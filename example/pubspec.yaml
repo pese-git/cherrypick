@@ -1,0 +1,14 @@
+name: example
+version: 1.0.0
+author: "Sergey Penkovsky <sergey.penkovsky@gmail.com>"
+homepage:
+
+environment:
+  sdk: ">=2.2.0 <3.0.0"
+
+
+dependencies:
+  dart_di:
+    path: ../
+
+dev_dependencies:
