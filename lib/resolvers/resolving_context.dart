@@ -25,8 +25,8 @@ class ResolvingContext<T> extends Resolver {
      * пользовательский резолвер
      */
   ResolvingContext<T> toResolver<TImpl extends T>(Resolver<TImpl> resolver) {
-    // TODO: implement toResolver
-    throw UnimplementedError();
+    _resolver = resolver;
+    return this;
   }
 
   /**
