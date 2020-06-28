@@ -20,6 +20,35 @@ void main() {
       container.bind<int>().toResolver(_makeResolver(expectedValue));
       expect(container.resolve<int>(), expectedValue);
     });
+
+    test("Container throws state error if the value can't be resolved", () {
+      final container = DiContainer();
+      expect(() => container.resolve<int>(), throwsA(isA<StateError>()));
+    });
+
+    test("Container has() returns true if it has resolver", () {
+      final expectedValue = 5;
+      final container = new DiContainer();
+      container.bind<int>().toResolver(_makeResolver(expectedValue));
+      expect(container.has<int>(), true);
+    });
+
+    test("Container has() returns false if it hasn't resolver", () {
+      final container = new DiContainer();
+      expect(container.has<int>(), false);
+    });
+
+    test("Container hasInTree() returns true if it has resolver", () {
+      final expectedValue = 5;
+      final container = DiContainer();
+      container.bind<int>().toResolver(_makeResolver(expectedValue));
+      expect(container.hasInTree<int>(), true);
+    });
+
+    test("Container hasInTree() returns true if it hasn`t resolver", () {
+      final container = DiContainer();
+      expect(container.hasInTree<int>(), false);
+    });
   });
 }
 
