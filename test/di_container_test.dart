@@ -13,6 +13,13 @@ void main() {
       expect(() => container.bind<int>().toResolver(_makeResolver(3)),
           throwsA(isA<StateError>()));
     });
+
+    test("Container resolves value after adding a dependency", () {
+      final expectedValue = 3;
+      final container = new DiContainer();
+      container.bind<int>().toResolver(_makeResolver(expectedValue));
+      expect(container.resolve<int>(), expectedValue);
+    });
   });
 }
 

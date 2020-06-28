@@ -15,8 +15,8 @@ class ResolvingContext<T> extends Resolver {
      */
   @override
   T resolve() {
-    // TODO: implement resolve
-    throw UnimplementedError();
+    _verify();
+    return _resolver?.resolve();
   }
 
   /**
@@ -120,5 +120,12 @@ class ResolvingContext<T> extends Resolver {
       T Function(T1, T2, T3, T4, T5, T6, T7, T8) factory) {
     // TODO: implement toFactory8
     throw UnimplementedError();
+  }
+
+  void _verify() {
+    if (_resolver == null) {
+      throw StateError("Can\'t resolve T without any resolvers. " +
+          "Please check, may be you didn\'t do anything after bind()");
+    }
   }
 }
