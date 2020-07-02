@@ -70,6 +70,6 @@ class DiContainer {
      * @return - возвращает булево значение
      */
   bool hasInTree<T>() {
-    return has<T>() || (_parent != null && _parent.hasInTree());
+    return has<T>() || (_parent != null && _parent.hasInTree<T>());
   }
 }

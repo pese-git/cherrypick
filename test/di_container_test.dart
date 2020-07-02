@@ -50,6 +50,20 @@ void main() {
       expect(container.hasInTree<int>(), false);
     });
   });
+
+  group('With parent', () {
+    test(
+        "Container bind() throws state error (if it's parent already has a resolver)",
+        () {
+      final parentContainer = new DiContainer();
+      final container = new DiContainer(parentContainer);
+
+      parentContainer.bind<int>().toResolver(_makeResolver(5));
+
+      expect(() => container.bind<int>().toResolver(_makeResolver(3)),
+          throwsA(isA<StateError>()));
+    });
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
