@@ -1,10 +1,14 @@
 import 'package:dart_di/di_container.dart';
 import 'package:dart_di/resolvers/resolver.dart';
+import 'package:dart_di/resolvers/singelton_resolver.dart';
+import 'package:dart_di/resolvers/value_resolver.dart';
 
 class ResolvingContext<T> extends Resolver {
+  /// Корневой резолвер
+  Resolver<T> get resolver => _resolver;
+
   DiContainer _container;
 
-  // Корневой резолвер
   Resolver _resolver;
 
   ResolvingContext(this._container);
@@ -33,16 +37,15 @@ class ResolvingContext<T> extends Resolver {
      *  Создать резолвер значения
      */
   ResolvingContext<T> toValue<TImpl extends T>(T value) {
-    // TODO: implement toValue
-    throw UnimplementedError();
+    Resolver<TImpl> resolver = ValueResolver(value);
+    return toResolver<TImpl>(resolver);
   }
 
   /**
      * Преобразователь в сингелтон
      */
   ResolvingContext<T> asSingleton() {
-    // TODO: implement asSingleton
-    throw UnimplementedError();
+    return toResolver(SingletonResolver<T>(resolver));
   }
 
   /**
