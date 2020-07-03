@@ -245,6 +245,34 @@ void main() {
     expect(container.resolve<DependOnABCDEF>().e, e);
     expect(container.resolve<DependOnABCDEF>().f, f);
   });
+
+  test("Bind to the factory resolves with 7 value", () {
+    final container = DiContainer();
+    final a = AA();
+    final b = BB();
+    final c = CC();
+    final d = DD();
+    final e = EE();
+    final f = FF();
+    final g = GG();
+    container.bind<A>().toValue(a);
+    container.bind<B>().toValue(b);
+    container.bind<C>().toValue(c);
+    container.bind<D>().toValue(d);
+    container.bind<E>().toValue(e);
+    container.bind<F>().toValue(f);
+    container.bind<G>().toValue(g);
+    container.bind<DependOnABCDEFG>().toFactory7<A, B, C, D, E, F, G>(
+        (a, b, c, d, e, f, g) => DependOnABCDEFG(a, b, c, d, e, f, g));
+
+    expect(container.resolve<DependOnABCDEFG>().a, a);
+    expect(container.resolve<DependOnABCDEFG>().b, b);
+    expect(container.resolve<DependOnABCDEFG>().c, c);
+    expect(container.resolve<DependOnABCDEFG>().d, d);
+    expect(container.resolve<DependOnABCDEFG>().e, e);
+    expect(container.resolve<DependOnABCDEFG>().f, f);
+    expect(container.resolve<DependOnABCDEFG>().g, g);
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
@@ -278,6 +306,10 @@ class EE implements E {}
 abstract class F {}
 
 class FF implements F {}
+
+abstract class G {}
+
+class GG implements G {}
 
 class DependOnA {
   final A a;
@@ -337,4 +369,23 @@ class DependOnABCDEF {
             d != null &&
             e != null &&
             f != null);
+}
+
+class DependOnABCDEFG {
+  final A a;
+  final B b;
+  final C c;
+  final D d;
+  final E e;
+  final F f;
+  final G g;
+
+  DependOnABCDEFG(this.a, this.b, this.c, this.d, this.e, this.f, this.g)
+      : assert(a != null &&
+            b != null &&
+            c != null &&
+            d != null &&
+            e != null &&
+            f != null &&
+            g != null);
 }
