@@ -273,6 +273,37 @@ void main() {
     expect(container.resolve<DependOnABCDEFG>().f, f);
     expect(container.resolve<DependOnABCDEFG>().g, g);
   });
+
+  test("Bind to the factory resolves with 8 value", () {
+    final container = DiContainer();
+    final a = AA();
+    final b = BB();
+    final c = CC();
+    final d = DD();
+    final e = EE();
+    final f = FF();
+    final g = GG();
+    final h = HH();
+    container.bind<A>().toValue(a);
+    container.bind<B>().toValue(b);
+    container.bind<C>().toValue(c);
+    container.bind<D>().toValue(d);
+    container.bind<E>().toValue(e);
+    container.bind<F>().toValue(f);
+    container.bind<G>().toValue(g);
+    container.bind<H>().toValue(h);
+    container.bind<DependOnABCDEFGH>().toFactory8<A, B, C, D, E, F, G, H>(
+        (a, b, c, d, e, f, g, h) => DependOnABCDEFGH(a, b, c, d, e, f, g, h));
+
+    expect(container.resolve<DependOnABCDEFGH>().a, a);
+    expect(container.resolve<DependOnABCDEFGH>().b, b);
+    expect(container.resolve<DependOnABCDEFGH>().c, c);
+    expect(container.resolve<DependOnABCDEFGH>().d, d);
+    expect(container.resolve<DependOnABCDEFGH>().e, e);
+    expect(container.resolve<DependOnABCDEFGH>().f, f);
+    expect(container.resolve<DependOnABCDEFGH>().g, g);
+    expect(container.resolve<DependOnABCDEFGH>().h, h);
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
@@ -310,6 +341,10 @@ class FF implements F {}
 abstract class G {}
 
 class GG implements G {}
+
+abstract class H {}
+
+class HH implements H {}
 
 class DependOnA {
   final A a;
@@ -388,4 +423,26 @@ class DependOnABCDEFG {
             e != null &&
             f != null &&
             g != null);
+}
+
+class DependOnABCDEFGH {
+  final A a;
+  final B b;
+  final C c;
+  final D d;
+  final E e;
+  final F f;
+  final G g;
+  final H h;
+
+  DependOnABCDEFGH(
+      this.a, this.b, this.c, this.d, this.e, this.f, this.g, this.h)
+      : assert(a != null &&
+            b != null &&
+            c != null &&
+            d != null &&
+            e != null &&
+            f != null &&
+            g != null &&
+            h != null);
 }
