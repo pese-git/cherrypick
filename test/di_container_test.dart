@@ -140,6 +140,15 @@ void main() {
 
     expect(container.resolve<A>(), b);
   });
+
+  test("Bind to the factory resolves with value", () {
+    final container = DiContainer();
+    final b = B();
+    container.bind<A>().toValue(b);
+    container.bind<DependOnA>().toFactory1<A>((a) => DependOnA(a));
+
+    expect(container.resolve<DependOnA>().a, b);
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
