@@ -73,64 +73,74 @@ void main() {
 
       expect(container.resolve<int>(), expectedValue);
     });
-  });
 
-  test("Container resolve() returns a  several value from parent container",
-      () {
-    final expectedIntValue = 5;
-    final expectedStringValue = "Hello world";
-    final parentContainer = DiContainer();
-    final container = DiContainer(parentContainer);
+    test("Container resolve() returns a  several value from parent container",
+        () {
+      final expectedIntValue = 5;
+      final expectedStringValue = "Hello world";
+      final parentContainer = DiContainer();
+      final container = DiContainer(parentContainer);
 
-    parentContainer.bind<int>().toResolver(_makeResolver(expectedIntValue));
-    parentContainer
-        .bind<String>()
-        .toResolver(_makeResolver(expectedStringValue));
+      parentContainer.bind<int>().toResolver(_makeResolver(expectedIntValue));
+      parentContainer
+          .bind<String>()
+          .toResolver(_makeResolver(expectedStringValue));
 
-    expect(container.resolve<int>(), expectedIntValue);
-    expect(container.resolve<String>(), expectedStringValue);
-  });
+      expect(container.resolve<int>(), expectedIntValue);
+      expect(container.resolve<String>(), expectedStringValue);
+    });
 
-  test("Container resolve() throws a state error if parent hasn't value too",
-      () {
-    final parentContainer = DiContainer();
-    final container = DiContainer(parentContainer);
-    expect(() => container.resolve<int>(), throwsA(isA<StateError>()));
-  });
+    test("Container resolve() throws a state error if parent hasn't value too",
+        () {
+      final parentContainer = DiContainer();
+      final container = DiContainer(parentContainer);
+      expect(() => container.resolve<int>(), throwsA(isA<StateError>()));
+    });
 
-  test("Container has() returns false if parent has a resolver", () {
-    final parentContainer = DiContainer();
-    final container = DiContainer(parentContainer);
+    test("Container has() returns false if parent has a resolver", () {
+      final parentContainer = DiContainer();
+      final container = DiContainer(parentContainer);
 
-    parentContainer.bind<int>().toResolver(_makeResolver(5));
+      parentContainer.bind<int>().toResolver(_makeResolver(5));
 
-    expect(container.has<int>(), false);
-  });
+      expect(container.has<int>(), false);
+    });
 
-  test("Container has() returns false if parent hasn't a resolver", () {
-    final parentContainer = DiContainer();
-    final container = DiContainer(parentContainer);
+    test("Container has() returns false if parent hasn't a resolver", () {
+      final parentContainer = DiContainer();
+      final container = DiContainer(parentContainer);
 
-    expect(container.has<int>(), false);
-  });
+      expect(container.has<int>(), false);
+    });
 
-  test("Container hasInTree() returns true if parent has a resolver", () {
-    final parentContainer = DiContainer();
-    final container = DiContainer(parentContainer);
+    test("Container hasInTree() returns true if parent has a resolver", () {
+      final parentContainer = DiContainer();
+      final container = DiContainer(parentContainer);
 
-    parentContainer.bind<int>().toResolver(_makeResolver(5));
+      parentContainer.bind<int>().toResolver(_makeResolver(5));
 
-    expect(container.hasInTree<int>(), true);
-  });
+      expect(container.hasInTree<int>(), true);
+    });
 
-  test("Test asSingelton", () {
-    final expectedIntValue = 10;
-    final containerA = DiContainer();
-    final containerB = DiContainer(containerA);
+    test("Test asSingelton", () {
+      final expectedIntValue = 10;
+      final containerA = DiContainer();
+      final containerB = DiContainer(containerA);
 
-    containerA.bind<int>().toValue(expectedIntValue).asSingleton();
+      containerA.bind<int>().toValue(expectedIntValue).asSingleton();
 
-    expect(containerB.resolve<int>(), expectedIntValue);
+      expect(containerB.resolve<int>(), expectedIntValue);
+    });
+
+    test("Child container can resolve parent container's value", () {
+      final containerA = DiContainer();
+      final a = AA();
+      containerA.bind<A>().toValue(a);
+
+      final containerB = DiContainer(containerA);
+      final containerC = DiContainer(containerB);
+      expect(containerC.resolve<A>(), a);
+    });
   });
 
   test("Bind to the factory resolves with value", () {
