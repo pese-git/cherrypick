@@ -1,4 +1,5 @@
 import 'package:dart_di/di_container.dart';
+import 'package:dart_di/resolvers/factory_resolver.dart';
 import 'package:dart_di/resolvers/resolver.dart';
 import 'package:dart_di/resolvers/singelton_resolver.dart';
 import 'package:dart_di/resolvers/value_resolver.dart';
@@ -52,8 +53,8 @@ class ResolvingContext<T> extends Resolver {
      * Создать фабричный resolver без каких-либо зависимостей
      */
   ResolvingContext<T> toFactory<TImpl extends T>(TImpl Function() factory) {
-    // TODO: implement toFactory
-    throw UnimplementedError();
+    Resolver<TImpl> resolver = FactoryResolver<TImpl>(factory);
+    return toResolver(resolver);
   }
 
   /**

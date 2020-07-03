@@ -132,6 +132,14 @@ void main() {
 
     expect(containerB.resolve<int>(), expectedIntValue);
   });
+
+  test("Bind to the factory resolves with value", () {
+    final container = DiContainer();
+    final b = B();
+    container.bind<A>().toFactory(() => b);
+
+    expect(container.resolve<A>(), b);
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
