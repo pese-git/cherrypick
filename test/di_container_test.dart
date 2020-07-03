@@ -135,19 +135,31 @@ void main() {
 
   test("Bind to the factory resolves with value", () {
     final container = DiContainer();
-    final b = B();
-    container.bind<A>().toFactory(() => b);
+    final a = AA();
+    container.bind<A>().toFactory(() => a);
 
-    expect(container.resolve<A>(), b);
+    expect(container.resolve<A>(), a);
   });
 
   test("Bind to the factory resolves with value", () {
     final container = DiContainer();
-    final b = B();
-    container.bind<A>().toValue(b);
+    final a = AA();
+    container.bind<A>().toValue(a);
     container.bind<DependOnA>().toFactory1<A>((a) => DependOnA(a));
 
-    expect(container.resolve<DependOnA>().a, b);
+    expect(container.resolve<DependOnA>().a, a);
+  });
+
+  test("Bind to the factory resolves with 2 value", () {
+    final container = DiContainer();
+    final a = AA();
+    final b = BB();
+    container.bind<A>().toValue(a);
+    container.bind<B>().toValue(b);
+    container.bind<DependOnAB>().toFactory2<A, B>((a, b) => DependOnAB(a, b));
+
+    expect(container.resolve<DependOnAB>().a, a);
+    expect(container.resolve<DependOnAB>().b, b);
   });
 }
 
@@ -161,10 +173,21 @@ class ResolverMock<T> extends Mock implements Resolver<T> {}
 
 abstract class A {}
 
-class B implements A {}
+class AA implements A {}
+
+abstract class B {}
+
+class BB implements B {}
 
 class DependOnA {
   final A a;
 
   DependOnA(this.a) : assert(a != null);
+}
+
+class DependOnAB {
+  final A a;
+  final B b;
+
+  DependOnAB(this.a, this.b) : assert(a != null && b != null);
 }

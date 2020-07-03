@@ -70,8 +70,9 @@ class ResolvingContext<T> extends Resolver {
      * Создать фабричный resolver с 2 зависимостями от контейнера
      */
   ResolvingContext<T> toFactory2<T1, T2>(T Function(T1, T2) factory) {
-    // TODO: implement toFactory2
-    throw UnimplementedError();
+    Resolver<T> resolver = FactoryResolver<T>(
+        () => factory(_container.resolve<T1>(), _container.resolve<T2>()));
+    return toResolver(resolver);
   }
 
   /**
