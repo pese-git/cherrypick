@@ -104,8 +104,13 @@ class ResolvingContext<T> extends Resolver {
      */
   ResolvingContext<T> toFactory5<T1, T2, T3, T4, T5>(
       T Function(T1, T2, T3, T4, T5) factory) {
-    // TODO: implement toFactory5
-    throw UnimplementedError();
+    Resolver<T> resolver = FactoryResolver<T>(() => factory(
+        _container.resolve<T1>(),
+        _container.resolve<T2>(),
+        _container.resolve<T3>(),
+        _container.resolve<T4>(),
+        _container.resolve<T5>()));
+    return toResolver(resolver);
   }
 
   /**

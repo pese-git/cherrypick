@@ -198,6 +198,28 @@ void main() {
     expect(container.resolve<DependOnABCD>().c, c);
     expect(container.resolve<DependOnABCD>().d, d);
   });
+
+  test("Bind to the factory resolves with 5 value", () {
+    final container = DiContainer();
+    final a = AA();
+    final b = BB();
+    final c = CC();
+    final d = DD();
+    final e = EE();
+    container.bind<A>().toValue(a);
+    container.bind<B>().toValue(b);
+    container.bind<C>().toValue(c);
+    container.bind<D>().toValue(d);
+    container.bind<E>().toValue(e);
+    container.bind<DependOnABCDE>().toFactory5<A, B, C, D, E>(
+        (a, b, c, d, e) => DependOnABCDE(a, b, c, d, e));
+
+    expect(container.resolve<DependOnABCDE>().a, a);
+    expect(container.resolve<DependOnABCDE>().b, b);
+    expect(container.resolve<DependOnABCDE>().c, c);
+    expect(container.resolve<DependOnABCDE>().d, d);
+    expect(container.resolve<DependOnABCDE>().e, e);
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
@@ -223,6 +245,10 @@ class CC implements C {}
 abstract class D {}
 
 class DD implements D {}
+
+abstract class E {}
+
+class EE implements E {}
 
 class DependOnA {
   final A a;
@@ -254,4 +280,15 @@ class DependOnABCD {
 
   DependOnABCD(this.a, this.b, this.c, this.d)
       : assert(a != null && b != null && c != null && d != null);
+}
+
+class DependOnABCDE {
+  final A a;
+  final B b;
+  final C c;
+  final D d;
+  final E e;
+
+  DependOnABCDE(this.a, this.b, this.c, this.d, this.e)
+      : assert(a != null && b != null && c != null && d != null && e != null);
 }
