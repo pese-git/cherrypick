@@ -161,6 +161,23 @@ void main() {
     expect(container.resolve<DependOnAB>().a, a);
     expect(container.resolve<DependOnAB>().b, b);
   });
+
+  test("Bind to the factory resolves with 3 value", () {
+    final container = DiContainer();
+    final a = AA();
+    final b = BB();
+    final c = CC();
+    container.bind<A>().toValue(a);
+    container.bind<B>().toValue(b);
+    container.bind<C>().toValue(c);
+    container
+        .bind<DependOnABC>()
+        .toFactory3<A, B, C>((a, b, c) => DependOnABC(a, b, c));
+
+    expect(container.resolve<DependOnABC>().a, a);
+    expect(container.resolve<DependOnABC>().b, b);
+    expect(container.resolve<DependOnABC>().c, c);
+  });
 }
 
 ResolverMock<T> _makeResolver<T>(T expectedValue) {
@@ -179,6 +196,10 @@ abstract class B {}
 
 class BB implements B {}
 
+abstract class C {}
+
+class CC implements C {}
+
 class DependOnA {
   final A a;
 
@@ -190,4 +211,13 @@ class DependOnAB {
   final B b;
 
   DependOnAB(this.a, this.b) : assert(a != null && b != null);
+}
+
+class DependOnABC {
+  final A a;
+  final B b;
+  final C c;
+
+  DependOnABC(this.a, this.b, this.c)
+      : assert(a != null && b != null && c != null);
 }
