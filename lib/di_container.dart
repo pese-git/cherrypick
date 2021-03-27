@@ -4,7 +4,7 @@ import 'package:dart_di/resolvers/resolving_context.dart';
  * Контейнер - это объект, которой хранит все резолверы зависимостей.
  */
 class DiContainer {
-  final DiContainer _parent;
+  final DiContainer? _parent;
 
   final _resolvers = <Type, ResolvingContext>{};
 
@@ -46,7 +46,7 @@ class DiContainer {
   /**
      * Возвращает разрешенную зависимость типа [T] или null, если она не может быть разрешена.
      */
-  T tryResolve<T>() {
+  T? tryResolve<T>() {
     var resolver = _resolvers[T];
     if (resolver != null) {
       return resolver.resolve();
@@ -70,6 +70,6 @@ class DiContainer {
      * @return - возвращает булево значение
      */
   bool hasInTree<T>() {
-    return has<T>() || (_parent != null && _parent.hasInTree<T>());
+    return has<T>() || (_parent != null && _parent!.hasInTree<T>());
   }
 }

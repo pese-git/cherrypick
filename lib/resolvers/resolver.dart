@@ -7,5 +7,5 @@ abstract class Resolver<T> {
      * Разрешает зависимость типа [T]
      * @return - возвращает объект типа [T]
      */
-  T resolve();
+  T? resolve();
 }
