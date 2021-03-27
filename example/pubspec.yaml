@@ -1,10 +1,10 @@
 name: example
 version: 1.0.0
 author: "Sergey Penkovsky <sergey.penkovsky@gmail.com>"
-homepage:
+homepage: localhost
 
 environment:
-  sdk: ">=2.2.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 
 dependencies:
@@ -12,3 +12,4 @@ dependencies:
     path: ../
 
 dev_dependencies:
+  test: ^1.16.8

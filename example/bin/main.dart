@@ -59,7 +59,7 @@ abstract class ApiClient {
 class ApiClientMock implements ApiClient {
   @override
   Future sendRequest(
-      {@required String url, String token, Map requestBody}) async {
+      {@required String? url, String? token, Map? requestBody}) async {
     return 'hello world';
   }
 }
