@@ -4,15 +4,20 @@ import 'package:dart_di/experimental/scope.dart';
 import 'package:dart_di/experimental/module.dart';
 
 class AppModule extends Module {
-  bool isMock;
-
-  AppModule({required this.isMock});
-
   @override
   void builder(Scope currentScope) {
     bind<ApiClient>().withName("apiClientMock").toInstance(ApiClientMock());
     bind<ApiClient>().withName("apiClientImpl").toInstance(ApiClientImpl());
+  }
+}
 
+class FeatureModule extends Module {
+  bool isMock;
+
+  FeatureModule({required this.isMock});
+
+  @override
+  void builder(Scope currentScope) {
     bind<DataRepository>()
         .withName("networkRepo")
         .toProvide(
@@ -33,10 +38,14 @@ class AppModule extends Module {
 
 void main() async {
   final scope = openRootScope().installModules([
-    AppModule(isMock: false),
+    AppModule(),
   ]);
 
-  final dataBloc = scope.resolve<DataBloc>();
+  final subScope = scope
+      .openSubScope("featureScope")
+      .installModules([FeatureModule(isMock: true)]);
+
+  final dataBloc = subScope.resolve<DataBloc>();
   dataBloc.data.listen((d) => print('Received data: $d'),
       onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
