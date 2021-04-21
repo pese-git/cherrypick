@@ -4,15 +4,25 @@ import 'package:dart_di/experimental/scope.dart';
 import 'package:dart_di/experimental/module.dart';
 
 class AppModule extends Module {
+  bool isMock;
+
+  AppModule({required this.isMock});
+
   @override
   void builder(Scope currentScope) {
-    bind<ApiClient>().withName("apiClient").toInstance(ApiClientMock());
-    bind<DataRepository>().withName("networkRepo").toProvide(
+    bind<ApiClient>().withName("apiClientMock").toInstance(ApiClientMock());
+    bind<ApiClient>().withName("apiClientImpl").toInstance(ApiClientImpl());
+
+    bind<DataRepository>()
+        .withName("networkRepo")
+        .toProvide(
           () => NetworkDataRepository(
-            currentScope.resolve<ApiClient>(named: "apiClient"),
+            currentScope.resolve<ApiClient>(
+              named: isMock ? "apiClientMock" : "apiClientImpl",
+            ),
           ),
-        );
-    // .singeltone();
+        )
+        .singeltone();
     bind<DataBloc>().toProvide(
       () => DataBloc(
         currentScope.resolve<DataRepository>(named: "networkRepo"),
@@ -23,7 +33,7 @@ class AppModule extends Module {
 
 void main() async {
   final scope = openRootScope().installModules([
-    AppModule(),
+    AppModule(isMock: false),
   ]);
 
   final dataBloc = scope.resolve<DataBloc>();
@@ -77,6 +87,14 @@ class ApiClientMock implements ApiClient {
   @override
   Future sendRequest(
       {@required String? url, String? token, Map? requestBody}) async {
-    return 'hello world';
+    return 'Local Data';
+  }
+}
+
+class ApiClientImpl implements ApiClient {
+  @override
+  Future sendRequest(
+      {@required String? url, String? token, Map? requestBody}) async {
+    return 'Network data';
   }
 }
