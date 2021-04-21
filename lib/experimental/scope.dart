@@ -83,6 +83,6 @@ class Scope {
     }
 
     // 2 Поиск зависимостей в родительском скоупе
-    return _parentScope != null ? _parentScope!.tryResolve() : null;
+    return _parentScope != null ? _parentScope!.tryResolve(named: named) : null;
   }
 }
