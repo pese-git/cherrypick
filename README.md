@@ -2,6 +2,9 @@
 
 Экспериментальная разработка DI на ЯП Dart
 
+- [New Api ENG](/doc/quick_start_en.md)
+- [New Api RU](/doc/quick_start_ru.md)
+
 ## Документация
 
 ### Быстрый старт
