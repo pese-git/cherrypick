@@ -8,6 +8,11 @@ Scope openRootScope() => Scope(null);
 class Scope {
   final Scope? _parentScope;
 
+  /// RU: Метод возвращает родительский [Scope].
+  ///
+  /// ENG: The method returns the parent [Scope].
+  ///
+  /// return [Scope]
   Scope? get parentScope => _parentScope;
 
   final Map<String, Scope> _scopeMap = HashMap();
@@ -16,6 +21,11 @@ class Scope {
 
   final Set<Module> _modulesList = HashSet();
 
+  /// RU: Метод открывает дочерний (дополнительный) [Scope].
+  ///
+  /// ENG: The method opens child (additional) [Scope].
+  ///
+  /// return [Scope]
   Scope openSubScope(String name) {
     final subScope = Scope(this);
     if (!_scopeMap.containsKey(name)) {
@@ -24,28 +34,47 @@ class Scope {
     return _scopeMap[name]!;
   }
 
+  /// RU: Метод закрывает дочерний (дополнительный) [Scope].
+  ///
+  /// ENG: The method closes child (additional) [Scope].
+  ///
+  /// return [Scope]
   void closeSubScope(String name) {
     _scopeMap.remove(name);
   }
 
+  /// RU: Метод инициализирует пользовательские модули в  [Scope].
+  ///
+  /// ENG: The method initializes custom modules in [Scope].
+  ///
+  /// return [Scope]
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
     modules.forEach((module) => module.builder(this));
     return this;
   }
 
+  /// RU: Метод удаляет пользовательские модули из [Scope].
+  ///
+  /// ENG: This method removes custom modules from [Scope].
+  ///
+  /// return [Scope]
   Scope dropModules() {
     _modulesList.removeAll(_modulesList);
     return this;
   }
 
-  /**
-     * Возвращает найденную зависимость, определенную параметром типа [T].
-     * Выдает [StateError], если зависимость не может быть разрешена.
-     * Если вы хотите получить [null], если зависимость не может быть найдена,
-     * то используйте вместо этого [tryResolve]
-     * @return - возвращает объект типа [T]  или [StateError]
-     */
+  /// RU: Возвращает найденную зависимость, определенную параметром типа [T].
+  /// Выдает [StateError], если зависимость не может быть разрешена.
+  /// Если вы хотите получить [null], если зависимость не может быть найдена,
+  /// то используйте вместо этого [tryResolve]
+  /// return - возвращает объект типа [T]  или [StateError]
+  ///
+  /// ENG: Returns the found dependency specified by the type parameter [T].
+  /// Throws [StateError] if the dependency cannot be resolved.
+  /// If you want to get [null] if the dependency cannot be found then use [tryResolve] instead
+  /// return - returns an object of type [T] or [StateError]
+  ///
   T resolve<T>({String? named}) {
     var resolved = tryResolve<T>(named: named);
     if (resolved != null) {
@@ -56,9 +85,9 @@ class Scope {
     }
   }
 
-  /**
-     * Возвращает найденную зависимость типа [T] или null, если она не может быть найдена.
-     */
+  /// RU: Возвращает найденную зависимость типа [T] или null, если она не может быть найдена.
+  /// ENG: Returns found dependency of type [T] or null if it cannot be found.
+  ///
   T? tryResolve<T>({String? named}) {
     // 1 Поиск зависимости по всем модулям текущего скоупа
     if (_modulesList.isNotEmpty) {
