@@ -27,9 +27,8 @@ class Scope {
   ///
   /// return [Scope]
   Scope openSubScope(String name) {
-    final subScope = Scope(this);
     if (!_scopeMap.containsKey(name)) {
-      _scopeMap[name] = subScope;
+      _scopeMap[name] = Scope(this);
     }
     return _scopeMap[name]!;
   }
