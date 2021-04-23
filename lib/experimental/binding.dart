@@ -7,8 +7,8 @@ class Binding<T> {
   late Mode _mode;
   late Type _key;
   late String _name;
-  late T _instance;
-  late T Function() _provider;
+  T? _instance = null;
+  T? Function()? _provider = null;
   late bool _isSingeltone = false;
   late bool _isNamed = false;
 
@@ -84,7 +84,7 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> singeltone() {
     if (_mode == Mode.PROVIDER_INSTANCE) {
-      _instance = _provider.call();
+      _instance = _provider?.call();
     }
     _isSingeltone = true;
     return this;
@@ -100,5 +100,5 @@ class Binding<T> {
   /// ENG: Resolve instance.
   ///
   /// return [T]
-  T? get provider => _provider.call();
+  T? get provider => _provider?.call();
 }
