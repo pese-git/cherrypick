@@ -13,8 +13,8 @@
 
 import 'dart:collection';
 
-import 'package:dart_di/binding.dart';
-import 'package:dart_di/scope.dart';
+import 'package:cherrypick/binding.dart';
+import 'package:cherrypick/scope.dart';
 
 /// RU: Класс Module является основой для пользовательских модулей.
 ///  Этот класс нужен для инициализации [Scope].

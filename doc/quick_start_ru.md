@@ -65,7 +65,7 @@ Scope - это контейнер, который хранит все дерев
 
 ```dart
     // открыть главный scope
-    final rootScope =  DartDi.openRootScope();
+    final rootScope =  Cherrypick.openRootScope();
 
     // инициализация scope пользовательским модулем
     rootScope.installModules([AppModule()]);
@@ -76,7 +76,7 @@ Scope - это контейнер, который хранит все дерев
     final str = rootScope.tryResolve<String>();
 
     // закрыть главный scope
-    DartDi.closeRootScope();
+    Cherrypick.closeRootScope();
 ```
 
 ## Пример приложения
@@ -85,8 +85,8 @@ Scope - это контейнер, который хранит все дерев
 ```dart
 import 'dart:async';
 import 'package:meta/meta.dart';
-import 'package:dart_di/experimental/scope.dart';
-import 'package:dart_di/experimental/module.dart';
+import 'package:cherrypick/scope.dart';
+import 'package:cherrypick/module.dart';
 
 class AppModule extends Module {
   @override

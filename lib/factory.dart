@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-import 'package:dart_di/scope.dart';
+import 'package:cherrypick/scope.dart';
 
 abstract class Factory<T> {
   T createInstance(Scope scope);

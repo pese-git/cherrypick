@@ -10,11 +10,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import 'package:dart_di/scope.dart';
+import 'package:cherrypick/scope.dart';
 
 Scope? _rootScope = null;
 
-class DartDi {
+class CherryPick {
   /// RU: Метод открывает главный [Scope].
   /// ENG: The method opens the main [Scope].
   ///

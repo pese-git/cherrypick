@@ -65,7 +65,7 @@ Example:
 
 ```dart
     // open main scope
-    final rootScope =  DartDi.openRootScope();
+    final rootScope =  Cherrypick.openRootScope();
 
     // initializing scope with a custom module
     rootScope.installModules([AppModule()]);
@@ -76,7 +76,7 @@ Example:
     final str = rootScope.tryResolve<String>();
 
     // close main scope
-    DartDi.closeRootScope();
+    Cherrypick.closeRootScope();
 ```
 
 ## Example app
@@ -85,8 +85,8 @@ Example:
 ```dart
 import 'dart:async';
 import 'package:meta/meta.dart';
-import 'package:dart_di/experimental/scope.dart';
-import 'package:dart_di/experimental/module.dart';
+import 'package:cherrypick/scope.dart';
+import 'package:cherrypick/module.dart';
 
 class AppModule extends Module {
   @override

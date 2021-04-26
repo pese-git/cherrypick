@@ -13,7 +13,7 @@
 
 library dart_di;
 
-export 'package:dart_di/scope.dart';
-export 'package:dart_di/module.dart';
-export 'package:dart_di/binding.dart';
-export 'package:dart_di/di.dart';
+export 'package:cherrypick/scope.dart';
+export 'package:cherrypick/module.dart';
+export 'package:cherrypick/binding.dart';
+export 'package:cherrypick/di.dart';

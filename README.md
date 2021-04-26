@@ -1,4 +1,4 @@
-# dart_di
+# cherrypick
 
 Experimental development of DI in the Dart language
 
