@@ -1,5 +1,6 @@
 library dart_di;
 
-export 'package:dart_di/di_container.dart';
-export 'package:dart_di/resolvers/resolvers.dart';
-export 'package:dart_di/resolvers/resolving_context.dart';
+export 'package:dart_di/scope.dart';
+export 'package:dart_di/module.dart';
+export 'package:dart_di/binding.dart';
+export 'package:dart_di/di.dart';

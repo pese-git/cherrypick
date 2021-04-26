@@ -1,7 +1,7 @@
 import 'dart:collection';
 
-import 'package:dart_di/experimental/binding.dart';
-import 'package:dart_di/experimental/module.dart';
+import 'package:dart_di/binding.dart';
+import 'package:dart_di/module.dart';
 
 Scope openRootScope() => Scope(null);
 

@@ -1,5 +1,5 @@
-import 'package:dart_di/experimental/module.dart';
-import 'package:dart_di/experimental/scope.dart';
+import 'package:dart_di/module.dart';
+import 'package:dart_di/scope.dart';
 import 'package:test/test.dart';
 
 void main() {

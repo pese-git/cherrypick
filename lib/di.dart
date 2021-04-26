@@ -1,4 +1,4 @@
-import 'package:dart_di/experimental/scope.dart';
+import 'package:dart_di/scope.dart';
 
 Scope? _rootScope = null;
 

@@ -1,15 +1,51 @@
 import 'dart:async';
 import 'package:meta/meta.dart';
-import 'package:dart_di/dart_di.dart';
+import 'package:dart_di/scope.dart';
+import 'package:dart_di/module.dart';
+
+class AppModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<ApiClient>().withName("apiClientMock").toInstance(ApiClientMock());
+    bind<ApiClient>().withName("apiClientImpl").toInstance(ApiClientImpl());
+  }
+}
+
+class FeatureModule extends Module {
+  bool isMock;
+
+  FeatureModule({required this.isMock});
+
+  @override
+  void builder(Scope currentScope) {
+    bind<DataRepository>()
+        .withName("networkRepo")
+        .toProvide(
+          () => NetworkDataRepository(
+            currentScope.resolve<ApiClient>(
+              named: isMock ? "apiClientMock" : "apiClientImpl",
+            ),
+          ),
+        )
+        .singeltone();
+    bind<DataBloc>().toProvide(
+      () => DataBloc(
+        currentScope.resolve<DataRepository>(named: "networkRepo"),
+      ),
+    );
+  }
+}
 
 void main() async {
-  final dataModule = new DiContainer()
-    ..bind<ApiClient>().toValue(new ApiClientMock())
-    ..bind<DataRepository>()
-        .toFactory1<ApiClient>((c) => new NetworkDataRepository(c))
-    ..bind<DataBloc>().toFactory1<DataRepository>((s) => new DataBloc(s));
+  final scope = openRootScope().installModules([
+    AppModule(),
+  ]);
 
-  final dataBloc = dataModule.resolve<DataBloc>();
+  final subScope = scope
+      .openSubScope("featureScope")
+      .installModules([FeatureModule(isMock: true)]);
+
+  final dataBloc = subScope.resolve<DataBloc>();
   dataBloc.data.listen((d) => print('Received data: $d'),
       onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
@@ -60,6 +96,14 @@ class ApiClientMock implements ApiClient {
   @override
   Future sendRequest(
       {@required String? url, String? token, Map? requestBody}) async {
-    return 'hello world';
+    return 'Local Data';
+  }
+}
+
+class ApiClientImpl implements ApiClient {
+  @override
+  Future sendRequest(
+      {@required String? url, String? token, Map? requestBody}) async {
+    return 'Network data';
   }
 }
