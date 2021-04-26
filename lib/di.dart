@@ -10,10 +10,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import 'package:dart_di/scope.dart';
 
-library dart_di;
+Scope? _rootScope = null;
 
-export 'package:dart_di/scope.dart';
-export 'package:dart_di/module.dart';
-export 'package:dart_di/binding.dart';
-export 'package:dart_di/di.dart';
+class DartDi {
+  /// RU: Метод открывает главный [Scope].
+  /// ENG: The method opens the main [Scope].
+  ///
+  /// return
+  static Scope openRootScope() {
+    if (_rootScope == null) {
+      _rootScope = Scope(null);
+    }
+    return _rootScope!;
+  }
+
+  /// RU: Метод закрывает главный [Scope].
+  /// ENG: The method close the main [Scope].
+  ///
+  ///
+  static void closeRootScope() {
+    if (_rootScope != null) {
+      _rootScope = null;
+    }
+  }
+}

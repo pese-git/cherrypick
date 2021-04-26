@@ -11,9 +11,8 @@
  * limitations under the License.
  */
 
-library dart_di;
+import 'package:dart_di/scope.dart';
 
-export 'package:dart_di/scope.dart';
-export 'package:dart_di/module.dart';
-export 'package:dart_di/binding.dart';
-export 'package:dart_di/di.dart';
+abstract class Factory<T> {
+  T createInstance(Scope scope);
+}
