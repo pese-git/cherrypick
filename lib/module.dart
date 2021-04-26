@@ -1,7 +1,7 @@
 import 'dart:collection';
 
-import 'package:dart_di/experimental/binding.dart';
-import 'package:dart_di/experimental/scope.dart';
+import 'package:dart_di/binding.dart';
+import 'package:dart_di/scope.dart';
 
 /// RU: Класс Module является основой для пользовательских модулей.
 ///  Этот класс нужен для инициализации [Scope].
