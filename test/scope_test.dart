@@ -1,5 +1,5 @@
-import 'package:dart_di/module.dart';
-import 'package:dart_di/scope.dart';
+import 'package:cherrypick/module.dart';
+import 'package:cherrypick/scope.dart';
 import 'package:test/test.dart';
 
 void main() {

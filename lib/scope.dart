@@ -13,8 +13,8 @@
 
 import 'dart:collection';
 
-import 'package:dart_di/binding.dart';
-import 'package:dart_di/module.dart';
+import 'package:cherrypick/binding.dart';
+import 'package:cherrypick/module.dart';
 
 Scope openRootScope() => Scope(null);
 
