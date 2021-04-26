@@ -1,7 +1,7 @@
 name: dart_di
 description: Experimental Dependency Injection library.
 version: 0.1.0
-author: Sergey Penkovsky <sergey.penkovsky@gmail.com>
+author: Sergey Penkovsky
 homepage: https://github.com/pese-git/dart_di
 
 environment:
