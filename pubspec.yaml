@@ -3,6 +3,8 @@ description: Experimental Dependency Injection library.
 version: 0.1.0
 homepage: https://github.com/pese-git/dart_di
 documentation: https://github.com/pese-git/dart_di/doc
+repository: https://github.com/pese-git/dart_di
+issue_tracker: https://github.com/pese-git/dart_di/issues
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
