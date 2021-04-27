@@ -65,7 +65,7 @@ Scope - это контейнер, который хранит все дерев
 
 ```dart
     // открыть главный scope
-    final rootScope =  Cherrypick.openRootScope();
+    final rootScope =  CherryPick.openRootScope();
 
     // инициализация scope пользовательским модулем
     rootScope.installModules([AppModule()]);
