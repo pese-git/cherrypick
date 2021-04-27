@@ -1,6 +1,10 @@
 
 ---
 
+0.1.1  Updated pubspec
+
+---
+
 0.1.0  Initial release
 
 ---
