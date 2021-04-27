@@ -2,7 +2,7 @@ name: cherrypick
 description: Experimental Dependency Injection library.
 version: 0.1.0
 homepage: https://github.com/pese-git/cherrypick
-documentation: https://github.com/pese-git/cherrypick/doc
+documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 
