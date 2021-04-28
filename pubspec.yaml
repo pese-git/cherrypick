@@ -1,5 +1,5 @@
 name: cherrypick
-description: Experimental Dependency Injection library.
+description: Cherrypick is a small dependency injection (DI) library for dart/flutter projects.
 version: 0.1.1
 homepage: https://github.com/pese-git/cherrypick
 documentation: https://github.com/pese-git/cherrypick/wiki
