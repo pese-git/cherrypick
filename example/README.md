@@ -1,5 +1,4 @@
-## Example
-
+# Example
 
 pubspec.yaml:
 
@@ -19,9 +18,7 @@ dev_dependencies:
   test: ^1.16.8
 ```
 
-
 main.dart:
-
 
 ```dart
 import 'dart:async';
