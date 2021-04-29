@@ -1,6 +1,9 @@
 
 # Changelog
 
+0.1.2  Fixed warnings in code
+
+---
 0.1.1+2  Updated libraries and fixed warnings
 
 ---
