@@ -20,8 +20,8 @@ class Binding<T> {
   late Mode _mode;
   late Type _key;
   late String _name;
-  T? _instance = null;
-  T? Function()? _provider = null;
+  T? _instance;
+  T? Function()? _provider;
   late bool _isSingeltone = false;
   late bool _isNamed = false;
 

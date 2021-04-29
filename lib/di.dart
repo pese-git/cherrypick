@@ -13,7 +13,7 @@
 
 import 'package:cherrypick/scope.dart';
 
-Scope? _rootScope = null;
+Scope? _rootScope;
 
 class CherryPick {
   /// RU: Метод открывает главный [Scope].
@@ -21,9 +21,7 @@ class CherryPick {
   ///
   /// return
   static Scope openRootScope() {
-    if (_rootScope == null) {
-      _rootScope = Scope(null);
-    }
+    _rootScope ??= Scope(null);
     return _rootScope!;
   }
 

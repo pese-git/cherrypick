@@ -103,8 +103,8 @@ class Scope {
   T? tryResolve<T>({String? named}) {
     // 1 Поиск зависимости по всем модулям текущего скоупа
     if (_modulesList.isNotEmpty) {
-      for (Module module in _modulesList) {
-        for (Binding binding in module.bindingSet) {
+      for (var module in _modulesList) {
+        for (var binding in module.bindingSet) {
           if (binding.key == T &&
               ((!binding.isNamed && named == null) ||
                   (binding.isNamed && named == binding.name))) {

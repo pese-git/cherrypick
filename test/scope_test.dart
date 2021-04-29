@@ -3,26 +3,26 @@ import 'package:cherrypick/scope.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group("Without parent scope.", () {
+  group('Without parent scope.', () {
     test('Parent scope is null.', () {
-      final scope = new Scope(null);
+      final scope = Scope(null);
       expect(scope.parentScope, null);
     });
 
     test('Open sub scope.', () {
-      final scope = new Scope(null);
-      final subScope = scope.openSubScope("subScope");
-      expect(scope.openSubScope("subScope"), subScope);
+      final scope = Scope(null);
+      final subScope = scope.openSubScope('subScope');
+      expect(scope.openSubScope('subScope'), subScope);
     });
 
     test("Container throws state error if the value can't be resolved", () {
-      final scope = new Scope(null);
+      final scope = Scope(null);
       expect(() => scope.resolve<String>(), throwsA(isA<StateError>()));
     });
 
     test('Container resolves value after adding a dependency', () {
-      final expectedValue = "test string";
-      final scope = new Scope(null)
+      final expectedValue = 'test string';
+      final scope = Scope(null)
           .installModules([TestModule<String>(value: expectedValue)]);
       expect(scope.resolve<String>(), expectedValue);
     });
@@ -42,7 +42,7 @@ void main() {
           throwsA(isA<StateError>()));
     });
 */
-    test("Container resolve() returns a value from parent container.", () {
+    test('Container resolve() returns a value from parent container.', () {
       final expectedValue = 5;
       final parentScope = Scope(null);
       final scope = Scope(parentScope);
@@ -52,10 +52,10 @@ void main() {
       expect(scope.resolve<int>(), expectedValue);
     });
 
-    test("Container resolve() returns a  several value from parent container.",
+    test('Container resolve() returns a  several value from parent container.',
         () {
       final expectedIntValue = 5;
-      final expectedStringValue = "Hello world";
+      final expectedStringValue = 'Hello world';
       final parentScope = Scope(null).installModules([
         TestModule<int>(value: expectedIntValue),
         TestModule<String>(value: expectedStringValue)

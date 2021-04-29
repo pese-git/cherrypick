@@ -6,8 +6,8 @@ import 'package:cherrypick/module.dart';
 class AppModule extends Module {
   @override
   void builder(Scope currentScope) {
-    bind<ApiClient>().withName("apiClientMock").toInstance(ApiClientMock());
-    bind<ApiClient>().withName("apiClientImpl").toInstance(ApiClientImpl());
+    bind<ApiClient>().withName('apiClientMock').toInstance(ApiClientMock());
+    bind<ApiClient>().withName('apiClientImpl').toInstance(ApiClientImpl());
   }
 }
 
@@ -19,18 +19,18 @@ class FeatureModule extends Module {
   @override
   void builder(Scope currentScope) {
     bind<DataRepository>()
-        .withName("networkRepo")
+        .withName('networkRepo')
         .toProvide(
           () => NetworkDataRepository(
             currentScope.resolve<ApiClient>(
-              named: isMock ? "apiClientMock" : "apiClientImpl",
+              named: isMock ? 'apiClientMock' : 'apiClientImpl',
             ),
           ),
         )
         .singeltone();
     bind<DataBloc>().toProvide(
       () => DataBloc(
-        currentScope.resolve<DataRepository>(named: "networkRepo"),
+        currentScope.resolve<DataRepository>(named: 'networkRepo'),
       ),
     );
   }
@@ -42,7 +42,7 @@ void main() async {
   ]);
 
   final subScope = scope
-      .openSubScope("featureScope")
+      .openSubScope('featureScope')
       .installModules([FeatureModule(isMock: true)]);
 
   final dataBloc = subScope.resolve<DataBloc>();
@@ -56,7 +56,7 @@ class DataBloc {
   final DataRepository _dataRepository;
 
   Stream<String> get data => _dataController.stream;
-  StreamController<String> _dataController = new StreamController.broadcast();
+  final StreamController<String> _dataController = StreamController.broadcast();
 
   DataBloc(this._dataRepository);
 
