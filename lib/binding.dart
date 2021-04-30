@@ -96,9 +96,6 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> singeltone() {
-    if (_mode == Mode.PROVIDER_INSTANCE) {
-      _instance = _provider?.call();
-    }
     _isSingeltone = true;
     return this;
   }
@@ -113,5 +110,11 @@ class Binding<T> {
   /// ENG: Resolve instance.
   ///
   /// return [T]
-  T? get provider => _provider?.call();
+  T? get provider {
+    if (_isSingeltone) {
+      _instance ??= _provider?.call();
+      return _instance;
+    }
+    return _provider?.call();
+  }
 }

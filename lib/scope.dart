@@ -112,9 +112,7 @@ class Scope {
               case Mode.INSTANCE:
                 return binding.instance;
               case Mode.PROVIDER_INSTANCE:
-                return binding.isSingeltone
-                    ? binding.instance
-                    : binding.provider;
+                return binding.provider;
               default:
                 return null;
             }
