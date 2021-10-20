@@ -85,8 +85,7 @@ Example:
 ```dart
 import 'dart:async';
 import 'package:meta/meta.dart';
-import 'package:cherrypick/scope.dart';
-import 'package:cherrypick/module.dart';
+import 'package:cherrypick/cherrypick.dart';
 
 class AppModule extends Module {
   @override
