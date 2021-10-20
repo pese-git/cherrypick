@@ -1,6 +1,10 @@
 
 # Changelog
 
+1.0.0  Refactored code and added experimental api
+
+---
+
 0.1.2+1  Fixed initializtaion error
 
 ---
