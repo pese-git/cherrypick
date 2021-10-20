@@ -11,8 +11,9 @@
 /// limitations under the License.
 ///
 
-import 'package:cherrypick/scope.dart';
+library cherrypick;
 
-abstract class Factory<T> {
-  T createInstance(Scope scope);
-}
+export 'package:cherrypick/src/binding.dart';
+export 'package:cherrypick/src/helper.dart';
+export 'package:cherrypick/src/module.dart';
+export 'package:cherrypick/src/scope.dart';

@@ -1,4 +1,4 @@
-import 'package:cherrypick/binding.dart';
+import 'package:cherrypick/src/binding.dart';
 import 'package:test/test.dart';
 
 void main() {

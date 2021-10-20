@@ -10,11 +10,10 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
-
 import 'dart:collection';
 
-import 'package:cherrypick/binding.dart';
-import 'package:cherrypick/module.dart';
+import 'package:cherrypick/src/binding.dart';
+import 'package:cherrypick/src/module.dart';
 
 Scope openRootScope() => Scope(null);
 

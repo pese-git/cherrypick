@@ -1,6 +1,5 @@
 name: example
 version: 1.0.0
-author: "Sergey Penkovsky <sergey.penkovsky@gmail.com>"
 homepage: localhost
 publish_to: none
 

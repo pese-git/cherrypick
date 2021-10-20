@@ -10,11 +10,10 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
-
 import 'dart:collection';
 
-import 'package:cherrypick/binding.dart';
-import 'package:cherrypick/scope.dart';
+import 'package:cherrypick/src/binding.dart';
+import 'package:cherrypick/src/scope.dart';
 
 /// RU: Класс Module является основой для пользовательских модулей.
 ///  Этот класс нужен для инициализации [Scope].

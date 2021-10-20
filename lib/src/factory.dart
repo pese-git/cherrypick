@@ -10,28 +10,8 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
+import 'package:cherrypick/src/scope.dart';
 
-import 'package:cherrypick/scope.dart';
-
-Scope? _rootScope;
-
-class CherryPick {
-  /// RU: Метод открывает главный [Scope].
-  /// ENG: The method opens the main [Scope].
-  ///
-  /// return
-  static Scope openRootScope() {
-    _rootScope ??= Scope(null);
-    return _rootScope!;
-  }
-
-  /// RU: Метод закрывает главный [Scope].
-  /// ENG: The method close the main [Scope].
-  ///
-  ///
-  static void closeRootScope() {
-    if (_rootScope != null) {
-      _rootScope = null;
-    }
-  }
+abstract class Factory<T> {
+  T createInstance(Scope scope);
 }
