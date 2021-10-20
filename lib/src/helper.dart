@@ -11,6 +11,7 @@
 /// limitations under the License.
 ///
 import 'package:cherrypick/src/scope.dart';
+import 'package:meta/meta.dart';
 
 Scope? _rootScope;
 
@@ -31,6 +32,74 @@ class CherryPick {
   static void closeRootScope() {
     if (_rootScope != null) {
       _rootScope = null;
+    }
+  }
+
+  /// RU: Метод открывает  дочерний [Scope].
+  /// ENG: The method open the child [Scope].
+  ///
+  /// Дочерний [Scope] открывается с [scopeName]
+  /// Child [Scope] open with [scopeName]
+  ///
+  /// Example:
+  /// ```
+  /// final String scopeName = 'firstScope.secondScope';
+  /// final subScope = CherryPick.openScope(scopeName);
+  /// ```
+  ///
+  ///
+  @experimental
+  static Scope openScope({String scopeName = '', String separator = '.'}) {
+    if (scopeName.isEmpty) {
+      return openRootScope();
+    }
+
+    final nameParts = scopeName.split(separator);
+    if (nameParts.isEmpty) {
+      throw Exception('Can not open sub scope because scopeName can not split');
+    }
+
+    return nameParts.fold(
+        openRootScope(),
+        (Scope previousValue, String element) =>
+            previousValue.openSubScope(element));
+  }
+
+  /// RU: Метод открывает  дочерний [Scope].
+  /// ENG: The method open the child [Scope].
+  ///
+  /// Дочерний [Scope] открывается с [scopeName]
+  /// Child [Scope] open with [scopeName]
+  ///
+  /// Example:
+  /// ```
+  /// final String scopeName = 'firstScope.secondScope';
+  /// final subScope = CherryPick.closeScope(scopeName);
+  /// ```
+  ///
+  ///
+  @experimental
+  static void closeScope({String scopeName = '', String separator = '.'}) {
+    if (scopeName.isEmpty) {
+      closeRootScope();
+    }
+
+    final nameParts = scopeName.split(separator);
+    if (nameParts.isEmpty) {
+      throw Exception(
+          'Can not close sub scope because scopeName can not split');
+    }
+
+    if (nameParts.length > 1) {
+      final lastPart = nameParts.removeLast();
+
+      final scope = nameParts.fold(
+          openRootScope(),
+          (Scope previousValue, String element) =>
+              previousValue.openSubScope(element));
+      scope.closeSubScope(lastPart);
+    } else {
+      openRootScope().closeSubScope(nameParts[0]);
     }
   }
 }
