@@ -22,7 +22,7 @@ class Binding<T> {
   late String _name;
   T? _instance;
   T? Function()? _provider;
-  late bool _isSingeltone = false;
+  late bool _isSingleton = false;
   late bool _isNamed = false;
 
   Binding() {
@@ -52,7 +52,7 @@ class Binding<T> {
   /// ENG: The method checks the singleton instance or not.
   ///
   /// return [bool]
-  bool get isSingeltone => _isSingeltone;
+  bool get isSingleton => _isSingleton;
 
   /// RU: Метод проверяет именован экземпляр или нет.
   /// ENG: The method checks whether the instance is named or not.
@@ -77,7 +77,7 @@ class Binding<T> {
   Binding<T> toInstance(T value) {
     _mode = Mode.INSTANCE;
     _instance = value;
-    _isSingeltone = true;
+    _isSingleton = true;
     return this;
   }
 
@@ -96,7 +96,7 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> singleton() {
-    _isSingeltone = true;
+    _isSingleton = true;
     return this;
   }
 
@@ -111,7 +111,7 @@ class Binding<T> {
   ///
   /// return [T]
   T? get provider {
-    if (_isSingeltone) {
+    if (_isSingleton) {
       _instance ??= _provider?.call();
       return _instance;
     }

@@ -7,7 +7,7 @@
 
 Binding is a custom instance configurator that contains methods for configuring a dependency.
 
-There are two main methods for initializing a custom instance `toInstance ()` and `toProvide ()` and auxiliary `withName ()` and `singeltone ()`.
+There are two main methods for initializing a custom instance `toInstance ()` and `toProvide ()` and auxiliary `withName ()` and `singleton ()`.
 
 `toInstance()` - takes a initialized instance
 
@@ -15,7 +15,7 @@ There are two main methods for initializing a custom instance `toInstance ()` an
 
 `withName()` - takes a string to name the instance. By this name, it will be possible to extract instance from the DI container
 
-`singeltone()` -  sets a flag in the Binding that tells the DI container that there is only one dependency.
+`singleton()` -  sets a flag in the Binding that tells the DI container that there is only one dependency.
 
 Example:
 
@@ -36,7 +36,7 @@ Example:
  // instance initialization like singleton
  Binding<String>().toInstance("hello world");
  // or
- Binding<String>().toProvide(() => "hello world").singeltone();
+ Binding<String>().toProvide(() => "hello world").singleton();
 
 ```
 
@@ -111,7 +111,7 @@ class FeatureModule extends Module {
             ),
           ),
         )
-        .singeltone();
+        .singleton();
     bind<DataBloc>().toProvide(
       () => DataBloc(
         currentScope.resolve<DataRepository>(named: "networkRepo"),

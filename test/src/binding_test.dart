@@ -16,11 +16,11 @@ void main() {
         expect(binding.mode, Mode.INSTANCE);
       });
 
-      test('Binding check singeltone', () {
+      test('Binding check singleton', () {
         final expectedValue = 5;
         final binding = Binding<int>().toInstance(expectedValue);
 
-        expect(binding.isSingeltone, true);
+        expect(binding.isSingleton, true);
       });
 
       test('Binding check value', () {
@@ -59,12 +59,12 @@ void main() {
         expect(binding.key, int);
       });
 
-      test('Binding check singeltone', () {
+      test('Binding check singleton', () {
         final expectedValue = 5;
         final binding =
             Binding<int>().withName('expectedValue').toInstance(expectedValue);
 
-        expect(binding.isSingeltone, true);
+        expect(binding.isSingleton, true);
       });
 
       test('Binding check value', () {
@@ -106,11 +106,11 @@ void main() {
         expect(binding.mode, Mode.PROVIDER_INSTANCE);
       });
 
-      test('Binding check singeltone', () {
+      test('Binding check singleton', () {
         final expectedValue = 5;
         final binding = Binding<int>().toProvide(() => expectedValue);
 
-        expect(binding.isSingeltone, false);
+        expect(binding.isSingleton, false);
       });
 
       test('Binding check value', () {
@@ -151,13 +151,13 @@ void main() {
         expect(binding.key, int);
       });
 
-      test('Binding check singeltone', () {
+      test('Binding check singleton', () {
         final expectedValue = 5;
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue);
 
-        expect(binding.isSingeltone, false);
+        expect(binding.isSingleton, false);
       });
 
       test('Binding check value', () {
@@ -188,33 +188,33 @@ void main() {
     });
   });
 
-  group('Check singeltone provide.', () {
+  group('Check singleton provide.', () {
     group('Without name.', () {
       test('Binding resolves null', () {
-        final binding = Binding<int>().singeltone();
+        final binding = Binding<int>().singleton();
         expect(binding.provider, null);
       });
 
       test('Binding check mode', () {
         final expectedValue = 5;
         final binding =
-            Binding<int>().toProvide(() => expectedValue).singeltone();
+            Binding<int>().toProvide(() => expectedValue).singleton();
 
         expect(binding.mode, Mode.PROVIDER_INSTANCE);
       });
 
-      test('Binding check singeltone', () {
+      test('Binding check singleton', () {
         final expectedValue = 5;
         final binding =
-            Binding<int>().toProvide(() => expectedValue).singeltone();
+            Binding<int>().toProvide(() => expectedValue).singleton();
 
-        expect(binding.isSingeltone, true);
+        expect(binding.isSingleton, true);
       });
 
       test('Binding check value', () {
         final expectedValue = 5;
         final binding =
-            Binding<int>().toProvide(() => expectedValue).singeltone();
+            Binding<int>().toProvide(() => expectedValue).singleton();
 
         expect(binding.provider, expectedValue);
       });
@@ -222,14 +222,14 @@ void main() {
       test('Binding resolves value', () {
         final expectedValue = 5;
         final binding =
-            Binding<int>().toProvide(() => expectedValue).singeltone();
+            Binding<int>().toProvide(() => expectedValue).singleton();
         expect(binding.provider, expectedValue);
       });
     });
 
     group('With name.', () {
       test('Binding resolves null', () {
-        final binding = Binding<int>().withName('expectedValue').singeltone();
+        final binding = Binding<int>().withName('expectedValue').singleton();
         expect(binding.provider, null);
       });
 
@@ -238,7 +238,7 @@ void main() {
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue)
-            .singeltone();
+            .singleton();
 
         expect(binding.mode, Mode.PROVIDER_INSTANCE);
       });
@@ -248,19 +248,19 @@ void main() {
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue)
-            .singeltone();
+            .singleton();
 
         expect(binding.key, int);
       });
 
-      test('Binding check singeltone', () {
+      test('Binding check singleton', () {
         final expectedValue = 5;
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue)
-            .singeltone();
+            .singleton();
 
-        expect(binding.isSingeltone, true);
+        expect(binding.isSingleton, true);
       });
 
       test('Binding check value', () {
@@ -268,7 +268,7 @@ void main() {
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue)
-            .singeltone();
+            .singleton();
 
         expect(binding.provider, expectedValue);
       });
@@ -278,7 +278,7 @@ void main() {
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue)
-            .singeltone();
+            .singleton();
 
         expect(binding.name, 'expectedValue');
       });
@@ -288,7 +288,7 @@ void main() {
         final binding = Binding<int>()
             .withName('expectedValue')
             .toProvide(() => expectedValue)
-            .singeltone();
+            .singleton();
         expect(binding.provider, expectedValue);
       });
     });

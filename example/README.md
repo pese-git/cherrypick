@@ -50,7 +50,7 @@ class FeatureModule extends Module {
             ),
           ),
         )
-        .singeltone();
+        .singleton();
     bind<DataBloc>().toProvide(
       () => DataBloc(
         currentScope.resolve<DataRepository>(named: "networkRepo"),
