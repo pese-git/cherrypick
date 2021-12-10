@@ -1,6 +1,9 @@
 
 # Changelog
 
+1.0.1  Fixed syntax error
+
+---
 1.0.0  Refactored code and added experimental api
 
 ---
