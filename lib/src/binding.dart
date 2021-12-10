@@ -95,7 +95,7 @@ class Binding<T> {
   /// ENG: Initialization instance as a singelton [value].
   ///
   /// return [Binding]
-  Binding<T> singeltone() {
+  Binding<T> singleton() {
     _isSingeltone = true;
     return this;
   }
