@@ -1,6 +1,9 @@
 
 # Changelog
 
+1.0.2  Updated doc and fixed syntax error
+
+---
 1.0.1  Fixed syntax error
 
 ---
