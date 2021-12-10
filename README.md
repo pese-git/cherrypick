@@ -15,7 +15,7 @@ There are two main methods for initializing a custom instance `toInstance ()` an
 
 `withName()` - takes a string to name the instance. By this name, it will be possible to extract instance from the DI container
 
-`singeltone()` -  sets a flag in the Binding that tells the DI container that there is only one dependency.
+`singleton()` -  sets a flag in the Binding that tells the DI container that there is only one dependency.
 
 Example:
 
