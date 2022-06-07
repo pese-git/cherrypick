@@ -71,7 +71,7 @@ class Scope {
   ///
   /// return [Scope]
   Scope dropModules() {
-    _modulesList.removeAll(_modulesList);
+    _modulesList.clear();
     return this;
   }
 
