@@ -11,7 +11,9 @@
 /// limitations under the License.
 ///
 
-enum Mode { SIMPLE, INSTANCE, PROVIDER_INSTANCE }
+enum Mode { SIMPLE, INSTANCE, PROVIDER_INSTANCE, PROVIDER_WITH_PARAMS_INSTANCE }
+
+typedef ProviderWithParam<T> = T Function(dynamic param);
 
 /// RU: Класс Binding<T> настраивает параметры экземпляра.
 /// ENG: The Binding<T> class configures the settings for the instance.
@@ -22,6 +24,7 @@ class Binding<T> {
   late String _name;
   T? _instance;
   T? Function()? _provider;
+  ProviderWithParam<T>? _providerWithParam;
   late bool _isSingleton = false;
   late bool _isNamed = false;
 
@@ -91,6 +94,16 @@ class Binding<T> {
     return this;
   }
 
+  /// RU: Инициализация экземляпяра  через провайдер [value] c динамическим параметром.
+  /// ENG: Initialization instance via provider [value] with a dynamic param.
+  ///
+  /// return [Binding]
+  Binding<T> toProvideWithParam(ProviderWithParam<T> value) {
+    _mode = Mode.PROVIDER_WITH_PARAMS_INSTANCE;
+    _providerWithParam = value;
+    return this;
+  }
+
   /// RU: Инициализация экземляпяра  как сингелтон [value].
   /// ENG: Initialization instance as a singelton [value].
   ///
@@ -116,5 +129,13 @@ class Binding<T> {
       return _instance;
     }
     return _provider?.call();
+  }
+
+  /// RU: Поиск экземпляра с параметром.
+  /// ENG: Resolve instance with param.
+  ///
+  /// return [T]
+  T? providerWithParam(dynamic param) {
+    return _providerWithParam?.call(param);
   }
 }
