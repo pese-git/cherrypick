@@ -1,6 +1,10 @@
 
 # Changelog
 
+1.0.3  Added provider with params
+
+---
+
 1.0.2  Updated doc and fixed syntax error
 
 ---
