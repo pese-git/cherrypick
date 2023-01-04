@@ -13,7 +13,7 @@
 
 enum Mode { SIMPLE, INSTANCE, PROVIDER_INSTANCE, PROVIDER_WITH_PARAMS_INSTANCE }
 
-typedef ProviderWithParam<T> = T Function(dynamic param);
+typedef ProviderWithParams<T> = T Function(dynamic params);
 
 /// RU: Класс Binding<T> настраивает параметры экземпляра.
 /// ENG: The Binding<T> class configures the settings for the instance.
@@ -24,7 +24,7 @@ class Binding<T> {
   late String _name;
   T? _instance;
   T? Function()? _provider;
-  ProviderWithParam<T>? _providerWithParam;
+  ProviderWithParams<T>? _providerWithParams;
   late bool _isSingleton = false;
   late bool _isNamed = false;
 
@@ -98,9 +98,9 @@ class Binding<T> {
   /// ENG: Initialization instance via provider [value] with a dynamic param.
   ///
   /// return [Binding]
-  Binding<T> toProvideWithParam(ProviderWithParam<T> value) {
+  Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
     _mode = Mode.PROVIDER_WITH_PARAMS_INSTANCE;
-    _providerWithParam = value;
+    _providerWithParams = value;
     return this;
   }
 
@@ -132,10 +132,11 @@ class Binding<T> {
   }
 
   /// RU: Поиск экземпляра с параметром.
-  /// ENG: Resolve instance with param.
+  ///
+  /// ENG: Resolve instance with [params].
   ///
   /// return [T]
-  T? providerWithParam(dynamic param) {
-    return _providerWithParam?.call(param);
+  T? providerWithParams(dynamic params) {
+    return _providerWithParams?.call(params);
   }
 }

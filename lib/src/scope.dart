@@ -86,8 +86,8 @@ class Scope {
   /// If you want to get [null] if the dependency cannot be found then use [tryResolve] instead
   /// return - returns an object of type [T] or [StateError]
   ///
-  T resolve<T>({String? named, dynamic param}) {
-    var resolved = tryResolve<T>(named: named, param: param);
+  T resolve<T>({String? named, dynamic params}) {
+    var resolved = tryResolve<T>(named: named, params: params);
     if (resolved != null) {
       return resolved;
     } else {
@@ -99,7 +99,7 @@ class Scope {
   /// RU: Возвращает найденную зависимость типа [T] или null, если она не может быть найдена.
   /// ENG: Returns found dependency of type [T] or null if it cannot be found.
   ///
-  T? tryResolve<T>({String? named, dynamic param}) {
+  T? tryResolve<T>({String? named, dynamic params}) {
     // 1 Поиск зависимости по всем модулям текущего скоупа
     if (_modulesList.isNotEmpty) {
       for (var module in _modulesList) {
@@ -113,11 +113,10 @@ class Scope {
               case Mode.PROVIDER_INSTANCE:
                 return binding.provider;
               case Mode.PROVIDER_WITH_PARAMS_INSTANCE:
-                if (param == null) {
-                  throw StateError(
-                      'Param is null. Maybe you forget pass it');
+                if (params == null) {
+                  throw StateError('Param is null. Maybe you forget pass it');
                 }
-                return binding.providerWithParam(param);
+                return binding.providerWithParams(params);
               default:
                 return null;
             }

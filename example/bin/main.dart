@@ -22,15 +22,15 @@ class FeatureModule extends Module {
         .withName('networkRepo')
         .toProvide(
           () => NetworkDataRepository(
-        currentScope.resolve<ApiClient>(
-          named: isMock ? 'apiClientMock' : 'apiClientImpl',
-        ),
-      ),
-    )
+            currentScope.resolve<ApiClient>(
+              named: isMock ? 'apiClientMock' : 'apiClientImpl',
+            ),
+          ),
+        )
         .singleton();
 
-    bind<DataBloc>().toProvideWithParam(
-          (param) => DataBloc(
+    bind<DataBloc>().toProvideWithParams(
+      (param) => DataBloc(
         currentScope.resolve<DataRepository>(named: 'networkRepo'),
         param,
       ),
@@ -47,7 +47,7 @@ void main() async {
       .openSubScope('featureScope')
       .installModules([FeatureModule(isMock: true)]);
 
-  final dataBloc = subScope.resolve<DataBloc>(param: 'PARAMETER');
+  final dataBloc = subScope.resolve<DataBloc>(params: 'PARAMETER');
   dataBloc.data.listen((d) => print('Received data: $d'),
       onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
