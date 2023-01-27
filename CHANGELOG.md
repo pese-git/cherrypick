@@ -1,6 +1,10 @@
 
 # Changelog
 
+1.0.4  Fixed exception "ConcurrentModificationError"
+
+---
+
 1.0.3  Added provider with params
 
 ---
