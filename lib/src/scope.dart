@@ -71,7 +71,9 @@ class Scope {
   ///
   /// return [Scope]
   Scope dropModules() {
-    _modulesList.removeAll(_modulesList);
+    // [AlexeyYuPopkov](https://github.com/AlexeyYuPopkov) Thank you for the [Removed exception "ConcurrentModificationError"](https://github.com/pese-git/cherrypick/pull/2)
+    _modulesList.clear();
+
     return this;
   }
 
