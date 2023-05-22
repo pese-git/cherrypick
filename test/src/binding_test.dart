@@ -13,7 +13,7 @@ void main() {
         final expectedValue = 5;
         final binding = Binding<int>().toInstance(expectedValue);
 
-        expect(binding.mode, Mode.INSTANCE);
+        expect(binding.mode, Mode.instance);
       });
 
       test('Binding check singleton', () {
@@ -48,7 +48,7 @@ void main() {
         final binding =
             Binding<int>().withName('expectedValue').toInstance(expectedValue);
 
-        expect(binding.mode, Mode.INSTANCE);
+        expect(binding.mode, Mode.instance);
       });
 
       test('Binding check key', () {
@@ -103,7 +103,7 @@ void main() {
         final expectedValue = 5;
         final binding = Binding<int>().toProvide(() => expectedValue);
 
-        expect(binding.mode, Mode.PROVIDER_INSTANCE);
+        expect(binding.mode, Mode.providerInstance);
       });
 
       test('Binding check singleton', () {
@@ -139,7 +139,7 @@ void main() {
             .withName('expectedValue')
             .toProvide(() => expectedValue);
 
-        expect(binding.mode, Mode.PROVIDER_INSTANCE);
+        expect(binding.mode, Mode.providerInstance);
       });
 
       test('Binding check key', () {
@@ -200,7 +200,7 @@ void main() {
         final binding =
             Binding<int>().toProvide(() => expectedValue).singleton();
 
-        expect(binding.mode, Mode.PROVIDER_INSTANCE);
+        expect(binding.mode, Mode.providerInstance);
       });
 
       test('Binding check singleton', () {
@@ -240,7 +240,7 @@ void main() {
             .toProvide(() => expectedValue)
             .singleton();
 
-        expect(binding.mode, Mode.PROVIDER_INSTANCE);
+        expect(binding.mode, Mode.providerInstance);
       });
 
       test('Binding check key', () {

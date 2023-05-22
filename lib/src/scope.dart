@@ -61,7 +61,9 @@ class Scope {
   /// return [Scope]
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
-    modules.forEach((module) => module.builder(this));
+    for (var module in modules) {
+      module.builder(this);
+    }
     return this;
   }
 
@@ -110,11 +112,11 @@ class Scope {
               ((!binding.isNamed && named == null) ||
                   (binding.isNamed && named == binding.name))) {
             switch (binding.mode) {
-              case Mode.INSTANCE:
+              case Mode.instance:
                 return binding.instance;
-              case Mode.PROVIDER_INSTANCE:
+              case Mode.providerInstance:
                 return binding.provider;
-              case Mode.PROVIDER_WITH_PARAMS_INSTANCE:
+              case Mode.providerInstanceWithParams:
                 if (params == null) {
                   throw StateError('Param is null. Maybe you forget pass it');
                 }

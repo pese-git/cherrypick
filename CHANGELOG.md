@@ -1,6 +1,10 @@
 
 # Changelog
 
+2.0.0  supported Dart 3.0
+
+---
+
 1.1.0  cheked support Dart 3.0
 
 ---

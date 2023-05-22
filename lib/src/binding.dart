@@ -11,7 +11,7 @@
 /// limitations under the License.
 ///
 
-enum Mode { SIMPLE, INSTANCE, PROVIDER_INSTANCE, PROVIDER_WITH_PARAMS_INSTANCE }
+enum Mode { simple, instance, providerInstance, providerInstanceWithParams }
 
 typedef ProviderWithParams<T> = T Function(dynamic params);
 
@@ -29,7 +29,7 @@ class Binding<T> {
   late bool _isNamed = false;
 
   Binding() {
-    _mode = Mode.SIMPLE;
+    _mode = Mode.simple;
     _key = T;
   }
 
@@ -78,7 +78,7 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> toInstance(T value) {
-    _mode = Mode.INSTANCE;
+    _mode = Mode.instance;
     _instance = value;
     _isSingleton = true;
     return this;
@@ -89,7 +89,7 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> toProvide(T Function() value) {
-    _mode = Mode.PROVIDER_INSTANCE;
+    _mode = Mode.providerInstance;
     _provider = value;
     return this;
   }
@@ -99,7 +99,7 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
-    _mode = Mode.PROVIDER_WITH_PARAMS_INSTANCE;
+    _mode = Mode.providerInstanceWithParams;
     _providerWithParams = value;
     return this;
   }
