@@ -1,6 +1,10 @@
 
 # Changelog
 
+1.1.0  cheked support Dart 3.0
+
+---
+
 1.0.4  Fixed exception "ConcurrentModificationError"
 
 ---
