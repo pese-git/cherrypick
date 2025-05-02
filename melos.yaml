@@ -5,3 +5,11 @@ sdkPath: .fvm/flutter_sdk
 packages:
   - cherrypick
   - cherrypick_flutter
+
+scripts:
+  analyze:
+    run: |
+      flutter analyze
+  format:
+    run: |
+      flutter format
