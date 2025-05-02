@@ -1,51 +1,41 @@
-# Quick start
+# CherryPick Flutter
 
-## Main components DI
+`cherrypick_flutter` is a powerful Flutter library for managing and accessing dependencies within your application through a root scope context using `CherryPickProvider`. It offers simplified dependency injection, making your application more modular and test-friendly.
 
+## Quick Start
 
-### Binding
+### Main Components in Dependency Injection (DI)
 
-Binding is a custom instance configurator that contains methods for configuring a dependency.
+#### Binding
 
-There are two main methods for initializing a custom instance `toInstance()` and `toProvide()` and auxiliary `withName()` and `singleton()`.
+A Binding is a custom instance configurator, essential for setting up dependencies. It offers the following key methods:
 
-`toInstance()` - takes a initialized instance
+- `toInstance()`: Directly provides an initialized instance.
+- `toProvide()`: Accepts a provider function or constructor for lazy initialization.
+- `withName()`: Assigns a name to an instance, allowing for retrieval by name.
+- `singleton()`: Marks the instance as a singleton, ensuring only one instance exists in the scope.
 
-`toProvide()` -  takes a `provider` function (instance constructor)
-
-`withName()` - takes a string to name the instance. By this name, it will be possible to extract instance from the DI container
-
-`singleton()` -  sets a flag in the Binding that tells the DI container that there is only one dependency.
-
-Example:
+##### Example:
 
 ```dart
- // initializing a text string instance through a method toInstance()
- Binding<String>().toInstance("hello world");
+// Direct instance initialization with toInstance()
+Binding<String>().toInstance("hello world");
 
- // or
+// Or use a provider for lazy initialization
+Binding<String>().toProvide(() => "hello world");
 
- // initializing a text string instance
- Binding<String>().toProvide(() => "hello world");
+// Named instance
+Binding<String>().withName("my_string").toInstance("hello world");
 
- // initializing an instance of a string named
- Binding<String>().withName("my_string").toInstance("hello world");
- // or
- Binding<String>().withName("my_string").toProvide(() => "hello world");
-
- // instance initialization like singleton
- Binding<String>().toInstance("hello world");
- // or
- Binding<String>().toProvide(() => "hello world").singleton();
-
+// Singleton instance
+Binding<String>().toProvide(() => "hello world").singleton();
 ```
 
-### Module
+#### Module
 
-Module is a container of user instances, and on the basis of which the user can create their modules. The user in his module must implement the `void builder (Scope currentScope)` method.
+A Module encapsulates bindings, allowing you to organize dependencies logically. To create a custom module, implement the `void builder(Scope currentScope)` method.
 
-
-Example:
+##### Example:
 
 ```dart
 class AppModule extends Module {
@@ -56,31 +46,29 @@ class AppModule extends Module {
 }
 ```
 
-### Scope
+#### Scope
 
-Scope is a container that stores the entire dependency tree (scope, modules, instances).
-Through the scope, you can access the custom `instance`, for this you need to call the `resolve<T>()` method and specify the type of the object, and you can also pass additional parameters.
+A Scope is the container that manages your dependency tree, holding modules and instances. Use the scope to access dependencies with the `resolve<T>()` method.
 
-Example:
+##### Example:
 
 ```dart
-    // open main scope
-    final rootScope =  Cherrypick.openRootScope();
+// Open the main scope
+final rootScope = Cherrypick.openRootScope();
 
-    // initializing scope with a custom module
-    rootScope.installModules([AppModule()]);
+// Install custom modules
+rootScope.installModules([AppModule()]);
 
-    // takes custom instance
-    final str = rootScope.resolve<String>();
-    // or
-    final str = rootScope.tryResolve<String>();
+// Resolve an instance
+final str = rootScope.resolve<String>();
 
-    // close main scope
-    Cherrypick.closeRootScope();
+// Close the main scope
+Cherrypick.closeRootScope();
 ```
 
-## Example app
+## Example Application
 
+The following example demonstrates module setup, scope management, and dependency resolution.
 
 ```dart
 import 'dart:async';
@@ -193,13 +181,21 @@ class ApiClientImpl implements ApiClient {
 }
 ```
 
+## Features
 
-[GitHub Linl](https://github.com/pese-git/cherrypick)
+- [x] Main Scope and Sub Scopes
+- [x] Named Instance Initialization
 
+## Contributing
 
+We welcome contributions from the community. Please feel free to submit issues or pull requests with suggestions or improvements.
 
-### Features
+## License
 
-- [x] Scope
-- [x] Sub scope
-- [x] Initialization instance with name
+This project is licensed under the Apache License 2.0. You may obtain a copy of the License at [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+**Important:** Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for specific language governing permissions and limitations under the License.
+
+## Links
+
+- [GitHub Repository](https://github.com/pese-git/cherrypick)
