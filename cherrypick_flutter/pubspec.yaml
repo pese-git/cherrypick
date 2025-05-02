@@ -1,6 +1,6 @@
 name: cherrypick_flutter
 description: "A new Flutter package project."
-version: 1.0.0
+version: 1.0.1
 homepage: https://pese-git.github.io/cherrypick-site/
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
@@ -13,7 +13,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cherrypick: any
+  cherrypick: ^2.0.1
 
 dev_dependencies:
   flutter_test:
