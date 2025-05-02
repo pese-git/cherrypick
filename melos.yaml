@@ -4,3 +4,4 @@ sdkPath: .fvm/flutter_sdk
 
 packages:
   - cherrypick
+  - cherrypick_flutter
