@@ -1,0 +1,6 @@
+name: cherrypick_workspace
+
+sdkPath: .fvm/flutter_sdk
+
+packages:
+  - cherrypick
