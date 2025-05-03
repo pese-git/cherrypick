@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-05-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.0`](#cherrypick_flutter---v110)
+
+---
+
+#### `cherrypick_flutter` - `v1.1.0`
+
+ - **FIX**: update description.
+ - **FIX**: update gitignore.
+ - **FEAT**: modify api in CherryPickProvider.
+
+
 ## 2025-05-02
 
 ### Changes
