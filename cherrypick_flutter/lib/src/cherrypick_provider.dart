@@ -14,14 +14,15 @@ import 'package:flutter/widgets.dart';
 /// limitations under the License.
 ///
 
-class CherryPickProvider extends InheritedWidget {
-  // Holds a reference to the root scope object
-  final Scope rootScope;
+final class CherryPickProvider extends InheritedWidget {
+  Scope openRootScope() => CherryPick.openRootScope();
+
+  Scope openSubScope({String scopeName = '', String separator = '.'}) =>
+      CherryPick.openScope(scopeName: scopeName, separator: separator);
 
   // Constructor for CherryPickProvider. Initializes with a required rootScope and child widget.
   const CherryPickProvider({
     super.key,
-    required this.rootScope,
     required super.child,
   });
 
@@ -38,7 +39,6 @@ class CherryPickProvider extends InheritedWidget {
   // Determines whether the widget should notify dependents when it changes
   @override
   bool updateShouldNotify(CherryPickProvider oldWidget) {
-    // Notify if the rootScope has changed
-    return rootScope != oldWidget.rootScope;
+    return false;
   }
 }
