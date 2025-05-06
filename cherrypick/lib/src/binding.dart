@@ -15,6 +15,10 @@ enum Mode { simple, instance, providerInstance, providerInstanceWithParams }
 
 typedef ProviderWithParams<T> = T Function(dynamic params);
 
+typedef AsyncProvider<T> = Future<T> Function();
+
+typedef AsyncProviderWithParams<T> = Future<T> Function(dynamic params);
+
 /// RU: Класс Binding<T> настраивает параметры экземпляра.
 /// ENG: The Binding<T> class configures the settings for the instance.
 ///
@@ -24,6 +28,9 @@ class Binding<T> {
   late String _name;
   T? _instance;
   T? Function()? _provider;
+  AsyncProvider<T>? asyncProvider;
+  AsyncProviderWithParams<T>? asyncProviderWithParams;
+
   ProviderWithParams<T>? _providerWithParams;
   late bool _isSingleton = false;
   late bool _isNamed = false;
@@ -94,6 +101,16 @@ class Binding<T> {
     return this;
   }
 
+  /// RU: Инициализация экземляпяра  через провайдер [value].
+  /// ENG: Initialization instance via provider [value].
+  ///
+  /// return [Binding]
+  Binding<T> toProvideAsync(AsyncProvider<T> provider) {
+    _mode = Mode.providerInstance;
+    asyncProvider = provider;
+    return this;
+  }
+
   /// RU: Инициализация экземляпяра  через провайдер [value] c динамическим параметром.
   /// ENG: Initialization instance via provider [value] with a dynamic param.
   ///
@@ -101,6 +118,16 @@ class Binding<T> {
   Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
     _mode = Mode.providerInstanceWithParams;
     _providerWithParams = value;
+    return this;
+  }
+
+  /// RU: Инициализация экземляра через асинхронный провайдер [value] с динамическим параметром.
+  /// ENG: Initializes the instance via async provider [value] with a dynamic param.
+  ///
+  /// return [Binding]
+  Binding<T> toProvideAsyncWithParams(AsyncProviderWithParams<T> provider) {
+    _mode = Mode.providerInstanceWithParams;
+    asyncProviderWithParams = provider;
     return this;
   }
 
