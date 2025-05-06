@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cherrypick/cherrypick.dart';
 import 'package:meta/meta.dart';
 
@@ -12,33 +11,34 @@ class AppModule extends Module {
 }
 
 class FeatureModule extends Module {
-  bool isMock;
+  final bool isMock;
 
   FeatureModule({required this.isMock});
 
   @override
   void builder(Scope currentScope) {
-    bind<DataRepository>()
-        .withName('networkRepo')
-        .toProvide(
-          () => NetworkDataRepository(
-            currentScope.resolve<ApiClient>(
-              named: isMock ? 'apiClientMock' : 'apiClientImpl',
-            ),
-          ),
-        )
-        .singleton();
+    // DataRepository remains async for demonstration
+    bind<DataRepository>().withName('networkRepo').toProvideAsync(
+      () async {
+        // Using synchronous resolve for ApiClient
+        final apiClient = currentScope.resolve<ApiClient>(
+          named: isMock ? 'apiClientMock' : 'apiClientImpl',
+        );
+        return NetworkDataRepository(apiClient);
+      },
+    ).singleton();
 
-    bind<DataBloc>().toProvideWithParams(
-      (param) => DataBloc(
-        currentScope.resolve<DataRepository>(named: 'networkRepo'),
-        param,
-      ),
+    bind<DataBloc>().toProvideAsyncWithParams(
+      (param) async {
+        final dataRepository = await currentScope.resolveAsync<DataRepository>(
+            named: 'networkRepo');
+        return DataBloc(dataRepository, param);
+      },
     );
   }
 }
 
-void main() async {
+Future<void> main() async {
   final scope = openRootScope().installModules([
     AppModule(),
   ]);
@@ -47,18 +47,22 @@ void main() async {
       .openSubScope('featureScope')
       .installModules([FeatureModule(isMock: true)]);
 
-  final dataBloc = subScope.resolve<DataBloc>(params: 'PARAMETER');
-  dataBloc.data.listen((d) => print('Received data: $d'),
-      onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
+  try {
+    final dataBloc = await subScope.resolveAsync<DataBloc>(params: 'PARAMETER');
+    dataBloc.data.listen((d) => print('Received data: $d'),
+        onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
-  await dataBloc.fetchData();
+    await dataBloc.fetchData();
+  } catch (e) {
+    print('Error resolving dependency: $e');
+  }
 }
 
 class DataBloc {
   final DataRepository _dataRepository;
 
-  Stream<String> get data => _dataController.stream;
   final StreamController<String> _dataController = StreamController.broadcast();
+  Stream<String> get data => _dataController.stream;
 
   final String param;
 
@@ -105,7 +109,6 @@ abstract class ApiClient {
 }
 
 class ApiClientMock implements ApiClient {
-  @override
   Future sendRequest({
     @required String? url,
     String? token,
@@ -117,7 +120,6 @@ class ApiClientMock implements ApiClient {
 }
 
 class ApiClientImpl implements ApiClient {
-  @override
   Future sendRequest({
     @required String? url,
     String? token,
