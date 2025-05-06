@@ -37,28 +37,32 @@ class FeatureModule extends Module {
   }
 }
 
-void main() async {
-  final scope = openRootScope().installModules([
-    AppModule(),
-  ]);
+Future<void> main() async {
+  try {
+    final scope = openRootScope().installModules([
+      AppModule(),
+    ]);
 
-  final subScope = scope
-      .openSubScope("featureScope")
-      .installModules([FeatureModule(isMock: true)]);
+    final subScope = scope
+        .openSubScope("featureScope")
+        .installModules([FeatureModule(isMock: true)]);
 
-  // Asynchronous instance resolution
-  final dataBloc = await subScope.resolveAsync<DataBloc>();
-  dataBloc.data.listen((d) => print('Received data: $d'),
-      onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
+    // Asynchronous instance resolution
+    final dataBloc = await subScope.resolveAsync<DataBloc>();
+    dataBloc.data.listen((d) => print('Received data: $d'),
+        onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
-  await dataBloc.fetchData();
+    await dataBloc.fetchData();
+  } catch (e) {
+    print('Error resolving dependency: $e');
+  }
 }
 
 class DataBloc {
   final DataRepository _dataRepository;
 
-  Stream<String> get data => _dataController.stream;
   final StreamController<String> _dataController = StreamController.broadcast();
+  Stream<String> get data => _dataController.stream;
 
   DataBloc(this._dataRepository);
 
