@@ -1,4 +1,4 @@
-library cherrypick;
+library;
 
 //
 // Copyright 2021 Sergey Penkovsky (sergey.penkovsky@gmail.com)
