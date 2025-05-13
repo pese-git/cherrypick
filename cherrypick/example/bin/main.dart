@@ -109,6 +109,7 @@ abstract class ApiClient {
 }
 
 class ApiClientMock implements ApiClient {
+  @override
   Future sendRequest({
     @required String? url,
     String? token,
@@ -120,6 +121,7 @@ class ApiClientMock implements ApiClient {
 }
 
 class ApiClientImpl implements ApiClient {
+  @override
   Future sendRequest({
     @required String? url,
     String? token,
