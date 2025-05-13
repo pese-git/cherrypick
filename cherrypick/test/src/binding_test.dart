@@ -188,6 +188,25 @@ void main() {
     });
   });
 
+  group('Check Async provider.', () {
+    test('Binding resolves value asynchronously', () async {
+      final expectedValue = 5;
+      final binding = Binding<int>().toProvideAsync(() async => expectedValue);
+
+      final result = await binding.asyncProvider?.call();
+      expect(result, expectedValue);
+    });
+
+    test('Binding resolves value asynchronously with params', () async {
+      final expectedValue = 5;
+      final binding = Binding<int>().toProvideAsyncWithParams(
+          (param) async => expectedValue + (param as int));
+
+      final result = await binding.asyncProviderWithParams?.call(3);
+      expect(result, expectedValue + 3);
+    });
+  });
+
   group('Check singleton provide.', () {
     group('Without name.', () {
       test('Binding resolves null', () {
