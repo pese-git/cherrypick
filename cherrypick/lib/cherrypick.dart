@@ -1,3 +1,5 @@
+library;
+
 ///
 /// Copyright 2021 Sergey Penkovsky <sergey.penkovsky@gmail.com>
 /// Licensed under the Apache License, Version 2.0 (the "License");
@@ -10,8 +12,6 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
-
-library cherrypick;
 
 export 'package:cherrypick/src/binding.dart';
 export 'package:cherrypick/src/helper.dart';
