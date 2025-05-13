@@ -17,3 +17,4 @@ dev_dependencies:
   test: ^1.25.15
 
   mockito: ^5.0.6
+  melos: ^6.3.2
