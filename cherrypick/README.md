@@ -1,31 +1,43 @@
 # CherryPick Flutter
 
-`cherrypick_flutter` is a powerful Flutter library for managing and accessing dependencies within your application through a root scope context using `CherryPickProvider`. It offers simplified dependency injection, making your application more modular and test-friendly.
+`cherrypick_flutter` is a robust Flutter library designed for managing and accessing dependencies using a scope context provided by `CherryPickProvider`. It enhances your application's modularity and testability by simplifying dependency injection.
 
 ## Quick Start
 
-### Main Components in Dependency Injection (DI)
+### Core Components of Dependency Injection (DI)
 
 #### Binding
 
-A Binding is a custom instance configurator, essential for setting up dependencies. It offers the following key methods:
+A Binding is a custom instance configurator crucial for setting up dependencies. It offers the following key methods:
 
 - `toInstance()`: Directly provides an initialized instance.
-- `toProvide()`: Accepts a provider function or constructor for lazy initialization.
-- `withName()`: Assigns a name to an instance, allowing for retrieval by name.
-- `singleton()`: Marks the instance as a singleton, ensuring only one instance exists in the scope.
+- `toProvide()`: Accepts a provider function for lazy initialization.
+- `toProvideAsync()`: Accepts an asynchronous provider for lazy initialization.
+- `toProvideWithParams()`: Accepts a provider function requiring dynamic parameters.
+- `toProvideAsyncWithParams()`: Accepts an asynchronous provider requiring dynamic parameters.
+- `withName()`: Assigns a name for instance retrieval by name.
+- `singleton()`: Marks the instance as a singleton, ensuring only one instance exists within the scope.
 
 ##### Example:
 
 ```dart
-// Direct instance initialization with toInstance()
+// Direct instance initialization using toInstance()
 Binding<String>().toInstance("hello world");
 
-// Or use a provider for lazy initialization
+// Lazy initialization via provider
 Binding<String>().toProvide(() => "hello world");
 
-// Named instance
-Binding<String>().withName("my_string").toInstance("hello world");
+// Asynchronous lazy initialization
+Binding<String>().toProvideAsync(() async => "hello async world");
+
+/ Asynchronous lazy initialization with dynamic parameters
+Binding<String>().toProvideAsyncWithParams((params) async => "hello $params");
+
+// Initialization with dynamic parameters
+Binding<String>().toProvideWithParams((params) => "hello $params");
+
+// Named instance for resolution
+Binding<String>().toProvide(() => "hello world").withName("my_string").toInstance("hello world");
 
 // Singleton instance
 Binding<String>().toProvide(() => "hello world").singleton();
@@ -33,7 +45,7 @@ Binding<String>().toProvide(() => "hello world").singleton();
 
 #### Module
 
-A Module encapsulates bindings, allowing you to organize dependencies logically. To create a custom module, implement the `void builder(Scope currentScope)` method.
+A Module encapsulates bindings, logically organizing dependencies. Implement the `void builder(Scope currentScope)` method to create a custom module.
 
 ##### Example:
 
@@ -48,13 +60,13 @@ class AppModule extends Module {
 
 #### Scope
 
-A Scope is the container that manages your dependency tree, holding modules and instances. Use the scope to access dependencies with the `resolve<T>()` method.
+A Scope manages your dependency tree, holding modules and instances. Use the scope to access dependencies with `resolve<T>()` or `resolveAsync<T>()` for asynchronous operations.
 
 ##### Example:
 
 ```dart
 // Open the main scope
-final rootScope = Cherrypick.openRootScope();
+final rootScope = CherryPick.openRootScope();
 
 // Install custom modules
 rootScope.installModules([AppModule()]);
@@ -62,13 +74,16 @@ rootScope.installModules([AppModule()]);
 // Resolve an instance
 final str = rootScope.resolve<String>();
 
+// Asynchronously resolve an instance
+final asyncStr = await rootScope.resolveAsync<String>();
+
 // Close the main scope
-Cherrypick.closeRootScope();
+CherryPick.closeRootScope();
 ```
 
 ## Example Application
 
-The following example demonstrates module setup, scope management, and dependency resolution.
+The following example demonstrates module setup, scope management, and dependency resolution (both synchronous and asynchronous).
 
 ```dart
 import 'dart:async';
@@ -84,26 +99,30 @@ class AppModule extends Module {
 }
 
 class FeatureModule extends Module {
-  bool isMock;
+  final bool isMock;
 
   FeatureModule({required this.isMock});
 
   @override
   void builder(Scope currentScope) {
+    // Using toProvideAsync for async initialization
     bind<DataRepository>()
         .withName("networkRepo")
-        .toProvide(
-          () => NetworkDataRepository(
-            currentScope.resolve<ApiClient>(
-              named: isMock ? "apiClientMock" : "apiClientImpl",
-            ),
-          ),
-        )
+        .toProvideAsync(() async {
+          final client = await Future.delayed(
+              Duration(milliseconds: 100),
+              () => currentScope.resolve<ApiClient>(
+                  named: isMock ? "apiClientMock" : "apiClientImpl"));
+          return NetworkDataRepository(client);
+        })
         .singleton();
-    bind<DataBloc>().toProvide(
-      () => DataBloc(
-        currentScope.resolve<DataRepository>(named: "networkRepo"),
-      ),
+    
+    // Asynchronous initialization of DataBloc
+    bind<DataBloc>().toProvideAsync(
+      () async {
+        final repo = await currentScope.resolveAsync<DataRepository>(named: "networkRepo");
+        return DataBloc(repo);
+      },
     );
   }
 }
@@ -117,7 +136,8 @@ void main() async {
       .openSubScope("featureScope")
       .installModules([FeatureModule(isMock: true)]);
 
-  final dataBloc = subScope.resolve<DataBloc>();
+  // Asynchronous instance resolution
+  final dataBloc = await subScope.resolveAsync<DataBloc>();
   dataBloc.data.listen((d) => print('Received data: $d'),
       onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
@@ -128,7 +148,7 @@ class DataBloc {
   final DataRepository _dataRepository;
 
   Stream<String> get data => _dataController.stream;
-  StreamController<String> _dataController = new StreamController.broadcast();
+  StreamController<String> _dataController = StreamController.broadcast();
 
   DataBloc(this._dataRepository);
 
@@ -185,6 +205,8 @@ class ApiClientImpl implements ApiClient {
 
 - [x] Main Scope and Sub Scopes
 - [x] Named Instance Initialization
+- [x] Asynchronous Dependency Resolution
+- [x] Dynamic Parameter Support for Providers
 
 ## Contributing
 
