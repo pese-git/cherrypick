@@ -8,8 +8,10 @@ packages:
 
 scripts:
   analyze:
-    run: |
-      flutter analyze
+    exec: dart analyze
+
   format:
-    run: |
-      flutter format
+    exec: dart format
+
+  test:
+    exec: flutter test

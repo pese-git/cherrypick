@@ -1,15 +1,15 @@
-///
-/// Copyright 2021 Sergey Penkovsky <sergey.penkovsky@gmail.com>
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-/// You may obtain a copy of the License at
-///      http://www.apache.org/licenses/LICENSE-2.0
-/// Unless required by applicable law or agreed to in writing, software
-/// distributed under the License is distributed on an "AS IS" BASIS,
-/// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-/// See the License for the specific language governing permissions and
-/// limitations under the License.
-///
+//
+// Copyright 2021 Sergey Penkovsky <sergey.penkovsky@gmail.com>
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//      http://www.apache.org/licenses/LICENSE-2.0
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 import 'dart:collection';
 
 import 'package:cherrypick/src/binding.dart';
@@ -131,5 +131,46 @@ class Scope {
 
     // 2 Поиск зависимостей в родительском скоупе
     return _parentScope?.tryResolve(named: named);
+  }
+
+  /// RU: Асинхронно возвращает найденную зависимость, определенную параметром типа [T].
+  /// Выдает [StateError], если зависимость не может быть разрешена.
+  /// Если хотите получить [null], если зависимость не может быть найдена, используйте [tryResolveAsync].
+  /// return - возвращает объект типа [T] or [StateError]
+  ///
+  /// ENG: Asynchronously returns the found dependency specified by the type parameter [T].
+  /// Throws [StateError] if the dependency cannot be resolved.
+  /// If you want to get [null] if the dependency cannot be found, use [tryResolveAsync] instead.
+  /// return - returns an object of type [T] or [StateError]
+  ///
+  Future<T> resolveAsync<T>({String? named, dynamic params}) async {
+    var resolved = await tryResolveAsync<T>(named: named, params: params);
+    if (resolved != null) {
+      return resolved;
+    } else {
+      throw StateError(
+          'Can\'t resolve async dependency `$T`. Maybe you forget register it?');
+    }
+  }
+
+  Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
+    if (_modulesList.isNotEmpty) {
+      for (var module in _modulesList) {
+        for (var binding in module.bindingSet) {
+          if (binding.key == T &&
+              ((!binding.isNamed && named == null) ||
+                  (binding.isNamed && named == binding.name))) {
+            if (binding.asyncProvider != null) {
+              return await binding.asyncProvider?.call();
+            }
+
+            if (binding.asyncProviderWithParams != null) {
+              return await binding.asyncProviderWithParams!(params);
+            }
+          }
+        }
+      }
+    }
+    return _parentScope?.tryResolveAsync(named: named, params: params);
   }
 }
