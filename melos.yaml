@@ -14,4 +14,4 @@ scripts:
     exec: dart format
 
   test:
-    exec: dart test ./test
+    exec: flutter test
