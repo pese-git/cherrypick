@@ -1,0 +1,31 @@
+name: Dart Melos Monorepo CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Install Melos
+        run: dart pub global activate melos
+
+      - name: Bootstrap workspace
+        run: melos bootstrap
+
+      # Форматирование (если хотите сделать обязательным для всей монорепы)
+      # - name: Melos format
+      #   run: melos run format
+
+      - name: Analyze all packages
+        run: melos run analyze
+
+      - name: Run all tests
+        run: melos run test
