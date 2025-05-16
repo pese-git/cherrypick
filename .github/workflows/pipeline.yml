@@ -1,4 +1,4 @@
-name: Dart Melos Monorepo CI
+name: Melos + FVM CI
 
 on:
   push:
@@ -14,18 +14,28 @@ jobs:
 
       - uses: dart-lang/setup-dart@v1
 
+      # Установить fvm
+      - name: Install FVM
+        run: dart pub global activate fvm
+
+      # Установить Flutter SDK через fvm, если .fvm/fvm_config.json присутствует
+      # Альтернатива — выкачать flutter нужной версии напрямую (если workspace Flutter-based)
+      - name: Install Flutter version via FVM
+        run: fvm install
+
+      # Установить Melos
       - name: Install Melos
         run: dart pub global activate melos
 
       - name: Bootstrap workspace
-        run: melos bootstrap
+        run: fvm flutter pub global run melos bootstrap
 
-      # Форматирование (если хотите сделать обязательным для всей монорепы)
-      # - name: Melos format
-      #   run: melos run format
+      # Если нужен форматирование через melos
+      - name: Format
+        run: fvm flutter pub global run melos run format
 
       - name: Analyze all packages
-        run: melos run analyze
+        run: fvm flutter pub global run melos run analyze
 
       - name: Run all tests
-        run: melos run test
+        run: fvm flutter pub global run melos run test
