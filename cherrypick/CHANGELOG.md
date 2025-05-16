@@ -1,3 +1,7 @@
+## 2.0.2
+
+ - **FIX**: support passing params when resolving dependency recursively in parent scope.
+
 ## 2.0.1
 
  - **FIX**: fix warning.
