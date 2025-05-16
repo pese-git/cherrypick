@@ -1,3 +1,3 @@
 library;
 
-export 'inject_generator.dart';
+export 'module_generator.dart';

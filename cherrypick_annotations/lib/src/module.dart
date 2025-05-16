@@ -1,6 +1,5 @@
-library;
-
 /// Отмечает класс как injectable для автоматической регистрации.
-class Injectable {
-  const Injectable();
+// ignore: camel_case_types
+class module {
+  const module();
 }

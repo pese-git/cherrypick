@@ -3,6 +3,9 @@
 /// More dartdocs go here.
 library;
 
-export 'injectable.dart';
+export 'src/module.dart';
+export 'src/bind.dart';
+export 'src/provide.dart';
+export 'src/singleton.dart';
 
 // TODO: Export any libraries intended for clients of this package.

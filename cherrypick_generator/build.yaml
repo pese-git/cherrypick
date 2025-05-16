@@ -1,8 +1,8 @@
 builders:
-  injectable:
-    import: "package:cherrypick_generator/injectable_generator.dart"
-    builder_factories: ["injectableBuilder"]
-    build_extensions: {".dart": [".cherrypick_injectable.g.dart"]}
+  module_generator:
+    import: "package:cherrypick_generator/module_generator.dart"
+    builder_factories: ["moduleBuilder"]
+    build_extensions: {".dart": [".cherrypick.g.dart"]}
     auto_apply: dependents
     required_inputs: ["lib/**"]
     runs_before: []
@@ -11,6 +11,6 @@ builders:
 targets:
   $default:
     builders:
-      cherrypick_generator|injectable:
+      cherrypick_generator|module_generator:
         generate_for:
           - lib/**.dart

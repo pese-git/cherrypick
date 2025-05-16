@@ -8,7 +8,7 @@ import 'router/app_router.dart';
 
 void main() {
   final scope = CherryPick.openRootScope();
-  scope.installModules([AppModule()]);
+  scope.installModules([$AppModule()]);
 
   runApp(MyApp(scope: scope));
 }
