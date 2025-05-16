@@ -5,6 +5,8 @@ sdkPath: .fvm/flutter_sdk
 packages:
   - cherrypick
   - cherrypick_flutter
+  - examples/client_app
+  - examples/postly
 
 scripts:
   analyze:
