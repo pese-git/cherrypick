@@ -11,6 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  cherrypick: any
+  
   dio: ^5.4.0
   retrofit: ^4.0.3
   freezed_annotation: ^2.0.0

@@ -5,29 +5,24 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:dio/dio.dart';
+import 'package:cherrypick/cherrypick.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:postly/data/network/json_placeholder_api.dart';
-import 'package:postly/data/post_repository_impl.dart';
-import 'package:postly/domain/repository/post_repository.dart';
+import 'package:postly/di/app_module.dart';
 
 import 'package:postly/main.dart';
 
 void main() {
-  late Dio dio;
-  late JsonPlaceholderApi api;
-  late PostRepository repository;
+  late Scope scope;
 
   setUp(() {
-    dio = Dio();
-    api = JsonPlaceholderApi(dio);
-    repository = PostRepositoryImpl(api);
+    scope = CherryPick.openRootScope();
+    scope.installModules([AppModule()]);
   });
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(MyApp(
-      repository: repository,
+      scope: scope,
     ));
 
     // Verify that our counter starts at 0.

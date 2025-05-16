@@ -1,28 +1,29 @@
+import 'package:cherrypick/cherrypick.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import 'data/network/json_placeholder_api.dart';
-import 'data/post_repository_impl.dart';
+import 'di/app_module.dart';
 import 'domain/repository/post_repository.dart';
 import 'presentation/bloc/post_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'router/app_router.dart';
 
 void main() {
-  final dio = Dio();
-  final api = JsonPlaceholderApi(dio);
-  final repository = PostRepositoryImpl(api);
+  final scope = CherryPick.openRootScope();
+  scope.installModules([AppModule()]);
 
-  runApp(MyApp(repository: repository));
+  runApp(MyApp(scope: scope));
 }
 
 class MyApp extends StatelessWidget {
-  final PostRepository repository;
+  final Scope scope;
   final _appRouter = AppRouter();
 
-  MyApp({super.key, required this.repository});
+  MyApp({super.key, required this.scope});
 
   @override
   Widget build(BuildContext context) {
+    // Получаем репозиторий через injector
+    final repository = scope.resolve<PostRepository>();
+
     return BlocProvider(
       create: (_) => PostBloc(repository),
       child: MaterialApp.router(
