@@ -5,6 +5,8 @@ sdkPath: .fvm/flutter_sdk
 packages:
   - cherrypick
   - cherrypick_flutter
+  - cherrypick_annotations
+  - cherrypick_generator
   - examples/client_app
   - examples/postly
 
@@ -13,7 +15,7 @@ scripts:
     exec: dart analyze
 
   format:
-    exec: dart format
+    exec: dart format lib
 
   test:
     exec: flutter test
@@ -22,3 +24,8 @@ scripts:
     run: |
       melos exec --scope="postly" -- dart run build_runner build --delete-conflicting-outputs
 
+  upgrade:
+    exec: darp pub upgrade 
+
+  drop:
+    exec: flutter clean 

@@ -2,17 +2,22 @@ name: cherrypick_generator
 description: Code generator for cherrypick annotations
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
+publish_to: none
 
 environment:
-  sdk: ^3.5.2
+  sdk: ">=3.5.2 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
-  build: ^2.0.0
-  source_gen: ^1.0.0
-  cherrypick_annotations: any
+  cherrypick_annotations:
+    path: ../cherrypick_annotations
+  analyzer: any
+  dart_style: any
+  build: any
+  build_runner: any
+  source_gen: any
 
 dev_dependencies:
-  lints: ^4.0.0
-  test: ^1.24.0
-  build_runner: ^2.1.0
+  lints: ^5.0.0
+  mockito: any
+  test: ^1.25.8

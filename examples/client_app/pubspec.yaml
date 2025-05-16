@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.2
+  sdk: ">=3.5.2 <4.0.0"
 
 
 dependencies:
@@ -14,6 +14,8 @@ dependencies:
   cherrypick: ^2.1.0
   cherrypick_flutter: ^1.1.1
 
+  cherrypick_annotations: any
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -21,6 +23,9 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^4.0.0
+
+  cherrypick_generator: any
+  build_runner: any
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

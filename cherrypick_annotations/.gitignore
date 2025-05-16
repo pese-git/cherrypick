@@ -22,3 +22,5 @@ doc/api/
 
 # FVM Version Cache
 .fvm/
+
+melos_cherrypick_annotations.iml

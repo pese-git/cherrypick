@@ -7,8 +7,8 @@ repository: https://github.com/pese-git/cherrypick
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 
 environment:
-  sdk: ^3.5.2
-  flutter: ">=1.17.0"
+  sdk: ">=3.5.2 <4.0.0"
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
