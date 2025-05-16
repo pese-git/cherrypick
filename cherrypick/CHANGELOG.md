@@ -1,3 +1,11 @@
+## 2.1.0-dev.1
+
+ - **FIX**: fix warnings.
+ - **FIX**: fix warnings.
+ - **FIX**: support passing params when resolving dependency recursively in parent scope.
+ - **FEAT**: Add async dependency resolution and enhance example.
+ - **FEAT**: Add async dependency resolution and enhance example.
+
 ## 2.0.2
 - **FIX**: support passing params when resolving dependency recursively in parent scope.
 

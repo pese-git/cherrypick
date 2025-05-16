@@ -1,3 +1,7 @@
+## 1.1.1-dev.1
+
+ - **FIX**: fix warnings.
+
 ## 1.1.1-dev.0
 
  - Update a dependency to the latest release.
