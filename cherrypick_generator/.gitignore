@@ -22,3 +22,7 @@ doc/api/
 
 # FVM Version Cache
 .fvm/
+
+melos_cherrypick_generator.iml
+
+**/*.mocks.dart

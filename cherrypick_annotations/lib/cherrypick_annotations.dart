@@ -3,6 +3,6 @@
 /// More dartdocs go here.
 library;
 
-export 'src/cherrypick_annotations_base.dart';
+export 'injectable.dart';
 
 // TODO: Export any libraries intended for clients of this package.
