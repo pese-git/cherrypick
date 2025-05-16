@@ -130,6 +130,6 @@ class Scope {
     }
 
     // 2 Поиск зависимостей в родительском скоупе
-    return _parentScope?.tryResolve(named: named);
+    return _parentScope?.tryResolve(named: named, params: params);
   }
 }
