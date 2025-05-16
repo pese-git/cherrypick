@@ -93,7 +93,7 @@ We welcome contributions from the community. Feel free to open issues or submit 
 
 ## License
 
-This project is licensed under the Apache License 2.0. You may obtain a copy of the License at [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+This project is licensed under the Apache License 2.0. You may obtain a copy of the License at [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ## Links
 
