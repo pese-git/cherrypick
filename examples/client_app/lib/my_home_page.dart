@@ -3,6 +3,8 @@ import 'package:cherrypick_flutter/cherrypick_flutter.dart';
 import 'use_case.dart';
 
 class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Разрешение зависимости UseCase из рутового скоупа
@@ -11,7 +13,7 @@ class MyHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Example App'),
+        title: const Text('Example App'),
       ),
       body: Center(
         child: Text(useCase.fetchData()),

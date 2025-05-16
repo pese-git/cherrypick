@@ -28,19 +28,17 @@ packages:
   cherrypick:
     dependency: "direct main"
     description:
-      name: cherrypick
-      sha256: "802427b777bc80e39216ec7070e452edd1a01eca84f824dfb57cc5e055797c4c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
+      path: "../../cherrypick"
+      relative: true
+    source: path
+    version: "2.1.0-dev.1"
   cherrypick_flutter:
     dependency: "direct main"
     description:
-      name: cherrypick_flutter
-      sha256: "6fa2ee4ea06a8f9edfaab43e665199b378add34c52ca081f55ed82cded090257"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
+      path: "../../cherrypick_flutter"
+      relative: true
+    source: path
+    version: "1.1.1-dev.1"
   clock:
     dependency: transitive
     description:
