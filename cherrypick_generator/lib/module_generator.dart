@@ -20,7 +20,6 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
     final className = classElement.displayName;
     final generatedClassName = r'$' + className;
     final buffer = StringBuffer();
-
     buffer.writeln('final class $generatedClassName extends $className {');
     buffer.writeln('  @override');
     buffer.writeln('  void builder(Scope currentScope) {');
@@ -57,15 +56,50 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
           nameArg = cv.getField('value')?.toStringValue();
         }
       }
+
+      // ЗДЕСЬ ЛОГИКА ДЛЯ ПАРАМЕТРОВ МЕТОДА
+      final args = method.parameters.map((p) {
+        // Ищем @named у параметра
+        ElementAnnotation? paramNamed;
+        try {
+          paramNamed = p.metadata.firstWhere(
+            (m) =>
+                m
+                    .computeConstantValue()
+                    ?.type
+                    ?.getDisplayString(withNullability: false)
+                    .toLowerCase()
+                    .contains('named') ??
+                false,
+          );
+        } catch (_) {
+          paramNamed = null;
+        }
+        String namedArg = '';
+        if (paramNamed != null) {
+          final cv = paramNamed.computeConstantValue();
+          if (cv != null) {
+            final namedValue = cv.getField('value')?.toStringValue();
+            if (namedValue != null) {
+              namedArg = "(named: '$namedValue')";
+            }
+          }
+        }
+        return "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>$namedArg";
+      }).join(', ');
+
       final returnType =
           method.returnType.getDisplayString(withNullability: false);
       final methodName = method.displayName;
-      final args = method.parameters
-          .map((p) =>
-              "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()")
-          .join(', ');
-      buffer.write('    bind<$returnType>()'
-          '.toProvide(() => $methodName($args))');
+      // С переносом строки, если есть параметры
+      final hasLongArgs = args.length > 60 || args.contains('\n');
+      if (hasLongArgs) {
+        buffer.write('    bind<$returnType>()\n'
+            '      .toProvide(\n        () => $methodName($args))');
+      } else {
+        buffer.write('    bind<$returnType>()'
+            '.toProvide(() => $methodName($args))');
+      }
       if (nameArg != null) {
         buffer.write(".withName('$nameArg')");
       }
@@ -76,6 +110,7 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
     }
     buffer.writeln('  }');
     buffer.writeln('}');
+
     return buffer.toString();
   }
 }
