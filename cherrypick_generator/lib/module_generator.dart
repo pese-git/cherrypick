@@ -17,16 +17,14 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
         element: element,
       );
     }
-
     final classElement = element;
     final className = classElement.displayName;
     final generatedClassName = r'$' + className;
     final buffer = StringBuffer();
 
     buffer.writeln('final class $generatedClassName extends $className {');
-    buffer.writeln('@override');
-    buffer.writeln('void builder(Scope currentScope) {');
-
+    buffer.writeln('  @override');
+    buffer.writeln('  void builder(Scope currentScope) {');
     for (final method in classElement.methods.where((m) => !m.isAbstract)) {
       final hasSingleton = method.metadata.any(
         (m) =>
@@ -38,7 +36,28 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
                 .contains('singleton') ??
             false,
       );
-
+      ElementAnnotation? namedMeta;
+      try {
+        namedMeta = method.metadata.firstWhere(
+          (m) =>
+              m
+                  .computeConstantValue()
+                  ?.type
+                  ?.getDisplayString(withNullability: false)
+                  .toLowerCase()
+                  .contains('named') ??
+              false,
+        );
+      } catch (_) {
+        namedMeta = null;
+      }
+      String? nameArg;
+      if (namedMeta != null) {
+        final cv = namedMeta.computeConstantValue();
+        if (cv != null) {
+          nameArg = cv.getField('value')?.toStringValue();
+        }
+      }
       final returnType =
           method.returnType.getDisplayString(withNullability: false);
       final methodName = method.displayName;
@@ -46,18 +65,18 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
           .map((p) =>
               "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()")
           .join(', ');
-
-      buffer.write('bind<$returnType>()'
+      buffer.write('    bind<$returnType>()'
           '.toProvide(() => $methodName($args))');
+      if (nameArg != null) {
+        buffer.write(".withName('$nameArg')");
+      }
       if (hasSingleton) {
         buffer.write('.singleton()');
       }
       buffer.write(';\n');
     }
-
+    buffer.writeln('  }');
     buffer.writeln('}');
-    buffer.writeln('}');
-
     return buffer.toString();
   }
 }
