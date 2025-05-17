@@ -7,7 +7,10 @@ import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
   @override
   String generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) {
+    Element element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) {
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         '@module() может быть применён только к классам.',
@@ -20,10 +23,9 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
     final generatedClassName = r'$' + className;
     final buffer = StringBuffer();
 
-    //buffer.writeln("part of '${buildStep.inputId.uri.pathSegments.last}';\n");
     buffer.writeln('final class $generatedClassName extends $className {');
-    buffer.writeln('  @override');
-    buffer.writeln('  void builder(Scope currentScope) {');
+    buffer.writeln('@override');
+    buffer.writeln('void builder(Scope currentScope) {');
 
     for (final method in classElement.methods.where((m) => !m.isAbstract)) {
       final hasSingleton = method.metadata.any(
@@ -36,7 +38,6 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
                 .contains('singleton') ??
             false,
       );
-      if (!hasSingleton) continue;
 
       final returnType =
           method.returnType.getDisplayString(withNullability: false);
@@ -46,12 +47,17 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
               "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()")
           .join(', ');
 
-      buffer.write('    bind<$returnType>()'
-          '.toProvide(() => $methodName($args))'
-          '.singleton();\n');
+      buffer.write('bind<$returnType>()'
+          '.toProvide(() => $methodName($args))');
+      if (hasSingleton) {
+        buffer.write('.singleton()');
+      }
+      buffer.write(';\n');
     }
 
-    buffer.writeln('  }\n}');
+    buffer.writeln('}');
+    buffer.writeln('}');
+
     return buffer.toString();
   }
 }
