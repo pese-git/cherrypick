@@ -59,7 +59,6 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
 
       // ЗДЕСЬ ЛОГИКА ДЛЯ ПАРАМЕТРОВ МЕТОДА
       final args = method.parameters.map((p) {
-        // Ищем @named у параметра
         ElementAnnotation? paramNamed;
         try {
           paramNamed = p.metadata.firstWhere(
@@ -75,17 +74,23 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
         } catch (_) {
           paramNamed = null;
         }
-        String namedArg = '';
+
+        String argExpr;
         if (paramNamed != null) {
           final cv = paramNamed.computeConstantValue();
-          if (cv != null) {
-            final namedValue = cv.getField('value')?.toStringValue();
-            if (namedValue != null) {
-              namedArg = "(named: '$namedValue')";
-            }
+          final namedValue = cv?.getField('value')?.toStringValue();
+          if (namedValue != null) {
+            argExpr =
+                "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>(named: '$namedValue')";
+          } else {
+            argExpr =
+                "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()";
           }
+        } else {
+          argExpr =
+              "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()";
         }
-        return "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>$namedArg";
+        return argExpr;
       }).join(', ');
 
       final returnType =
