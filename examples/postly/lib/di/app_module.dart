@@ -10,11 +10,15 @@ part 'app_module.cherrypick.g.dart';
 @module()
 abstract class AppModule extends Module {
   @singleton()
+  @named('dio')
   Dio dio() => Dio();
 
   @singleton()
-  JsonPlaceholderApi api(Dio dio) => JsonPlaceholderApi(dio);
+  @named('api')
+  JsonPlaceholderApi api(@named('dio') Dio dio) => JsonPlaceholderApi(dio);
 
+  @named('repo')
   @singleton()
-  PostRepository repo(JsonPlaceholderApi api) => PostRepositoryImpl(api);
+  PostRepository repo(@named('api') JsonPlaceholderApi api) =>
+      PostRepositoryImpl(api);
 }

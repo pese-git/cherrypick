@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Получаем репозиторий через injector
-    final repository = scope.resolve<PostRepository>();
+    final repository = scope.resolve<PostRepository>(named: 'repo');
 
     return BlocProvider(
       create: (_) => PostBloc(repository),
