@@ -1,39 +1,113 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# cherrypick_annotations
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages). 
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages). 
--->
+A lightweight set of Dart annotations designed for dependency injection (DI) frameworks and code generation, inspired by modern approaches like Dagger and Injectable. Works best in tandem with [`cherrypick_generator`](https://pub.dev/packages/cherrypick_generator).
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+---
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- **@module** – Marks a class as a DI module for service/provider registration.
+- **@singleton** – Declares that a method or class should be provided as a singleton.
+- **@named** – Assigns a string name to a binding for keyed resolution.
 
-## Getting started
+These annotations are intended to streamline DI configuration and serve as markers for code generation tools.
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+---
 
-## Usage
+## Getting Started
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+### 1. Add dependency
 
-```dart
-const like = 'sample';
+```yaml
+dependencies:
+  cherrypick_annotations: ^latest
 ```
 
-## Additional information
+Add as a `dev_dependency` for codegen:
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+```yaml
+dev_dependencies:
+  build_runner: ^latest
+  cherrypick_generator:
+```
+
+### 2. Usage
+
+Annotate your DI modules and providers:
+
+```dart
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+@module()
+abstract class AppModule {
+  @singleton()
+  Dio dio() => Dio();
+
+  @named('baseUrl')
+  String baseUrl() => 'https://api.example.com';
+}
+```
+
+When used with `cherrypick_generator`, code similar to the following will be generated:
+
+```dart
+final class $AppModule extends AppModule {
+  @override
+  void builder(Scope currentScope) {
+    bind<Dio>().toProvide(() => dio()).singleton();
+    bind<String>().toProvide(() => baseUrl()).withName('baseUrl');
+  }
+}
+```
+
+---
+
+## Annotation Reference
+
+### `@module`
+
+```dart
+@module()
+abstract class AppModule {}
+```
+Use on classes to mark them as a DI module.
+
+---
+
+### `@singleton`
+
+```dart
+@singleton()
+Dio dio() => Dio();
+```
+Use on methods or classes to provide a singleton instance.
+
+---
+
+### `@named`
+
+```dart
+@named('token')
+String token() => 'abc';
+```
+Assigns a name to the binding for keyed injection.
+
+---
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
+
+---
+
+## Contributing
+
+Pull requests and feedback are welcome!
+
+---
+
+## Author
+
+Sergey Penkovsky (<sergey.penkovsky@gmail.com>)
