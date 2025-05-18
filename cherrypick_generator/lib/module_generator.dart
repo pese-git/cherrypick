@@ -65,7 +65,7 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
             m
                 .computeConstantValue()
                 ?.type
-                ?.getDisplayString(withNullability: false)
+                ?.getDisplayString()
                 .toLowerCase()
                 .contains('singleton') ??
             false,
@@ -79,7 +79,7 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
               m
                   .computeConstantValue()
                   ?.type
-                  ?.getDisplayString(withNullability: false)
+                  ?.getDisplayString()
                   .toLowerCase()
                   .contains('named') ??
               false,
@@ -108,7 +108,7 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
                 m
                     .computeConstantValue()
                     ?.type
-                    ?.getDisplayString(withNullability: false)
+                    ?.getDisplayString()
                     .toLowerCase()
                     .contains('named') ??
                 false,
@@ -124,22 +124,19 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
           // Если указано имя для параметра (@named), пробрасываем его в resolve
           if (namedValue != null) {
             argExpr =
-                "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>(named: '$namedValue')";
+                "currentScope.resolve<${p.type.getDisplayString()}>(named: '$namedValue')";
           } else {
             // fallback — скобки все равно нужны
-            argExpr =
-                "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()";
+            argExpr = "currentScope.resolve<${p.type.getDisplayString()}>()";
           }
         } else {
           // Если параметр не @named - просто resolve по типу
-          argExpr =
-              "currentScope.resolve<${p.type.getDisplayString(withNullability: false)}>()";
+          argExpr = "currentScope.resolve<${p.type.getDisplayString()}>()";
         }
         return argExpr;
       }).join(', ');
 
-      final returnType =
-          method.returnType.getDisplayString(withNullability: false);
+      final returnType = method.returnType.getDisplayString();
       final methodName = method.displayName;
 
       // Если список параметров длинный — переносим вызов на новую строку для читаемости.
