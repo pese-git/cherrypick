@@ -1,39 +1,120 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# cherrypick_generator
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages). 
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages). 
--->
+A code generator for dependency injection (DI) modules in Dart, designed to work with [`cherrypick_annotations`](https://pub.dev/packages/cherrypick_annotations). This package generates efficient, boilerplate-free registration code for your annotated module classes—making the provisioning and resolution of dependencies fast, type-safe, and expressive.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+---
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- **Generates DI module extension classes** from Dart classes annotated with `@module()`
+- **Automatic binding** of methods and dependencies based on `@singleton()`, `@named('...')`, and parameter-level annotations
+- **Optimized for readability/maintainability:** code output follows best practices for Dart and DI
+- **Integrated with build_runner** for seamless incremental builds
 
-## Getting started
+---
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+## How It Works
 
-## Usage
+1. You annotate your abstract classes with `@module()` and your provider methods inside with `@singleton()` or `@named()`.
+2. Run `build_runner` to trigger code generation.
+3. The generator creates a class (prefixed with `$`) extending your module, overriding the `builder()` method to register your dependencies with `bind<T>().toProvide(...)`, `.singleton()`, `.withName()`, etc.
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+**Example:**
 
 ```dart
-const like = 'sample';
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+@module()
+abstract class AppModule {
+  @singleton()
+  Dio dio() => Dio();
+
+  @named('apiBaseUrl')
+  String baseUrl() => 'https://api.example.com';
+}
 ```
 
-## Additional information
+Generates:
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+```dart
+final class $AppModule extends AppModule {
+  @override
+  void builder(Scope currentScope) {
+    bind<Dio>().toProvide(() => dio()).singleton();
+    bind<String>().toProvide(() => baseUrl()).withName('apiBaseUrl');
+  }
+}
+```
+
+---
+
+## Getting Started
+
+### 1. Add dependencies
+
+Add to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  cherrypick_annotations: ^latest
+
+dev_dependencies:
+  cherrypick_generator: ^latest
+  build_runner: ^latest
+```
+
+### 2. Annotate modules
+
+See the example above. Use
+- `@module()` on abstract classes
+- `@singleton()` on methods for singleton bindings
+- `@named('name')` on methods or method parameters to indicate named resolvers
+
+### 3. Build
+
+```shell
+dart run build_runner build
+```
+
+This generates `.cherrypick.g.dart` files containing the `$YourModule` classes.
+
+---
+
+## Advanced Usage
+
+**Parameter Injection with @named:**
+
+```dart
+@module()
+abstract class NetworkModule {
+  @singleton()
+  Dio dio(@named('baseUrl') String url) => Dio(BaseOptions(baseUrl: url));
+}
+```
+Which will be generated as:
+
+```dart
+bind<Dio>().toProvide(() => dio(
+  currentScope.resolve<String>(named: 'baseUrl')
+)).singleton();
+```
+
+---
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
+
+---
+
+## Contributing
+
+PRs and issues welcome! Please file bugs or feature requests via GitHub.
+
+---
+
+## Author
+
+Sergey Penkovsky (<sergey.penkovsky@gmail.com>)
