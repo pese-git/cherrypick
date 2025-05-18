@@ -25,9 +25,12 @@ A code generator for dependency injection (DI) modules in Dart, designed to work
 
 ```dart
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+import 'package:cherrypick/cherrypick.dart';
+
+part 'app_module.cherrypick.g.dart';
 
 @module()
-abstract class AppModule {
+abstract class AppModule extends Module {
   @singleton()
   Dio dio() => Dio();
 

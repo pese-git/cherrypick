@@ -39,9 +39,10 @@ Annotate your DI modules and providers:
 
 ```dart
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+import 'package:cherrypick/cherrypick.dart';
 
 @module()
-abstract class AppModule {
+abstract class AppModule extends Module {
   @singleton()
   Dio dio() => Dio();
 
@@ -70,7 +71,7 @@ final class $AppModule extends AppModule {
 
 ```dart
 @module()
-abstract class AppModule {}
+abstract class AppModule extends Module {}
 ```
 Use on classes to mark them as a DI module.
 
