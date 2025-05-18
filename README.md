@@ -90,7 +90,7 @@ Run `flutter pub get` or `dart pub get` to fetch dependencies.
   ```dart
   import 'package:cherrypick_annotations/cherrypick_annotations.dart';
   import 'package:cherrypick/cherrypick.dart';
-  
+
   part 'app_module.cherrypick.g.dart';
 
   @module()
@@ -182,4 +182,3 @@ CherryPick Workspace is licensed under the [Apache License 2.0](https://www.apac
 - [cherrypick_flutter on pub.dev](https://pub.dev/packages/cherrypick_flutter)
 - [cherrypick_generator on pub.dev](https://pub.dev/packages/cherrypick_generator)
 - [cherrypick_annotations on pub.dev](https://pub.dev/packages/cherrypick_annotations)
-```
