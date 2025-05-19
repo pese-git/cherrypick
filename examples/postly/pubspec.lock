@@ -153,11 +153,10 @@ packages:
   cherrypick:
     dependency: "direct main"
     description:
-      name: cherrypick
-      sha256: e1e2b4f3a70cbe7760e479e6ddb7dce2fc85a1bbb2fba6c398efe235ed111dfe
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
+      path: "../../cherrypick"
+      relative: true
+    source: path
+    version: "2.1.0-dev.1"
   clock:
     dependency: transitive
     description:
