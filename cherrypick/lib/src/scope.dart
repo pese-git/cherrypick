@@ -13,9 +13,9 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:cherrypick/src/binding.dart';
 import 'package:cherrypick/src/cycle_detector.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
+import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
 
 Scope openRootScope() => Scope(null);
@@ -176,33 +176,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// RU: Внутренний метод для разрешения зависимостей без проверки циклических зависимостей.
   /// ENG: Internal method for dependency resolution without circular dependency checking.
   T? _tryResolveInternal<T>({String? named, dynamic params}) {
-    // 1 Поиск зависимости по всем модулям текущего скоупа
-    if (_modulesList.isNotEmpty) {
-      for (var module in _modulesList) {
-        for (var binding in module.bindingSet) {
-          if (binding.key == T &&
-              ((!binding.isNamed && named == null) ||
-                  (binding.isNamed && named == binding.name))) {
-            switch (binding.mode) {
-              case Mode.instance:
-                return binding.instance;
-              case Mode.providerInstance:
-                return binding.provider;
-              case Mode.providerInstanceWithParams:
-                if (params == null) {
-                  throw StateError('Param is null. Maybe you forget pass it');
-                }
-                return binding.providerWithParams(params);
-              default:
-                return null;
-            }
-          }
-        }
-      }
-    }
+    final resolver = _findBindingResolver<T>(named);
 
-    // 2 Поиск зависимостей в родительском скоупе
-    return _parentScope?._tryResolveInternal(named: named, params: params);
+    // 1 Поиск зависимости по всем модулям текущего скоупа
+    return resolver?.resolveSync(params) ??
+        // 2 Поиск зависимостей в родительском скоупе
+        _parentScope?.tryResolve(named: named, params: params);
   }
 
   /// RU: Асинхронно возвращает найденную зависимость, определенную параметром типа [T].
@@ -266,30 +245,25 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// RU: Внутренний метод для асинхронного разрешения зависимостей без проверки циклических зависимостей.
   /// ENG: Internal method for async dependency resolution without circular dependency checking.
   Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) async {
-    if (_modulesList.isNotEmpty) {
-      for (var module in _modulesList) {
-        for (var binding in module.bindingSet) {
-          if (binding.key == T &&
-              ((!binding.isNamed && named == null) ||
-                  (binding.isNamed && named == binding.name))) {
-            if (binding.instanceAsync != null) {
-              return await binding.instanceAsync;
-            }
+    final resolver = _findBindingResolver<T>(named);
 
-            if (binding.asyncProvider != null) {
-              return await binding.asyncProvider?.call();
-            }
+    // 1 Поиск зависимости по всем модулям текущего скоупа
+    return resolver?.resolveAsync(params) ??
+        // 2 Поиск зависимостей в родительском скоупе
+        _parentScope?.tryResolveAsync(named: named, params: params);
+  }
 
-            if (binding.asyncProviderWithParams != null) {
-              if (params == null) {
-                throw StateError('Param is null. Maybe you forget pass it');
-              }
-              return await binding.asyncProviderWithParams!(params);
-            }
-          }
+  BindingResolver<T>? _findBindingResolver<T>(String? named) {
+    for (var module in _modulesList) {
+      for (var binding in module.bindingSet) {
+        if (binding.key == T &&
+            ((!binding.isNamed && named == null) ||
+                (binding.isNamed && named == binding.name))) {
+          return binding.resolver as BindingResolver<T>?;
         }
       }
     }
-    return _parentScope?._tryResolveAsyncInternal(named: named, params: params);
+
+    return null;
   }
 }

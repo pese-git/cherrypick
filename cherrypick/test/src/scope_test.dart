@@ -127,7 +127,7 @@ void main() {
       final scope = Scope(null)
         ..installModules([
           _InlineModule((m, s) {
-            m.bind<String>().toInstanceAsync(Future.value('async value'));
+            m.bind<String>().toInstance(Future.value('async value'));
           }),
         ]);
       expect(await scope.resolveAsync<String>(), "async value");
@@ -137,7 +137,7 @@ void main() {
       final scope = Scope(null)
         ..installModules([
           _InlineModule((m, s) {
-            m.bind<int>().toProvideAsync(() async => 7);
+            m.bind<int>().toProvide(() async => 7);
           }),
         ]);
       expect(await scope.resolveAsync<int>(), 7);
@@ -147,7 +147,7 @@ void main() {
       final scope = Scope(null)
         ..installModules([
           _InlineModule((m, s) {
-            m.bind<int>().toProvideAsyncWithParams((x) async => (x as int) * 3);
+            m.bind<int>().toProvideWithParams((x) async => (x as int) * 3);
           }),
         ]);
       expect(await scope.resolveAsync<int>(params: 2), 6);
