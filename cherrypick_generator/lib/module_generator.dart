@@ -180,6 +180,6 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
 }
 
 /// Фабрика Builder-го класса для build_runner
-/// Производит .cherrypick.g.dart файл для каждого модуля.
+/// Генерирует .cherrypick.g.dart файл для каждого модуля.
 Builder moduleBuilder(BuilderOptions options) =>
     PartBuilder([ModuleGenerator()], '.cherrypick.g.dart');
