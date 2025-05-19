@@ -160,11 +160,18 @@ class Scope {
           if (binding.key == T &&
               ((!binding.isNamed && named == null) ||
                   (binding.isNamed && named == binding.name))) {
+            if (binding.instanceAsync != null) {
+              return await binding.instanceAsync;
+            }
+
             if (binding.asyncProvider != null) {
               return await binding.asyncProvider?.call();
             }
 
             if (binding.asyncProviderWithParams != null) {
+              if (params == null) {
+                throw StateError('Param is null. Maybe you forget pass it');
+              }
               return await binding.asyncProviderWithParams!(params);
             }
           }

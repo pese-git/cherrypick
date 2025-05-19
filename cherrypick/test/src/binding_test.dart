@@ -312,4 +312,83 @@ void main() {
       });
     });
   });
+
+  test('Binding returns null providerWithParams if not set', () {
+    final binding = Binding<int>();
+    expect(binding.providerWithParams(123), null);
+  });
+
+  test('Binding withName changes isNamed to true', () {
+    final binding = Binding<int>().withName('foo');
+    expect(binding.isNamed, true);
+    expect(binding.name, 'foo');
+  });
+
+  // Проверка singleton provider вызывается один раз
+  test('Singleton provider only called once', () {
+    int counter = 0;
+    final binding = Binding<int>().toProvide(() {
+      counter++;
+      return counter;
+    }).singleton();
+
+    final first = binding.provider;
+    final second = binding.provider;
+    expect(first, equals(second));
+    expect(counter, 1);
+  });
+
+  // Повторный вызов toInstance влияет на значение
+  test('Multiple toInstance calls changes instance', () {
+    final binding = Binding<int>().toInstance(1).toInstance(2);
+    expect(binding.instance, 2);
+  });
+
+  // Проверка mode после chaining
+  test('Chained withName and singleton preserves mode', () {
+    final binding =
+        Binding<int>().toProvide(() => 3).withName("named").singleton();
+    expect(binding.mode, Mode.providerInstance);
+  });
+
+  group('Check toInstanceAsync.', () {
+    test('Binding resolves instanceAsync with expected value', () async {
+      final expectedValue = 42;
+      final binding =
+          Binding<int>().toInstanceAsync(Future.value(expectedValue));
+      final result = await binding.instanceAsync;
+      expect(result, equals(expectedValue));
+    });
+
+    test('Binding instanceAsync does not affect instance', () {
+      final binding = Binding<int>().toInstanceAsync(Future.value(5));
+      expect(binding.instance, null);
+    });
+
+    test('Binding mode is set to instance', () {
+      final binding = Binding<int>().toInstanceAsync(Future.value(5));
+      expect(binding.mode, Mode.instance);
+    });
+
+    test('Binding isSingleton is true after toInstanceAsync', () {
+      final binding = Binding<int>().toInstanceAsync(Future.value(5));
+      expect(binding.isSingleton, isTrue);
+    });
+
+    test('Binding withName combines with toInstanceAsync', () async {
+      final binding = Binding<int>()
+          .withName('asyncValue')
+          .toInstanceAsync(Future.value(7));
+      expect(binding.isNamed, isTrue);
+      expect(binding.name, 'asyncValue');
+      expect(await binding.instanceAsync, 7);
+    });
+
+    test('Binding instanceAsync keeps value after multiple awaits', () async {
+      final binding = Binding<int>().toInstanceAsync(Future.value(123));
+      final result1 = await binding.instanceAsync;
+      final result2 = await binding.instanceAsync;
+      expect(result1, equals(result2));
+    });
+  });
 }

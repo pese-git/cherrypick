@@ -29,6 +29,7 @@ class Binding<T> {
   late Type _key;
   late String _name;
   T? _instance;
+  Future<T>? _instanceAsync;
   Provider<T>? _provider;
   ProviderWithParams<T>? _providerWithParams;
 
@@ -94,6 +95,17 @@ class Binding<T> {
     return this;
   }
 
+  /// RU: Инициализация экземляпяра [value].
+  /// ENG: Initialization instance [value].
+  ///
+  /// return [Binding]
+  Binding<T> toInstanceAsync(Future<T> value) {
+    _mode = Mode.instance;
+    _instanceAsync = value;
+    _isSingleton = true;
+    return this;
+  }
+
   /// RU: Инициализация экземляпяра  через провайдер [value].
   /// ENG: Initialization instance via provider [value].
   ///
@@ -148,6 +160,12 @@ class Binding<T> {
   ///
   /// return [T]
   T? get instance => _instance;
+
+  /// RU: Поиск экземпляра.
+  /// ENG: Resolve instance.
+  ///
+  /// return [T]
+  Future<T>? get instanceAsync => _instanceAsync;
 
   /// RU: Поиск экземпляра.
   /// ENG: Resolve instance.
