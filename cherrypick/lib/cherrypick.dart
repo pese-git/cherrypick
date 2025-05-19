@@ -13,6 +13,7 @@ library;
 // limitations under the License.
 //
 
+export 'package:cherrypick/src/binding_resolver.dart';
 export 'package:cherrypick/src/binding.dart';
 export 'package:cherrypick/src/helper.dart';
 export 'package:cherrypick/src/module.dart';

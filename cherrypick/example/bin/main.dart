@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'package:meta/meta.dart';
+
 import 'package:cherrypick/cherrypick.dart';
+import 'package:meta/meta.dart';
 
 class AppModule extends Module {
   @override
@@ -18,19 +19,28 @@ class FeatureModule extends Module {
   @override
   void builder(Scope currentScope) {
     // Using toProvideAsync for async initialization
-    bind<DataRepository>().withName("networkRepo").toProvideAsync(() async {
+    bind<DataRepository>()
+        .withName("networkRepo")
+        .toProvideWithParams((params) async {
+      print('REPO PARAMS: $params');
+
       final client = await Future.delayed(
-          Duration(milliseconds: 100),
-          () => currentScope.resolve<ApiClient>(
-              named: isMock ? "apiClientMock" : "apiClientImpl"));
+        Duration(milliseconds: 1000),
+        () => currentScope.resolve<ApiClient>(
+          named: isMock ? "apiClientMock" : "apiClientImpl",
+        ),
+      );
+
       return NetworkDataRepository(client);
     }).singleton();
 
     // Asynchronous initialization of DataBloc
-    bind<DataBloc>().toProvideAsync(
+    bind<DataBloc>().toProvide(
       () async {
         final repo = await currentScope.resolveAsync<DataRepository>(
-            named: "networkRepo");
+          named: "networkRepo",
+          params: 'Some params',
+        );
         return DataBloc(repo);
       },
     );
@@ -38,9 +48,7 @@ class FeatureModule extends Module {
 }
 
 void main() async {
-  final scope = openRootScope().installModules([
-    AppModule(),
-  ]);
+  final scope = openRootScope().installModules([AppModule()]);
 
   final subScope = scope
       .openSubScope("featureScope")
@@ -48,8 +56,11 @@ void main() async {
 
   // Asynchronous instance resolution
   final dataBloc = await subScope.resolveAsync<DataBloc>();
-  dataBloc.data.listen((d) => print('Received data: $d'),
-      onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
+  dataBloc.data.listen(
+    (d) => print('Received data: $d'),
+    onError: (e) => print('Error: $e'),
+    onDone: () => print('DONE'),
+  );
 
   await dataBloc.fetchData();
 }

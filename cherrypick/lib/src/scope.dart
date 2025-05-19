@@ -12,7 +12,7 @@
 //
 import 'dart:collection';
 
-import 'package:cherrypick/src/binding.dart';
+import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
 
 Scope openRootScope() => Scope(null);
@@ -104,33 +104,12 @@ class Scope {
   /// ENG: Returns found dependency of type [T] or null if it cannot be found.
   ///
   T? tryResolve<T>({String? named, dynamic params}) {
-    // 1 Поиск зависимости по всем модулям текущего скоупа
-    if (_modulesList.isNotEmpty) {
-      for (var module in _modulesList) {
-        for (var binding in module.bindingSet) {
-          if (binding.key == T &&
-              ((!binding.isNamed && named == null) ||
-                  (binding.isNamed && named == binding.name))) {
-            switch (binding.mode) {
-              case Mode.instance:
-                return binding.instance;
-              case Mode.providerInstance:
-                return binding.provider;
-              case Mode.providerInstanceWithParams:
-                if (params == null) {
-                  throw StateError('Param is null. Maybe you forget pass it');
-                }
-                return binding.providerWithParams(params);
-              default:
-                return null;
-            }
-          }
-        }
-      }
-    }
+    final resolver = _findBindingResolver<T>(named);
 
-    // 2 Поиск зависимостей в родительском скоупе
-    return _parentScope?.tryResolve(named: named, params: params);
+    // 1 Поиск зависимости по всем модулям текущего скоупа
+    return resolver?.resolveSync(params) ??
+        // 2 Поиск зависимостей в родительском скоупе
+        _parentScope?.tryResolve(named: named, params: params);
   }
 
   /// RU: Асинхронно возвращает найденную зависимость, определенную параметром типа [T].
@@ -149,35 +128,31 @@ class Scope {
       return resolved;
     } else {
       throw StateError(
-          'Can\'t resolve async dependency `$T`. Maybe you forget register it?');
+        'Can\'t resolve async dependency `$T`. Maybe you forget register it?',
+      );
     }
   }
 
-  Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
-    if (_modulesList.isNotEmpty) {
-      for (var module in _modulesList) {
-        for (var binding in module.bindingSet) {
-          if (binding.key == T &&
-              ((!binding.isNamed && named == null) ||
-                  (binding.isNamed && named == binding.name))) {
-            if (binding.instanceAsync != null) {
-              return await binding.instanceAsync;
-            }
+  Future<T>? tryResolveAsync<T>({String? named, dynamic params}) {
+    final resolver = _findBindingResolver<T>(named);
 
-            if (binding.asyncProvider != null) {
-              return await binding.asyncProvider?.call();
-            }
+    // 1 Поиск зависимости по всем модулям текущего скоупа
+    return resolver?.resolveAsync(params) ??
+        // 2 Поиск зависимостей в родительском скоупе
+        _parentScope?.tryResolveAsync(named: named, params: params);
+  }
 
-            if (binding.asyncProviderWithParams != null) {
-              if (params == null) {
-                throw StateError('Param is null. Maybe you forget pass it');
-              }
-              return await binding.asyncProviderWithParams!(params);
-            }
-          }
+  BindingResolver<T>? _findBindingResolver<T>(String? named) {
+    for (var module in _modulesList) {
+      for (var binding in module.bindingSet) {
+        if (binding.key == T &&
+            ((!binding.isNamed && named == null) ||
+                (binding.isNamed && named == binding.name))) {
+          return binding.resolver as BindingResolver<T>?;
         }
       }
     }
-    return _parentScope?.tryResolveAsync(named: named, params: params);
+
+    return null;
   }
 }
