@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-05-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick_flutter` - `v1.1.1`](#cherrypick_flutter---v111)
+
+Packages with other changes:
+
+ - [`cherrypick` - `v2.1.0`](#cherrypick---v210)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `cherrypick` - `v2.1.0`
+ - `cherrypick_flutter` - `v1.1.1`
+
+---
+
+#### `cherrypick_flutter` - `v1.1.1`
+
+#### `cherrypick` - `v2.1.0`
+
+
 ## 2025-05-16
 
 ### Changes

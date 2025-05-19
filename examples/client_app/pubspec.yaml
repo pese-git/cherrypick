@@ -11,8 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cherrypick: any
-  cherrypick_flutter: any
+  cherrypick: ^2.1.0
+  cherrypick_flutter: ^1.1.1
 
   cupertino_icons: ^1.0.8
 
