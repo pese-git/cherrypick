@@ -30,7 +30,7 @@ Binding<String>().toProvide(() => "hello world");
 // Asynchronous lazy initialization
 Binding<String>().toProvideAsync(() async => "hello async world");
 
-/ Asynchronous lazy initialization with dynamic parameters
+// Asynchronous lazy initialization with dynamic parameters
 Binding<String>().toProvideAsyncWithParams((params) async => "hello $params");
 
 // Initialization with dynamic parameters
