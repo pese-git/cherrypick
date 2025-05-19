@@ -7,6 +7,11 @@
 .idea/
 .vscode/
 
+
+**/*.g.dart
+**/*.gr.dart
+**/*.freezed.dart
+
 pubspec_overrides.yaml
 
 melos_cherrypick.iml

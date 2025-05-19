@@ -1,6 +1,6 @@
 # CherryPick Flutter
 
-`cherrypick_flutter` is a Flutter library that allows access to the root scope through the context using `CherryPickProvider`. This package is designed to provide a simple and convenient way to interact with the root scope within the widget tree.
+`cherrypick_flutter` offers a Flutter integration to access and manage dependency injection scopes using the `CherryPickProvider`. This setup facilitates accessing the root scope directly from the widget tree, providing a straightforward mechanism for dependences management within Flutter applications.
 
 ## Installation
 
@@ -11,13 +11,13 @@ dependencies:
   cherrypick_flutter: ^1.0.0
 ```
 
-Then run `flutter pub get` to install the package.
+Run `flutter pub get` to install the package dependencies.
 
 ## Usage
 
 ### Importing the Package
 
-To start using `cherrypick_flutter`, import it into your Dart code:
+To begin using `cherrypick_flutter`, import it within your Dart file:
 
 ```dart
 import 'package:cherrypick_flutter/cherrypick_flutter.dart';
@@ -25,7 +25,7 @@ import 'package:cherrypick_flutter/cherrypick_flutter.dart';
 
 ### Providing State with `CherryPickProvider`
 
-Use `CherryPickProvider` to wrap the part of the widget tree that requires access to the provided state.
+Use `CherryPickProvider` to encase the widget tree section that requires access to the root or specific subscopes:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -34,35 +34,40 @@ import 'package:cherrypick_flutter/cherrypick_flutter.dart';
 void main() {
   runApp(
     CherryPickProvider(
-      rootScope: yourRootScopeInstance,
       child: MyApp(),
     ),
   );
 }
 ```
 
+Note: The current implementation of `CherryPickProvider` does not directly pass a `rootScope`. Instead, it utilizes its methods to open root and sub-scopes internally.
+
 ### Accessing State
 
-To access the state provided by `CherryPickProvider`, use the `of` method. This is typically done in the `build` method of your widgets.
+Access the state provided by `CherryPickProvider` within widget `build` methods using the `of` method:
 
 ```dart
 class MyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final rootScope = CherryPickProvider.of(context).rootScope;
+    final CherryPickProvider cherryPick = CherryPickProvider.of(context);
+    final rootScope = cherryPick.openRootScope();
 
-    return Text('Current state: ${rootScope.someStateValue}');
+    // Use the rootScope or open a subScope as needed
+    final subScope = cherryPick.openSubScope(scopeName: "exampleScope");
+
+    return Text('Scope accessed!');
   }
 }
 ```
 
 ### Updating State
 
-The `CherryPickProvider` will automatically update its dependents when its state changes. Ensure to override the `updateShouldNotify` method to specify when notifications should occur, as shown in the provided implementation.
+The `CherryPickProvider` setup internally manages state updates. Ensure the `updateShouldNotify` method accurately reflects when the dependents should receive updates. In the provided implementation, it currently does not notify updates automatically.
 
 ## Example
 
-Here is a simple example showing how to implement and use the `CherryPickProvider`.
+Here is an example illustrating how to implement and utilize `CherryPickProvider` within a Flutter application:
 
 ```dart
 class MyApp extends StatelessWidget {
@@ -70,7 +75,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rootScope = CherryPickProvider.of(context).rootScope;
+    final rootScope = CherryPickProvider.of(context).openRootScope();
 
     return MaterialApp.router(
       routerDelegate: rootScope.resolve<AppRouter>().delegate(),
@@ -81,10 +86,12 @@ class MyApp extends StatelessWidget {
 }
 ```
 
+In this example, `CherryPickProvider` accesses and resolves dependencies using root scope and potentially sub-scopes configured by the application.
+
 ## Contributing
 
-We welcome contributions from the community. Please open issues and pull requests if you have ideas for improvements.
+Contributions to improve this library are welcome. Feel free to open issues and submit pull requests on the repository.
 
 ## License
 
-This project is licensed under the Apache License 2.0.
+This project is licensed under the Apache License 2.0. A copy of the license can be obtained at [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).

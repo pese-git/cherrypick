@@ -28,6 +28,9 @@ jobs:
       - name: Bootstrap workspace
         run: fvm flutter pub global run melos bootstrap
 
+      - name: CodeGen
+        run: fvm flutter pub global run melos run codegen
+
       - name: Analyze all packages
         run: fvm flutter pub global run melos run analyze
 

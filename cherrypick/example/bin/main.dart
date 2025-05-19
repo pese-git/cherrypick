@@ -1,39 +1,38 @@
 import 'dart:async';
-
-import 'package:cherrypick/cherrypick.dart';
 import 'package:meta/meta.dart';
+import 'package:cherrypick/cherrypick.dart';
 
 class AppModule extends Module {
   @override
   void builder(Scope currentScope) {
-    bind<ApiClient>().withName('apiClientMock').toInstance(ApiClientMock());
-    bind<ApiClient>().withName('apiClientImpl').toInstance(ApiClientImpl());
+    bind<ApiClient>().withName("apiClientMock").toInstance(ApiClientMock());
+    bind<ApiClient>().withName("apiClientImpl").toInstance(ApiClientImpl());
   }
 }
 
 class FeatureModule extends Module {
-  bool isMock;
+  final bool isMock;
 
   FeatureModule({required this.isMock});
 
   @override
   void builder(Scope currentScope) {
-    bind<DataRepository>()
-        .withName('networkRepo')
-        .toProvide(
-          () => NetworkDataRepository(
-            currentScope.resolve<ApiClient>(
-              named: isMock ? 'apiClientMock' : 'apiClientImpl',
-            ),
-          ),
-        )
-        .singleton();
+    // Using toProvideAsync for async initialization
+    bind<DataRepository>().withName("networkRepo").toProvideAsync(() async {
+      final client = await Future.delayed(
+          Duration(milliseconds: 100),
+          () => currentScope.resolve<ApiClient>(
+              named: isMock ? "apiClientMock" : "apiClientImpl"));
+      return NetworkDataRepository(client);
+    }).singleton();
 
-    bind<DataBloc>().toProvideWithParams(
-      (param) => DataBloc(
-        currentScope.resolve<DataRepository>(named: 'networkRepo'),
-        param,
-      ),
+    // Asynchronous initialization of DataBloc
+    bind<DataBloc>().toProvideAsync(
+      () async {
+        final repo = await currentScope.resolveAsync<DataRepository>(
+            named: "networkRepo");
+        return DataBloc(repo);
+      },
     );
   }
 }
@@ -44,10 +43,11 @@ void main() async {
   ]);
 
   final subScope = scope
-      .openSubScope('featureScope')
+      .openSubScope("featureScope")
       .installModules([FeatureModule(isMock: true)]);
 
-  final dataBloc = subScope.resolve<DataBloc>(params: 'PARAMETER');
+  // Asynchronous instance resolution
+  final dataBloc = await subScope.resolveAsync<DataBloc>();
   dataBloc.data.listen((d) => print('Received data: $d'),
       onError: (e) => print('Error: $e'), onDone: () => print('DONE'));
 
@@ -60,13 +60,11 @@ class DataBloc {
   Stream<String> get data => _dataController.stream;
   final StreamController<String> _dataController = StreamController.broadcast();
 
-  final String param;
-
-  DataBloc(this._dataRepository, this.param);
+  DataBloc(this._dataRepository);
 
   Future<void> fetchData() async {
     try {
-      _dataController.sink.add(await _dataRepository.getData(param));
+      _dataController.sink.add(await _dataRepository.getData());
     } catch (e) {
       _dataController.sink.addError(e);
     }
@@ -78,7 +76,7 @@ class DataBloc {
 }
 
 abstract class DataRepository {
-  Future<String> getData(String param);
+  Future<String> getData();
 }
 
 class NetworkDataRepository implements DataRepository {
@@ -88,42 +86,26 @@ class NetworkDataRepository implements DataRepository {
   NetworkDataRepository(this._apiClient);
 
   @override
-  Future<String> getData(String param) async => await _apiClient.sendRequest(
-      url: 'www.google.com',
-      token: _token,
-      requestBody: {'type': 'data'},
-      param: param);
+  Future<String> getData() async => await _apiClient.sendRequest(
+      url: 'www.google.com', token: _token, requestBody: {'type': 'data'});
 }
 
 abstract class ApiClient {
-  Future sendRequest({
-    @required String url,
-    String token,
-    Map requestBody,
-    String param,
-  });
+  Future sendRequest({@required String url, String token, Map requestBody});
 }
 
 class ApiClientMock implements ApiClient {
   @override
-  Future sendRequest({
-    @required String? url,
-    String? token,
-    Map? requestBody,
-    String? param,
-  }) async {
-    return 'Local Data $param';
+  Future sendRequest(
+      {@required String? url, String? token, Map? requestBody}) async {
+    return 'Local Data';
   }
 }
 
 class ApiClientImpl implements ApiClient {
   @override
-  Future sendRequest({
-    @required String? url,
-    String? token,
-    Map? requestBody,
-    String? param,
-  }) async {
-    return 'Network data $param';
+  Future sendRequest(
+      {@required String? url, String? token, Map? requestBody}) async {
+    return 'Network data';
   }
 }

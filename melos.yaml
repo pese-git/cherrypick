@@ -5,11 +5,20 @@ sdkPath: .fvm/flutter_sdk
 packages:
   - cherrypick
   - cherrypick_flutter
+  - examples/client_app
+  - examples/postly
 
 scripts:
   analyze:
-    run: |
-      flutter analyze
+    exec: dart analyze
+
   format:
+    exec: dart format
+
+  test:
+    exec: flutter test
+
+  codegen:
     run: |
-      flutter format
+      melos exec --scope="postly" -- dart run build_runner build --delete-conflicting-outputs
+
