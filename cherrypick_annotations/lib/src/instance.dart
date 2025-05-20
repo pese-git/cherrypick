@@ -1,5 +1,3 @@
-library;
-
 //
 // Copyright 2021 Sergey Penkovsky (sergey.penkovsky@gmail.com)
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +11,7 @@ library;
 // limitations under the License.
 //
 
-export 'src/module.dart';
-export 'src/bind.dart';
-export 'src/provide.dart';
-export 'src/instance.dart';
-export 'src/singleton.dart';
-export 'src/named.dart';
+// ignore: camel_case_types
+class instance {
+  const instance();
+}

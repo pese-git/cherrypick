@@ -76,12 +76,15 @@ class BindSpec {
   /// Список параметров, которые требуются методу для внедрения зависимостей
   final List<BindParameterSpec> parameters;
 
+  final String bindingType; // 'instance' | 'provide'
+
   BindSpec({
     required this.returnType,
     required this.methodName,
     required this.isSingleton,
     required this.parameters,
     this.named,
+    required this.bindingType,
   });
 
   /// Формирует dart-код для биндинга, например:
@@ -95,11 +98,14 @@ class BindSpec {
     final argsStr = parameters.map((p) => p.generateArg()).join(', ');
 
     // Если аргументов много или они длинные — разбиваем вызов на несколько строк
-    final needMultiline = argsStr.length > 60 || argsStr.contains('\n');
+    //final needMultiline = argsStr.length > 60 || argsStr.contains('\n');
 
-    final provide = needMultiline
-        ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
-        : '.toProvide(() => $methodName($argsStr))';
+    // Важно: для .toInstance всегда просто method(), для .toProvide нужна лямбда
+    final provide = bindingType == 'instance'
+        ? '.toInstance($methodName($argsStr))'
+        : (argsStr.length > 60 || argsStr.contains('\n')
+            ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+            : '.toProvide(() => $methodName($argsStr))');
 
     final namePart = named != null ? ".withName('$named')" : '';
     final singletonPart = isSingleton ? '.singleton()' : '';
@@ -132,12 +138,24 @@ class BindSpec {
       params.add(BindParameterSpec(typeStr, paramNamed));
     }
 
+    // определяем bindingType
+    final hasInstance = _MetadataUtils.anyMeta(method.metadata, 'instance');
+    final hasProvide = _MetadataUtils.anyMeta(method.metadata, 'provide');
+    if (!hasInstance && !hasProvide) {
+      throw InvalidGenerationSourceError(
+        'Метод $methodName класса-модуля должен быть помечен либо @instance(), либо @provide().',
+        element: method,
+      );
+    }
+    final bindingType = hasInstance ? 'instance' : 'provide';
+
     return BindSpec(
       returnType: returnType,
       methodName: methodName,
       isSingleton: isSingleton,
       named: named,
       parameters: params,
+      bindingType: bindingType,
     );
   }
 }

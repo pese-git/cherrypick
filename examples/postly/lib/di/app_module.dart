@@ -9,16 +9,24 @@ part 'app_module.cherrypick.g.dart';
 
 @module()
 abstract class AppModule extends Module {
+  @instance()
+  int timeout() => 1000;
+
+  @instance()
+  @named('baseUrl')
+  String baseUrl() => "https://google.com";
+
+  @provide()
   @singleton()
   @named('dio')
-  Dio dio() => Dio();
+  Dio dio(@named('baseUrl') String baseUrl) =>
+      Dio(BaseOptions(baseUrl: baseUrl));
 
+  @provide()
   @singleton()
-  @named('api')
   JsonPlaceholderApi api(@named('dio') Dio dio) => JsonPlaceholderApi(dio);
 
+  @provide()
   @named('repo')
-  @singleton()
-  PostRepository repo(@named('api') JsonPlaceholderApi api) =>
-      PostRepositoryImpl(api);
+  PostRepository repo(JsonPlaceholderApi api) => PostRepositoryImpl(api);
 }
