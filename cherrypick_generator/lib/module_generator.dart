@@ -16,40 +16,28 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 
-/// Генератор DI-модулей для фреймворка cherrypick.
-/// Генерирует расширение для класса с аннотацией @module,
-/// автоматически создавая биндинги для зависимостей, определённых в модуле.
 ///
-/// Пример:
-/// ```dart
-/// @module()
-/// abstract class AppModule extends Module {
-///   @singleton()
-///   Dio dio() => Dio();
-/// }
-/// ```
+/// Генератор зависимостей для DI-контейнера на основе аннотаций.
 ///
-/// Сгенерирует код:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).singleton();
-///   }
-/// }
-/// ```
+/// Данный генератор автоматически создаёт код для внедрения зависимостей (DI)
+/// на основе аннотаций в вашем исходном коде. Когда вы отмечаете класс
+/// аннотацией `@module()`, этот генератор обработает все его публичные методы
+/// и автоматически сгенерирует класс с биндингами (регистрациями зависимостей)
+/// для DI-контейнера. Это избавляет от написания однообразного шаблонного кода.
+///
 class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
-  /// Основной метод генерации кода для аннотированного класса-модуля.
-  /// [element] - класс с аннотацией @module.
-  /// [annotation], [buildStep] - служебные параметры build_runner.
-  /// Возвращает сгенерированный Dart-код класса-расширения.
+  /// Генерирует исходный код для класса-модуля с аннотацией `@module()`.
+  ///
+  /// [element] — исходный класс, помеченный аннотацией.
+  /// [annotation] — значения параметров аннотации.
+  /// [buildStep] — информация о текущем шаге генерации.
   @override
   String generateForAnnotatedElement(
     Element element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    // Убеждаемся, что аннотирован только класс (не функция, не переменная).
+    // Генератор обрабатывает только классы (остальное — ошибка)
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         '@module() может быть применён только к классам.',
@@ -58,128 +46,223 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
     }
 
     final classElement = element;
-    final className = classElement.displayName;
 
-    // Имя сгенерированного класса (например: $AppModule)
-    final generatedClassName = r'$' + className;
+    // Создаёт объект, описывающий, какие биндинги нужно сгенерировать на основании методов класса
+    final generatedClass = _GeneratedClass.fromClassElement(classElement);
 
-    final buffer = StringBuffer();
+    // Генерирует итоговый Dart-код
+    return generatedClass.generate();
+  }
+}
 
-    // Объявление генерируемого класса как final, который наследуется от исходного модуля
-    buffer.writeln('final class $generatedClassName extends $className {');
-    buffer.writeln('  @override');
-    buffer.writeln('  void builder(Scope currentScope) {');
+///
+/// Описывает параметры для создания одного биндинга зависимости (binding spec).
+///
+/// Каждый биндинг соответствует одному публичному методу класса-модуля.
+///
+class BindSpec {
+  /// Тип, который предоставляет биндинг (например, SomeService)
+  final String returnType;
 
-    // Обрабатываем все НЕ-абстрактные методы модуля
-    for (final method in classElement.methods.where((m) => !m.isAbstract)) {
-      // Проверка на наличие аннотации @singleton() у метода
-      final hasSingleton = method.metadata.any(
-        (m) =>
-            m
-                .computeConstantValue()
-                ?.type
-                ?.getDisplayString()
-                .toLowerCase()
-                .contains('singleton') ??
-            false,
-      );
+  /// Имя метода, который реализует биндинг
+  final String methodName;
 
-      // Проверяем, есть ли у метода @named('...')
-      ElementAnnotation? namedMeta;
-      try {
-        namedMeta = method.metadata.firstWhere(
-          (m) =>
-              m
-                  .computeConstantValue()
-                  ?.type
-                  ?.getDisplayString()
-                  .toLowerCase()
-                  .contains('named') ??
-              false,
-        );
-      } catch (_) {
-        namedMeta = null;
-      }
+  /// Необязательное имя, для именованной зависимости (используется с @named)
+  final String? named;
 
-      // Извлекаем значение name из @named('value')
-      String? nameArg;
-      if (namedMeta != null) {
-        final cv = namedMeta.computeConstantValue();
-        if (cv != null) {
-          nameArg = cv.getField('value')?.toStringValue();
-        }
-      }
+  /// Является ли зависимость синглтоном (имеется ли аннотация @singleton)
+  final bool isSingleton;
 
-      // Формируем список аргументов для вызова метода.
-      // Каждый параметр может быть с аннотацией @named, либо без.
-      final args = method.parameters.map((p) {
-        // Проверяем наличие @named('value') на параметре
-        ElementAnnotation? paramNamed;
-        try {
-          paramNamed = p.metadata.firstWhere(
-            (m) =>
-                m
-                    .computeConstantValue()
-                    ?.type
-                    ?.getDisplayString()
-                    .toLowerCase()
-                    .contains('named') ??
-                false,
-          );
-        } catch (_) {
-          paramNamed = null;
-        }
+  /// Список параметров, которые требуются методу для внедрения зависимостей
+  final List<BindParameterSpec> parameters;
 
-        String argExpr;
-        if (paramNamed != null) {
-          final cv = paramNamed.computeConstantValue();
-          final namedValue = cv?.getField('value')?.toStringValue();
-          // Если указано имя для параметра (@named), пробрасываем его в resolve
-          if (namedValue != null) {
-            argExpr =
-                "currentScope.resolve<${p.type.getDisplayString()}>(named: '$namedValue')";
-          } else {
-            // fallback — скобки все равно нужны
-            argExpr = "currentScope.resolve<${p.type.getDisplayString()}>()";
-          }
-        } else {
-          // Если параметр не @named - просто resolve по типу
-          argExpr = "currentScope.resolve<${p.type.getDisplayString()}>()";
-        }
-        return argExpr;
-      }).join(', ');
+  BindSpec({
+    required this.returnType,
+    required this.methodName,
+    required this.isSingleton,
+    required this.parameters,
+    this.named,
+  });
 
-      final returnType = method.returnType.getDisplayString();
-      final methodName = method.displayName;
+  /// Формирует dart-код для биндинга, например:
+  ///   bind<Type>().toProvide(() => method(args)).withName('name').singleton();
+  ///
+  /// Параметр [indent] задаёт отступ для красивого форматирования кода.
+  String generateBind(int indent) {
+    final indentStr = ' ' * indent;
 
-      // Если список параметров длинный — переносим вызов на новую строку для читаемости.
-      final hasLongArgs = args.length > 60 || args.contains('\n');
-      if (hasLongArgs) {
-        buffer.write('    bind<$returnType>()\n'
-            '      .toProvide(\n        () => $methodName($args))');
-      } else {
-        buffer.write('    bind<$returnType>()'
-            '.toProvide(() => $methodName($args))');
-      }
-      // Применяем имя биндера если есть @named
-      if (nameArg != null) {
-        buffer.write(".withName('$nameArg')");
-      }
-      // Применяем singleton если был @singleton
-      if (hasSingleton) {
-        buffer.write('.singleton()');
-      }
-      buffer.write(';\n');
+    // Собираем строку аргументов для вызова метода
+    final argsStr = parameters.map((p) => p.generateArg()).join(', ');
+
+    // Если аргументов много или они длинные — разбиваем вызов на несколько строк
+    final needMultiline = argsStr.length > 60 || argsStr.contains('\n');
+
+    final provide = needMultiline
+        ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+        : '.toProvide(() => $methodName($argsStr))';
+
+    final namePart = named != null ? ".withName('$named')" : '';
+    final singletonPart = isSingleton ? '.singleton()' : '';
+
+    // Итоговый bind: bind<Type>().toProvide(...).withName(...).singleton();
+    return '$indentStr'
+        'bind<$returnType>()'
+        '$provide'
+        '$namePart'
+        '$singletonPart;';
+    // Всегда заканчиваем точкой с запятой!
+  }
+
+  /// Создаёт спецификацию биндинга (BindSpec) из метода класса-модуля
+  static BindSpec fromMethod(MethodElement method) {
+    final returnType = method.returnType.getDisplayString();
+
+    final methodName = method.displayName;
+    // Проверим, помечен ли метод аннотацией @singleton
+    final isSingleton = _MetadataUtils.anyMeta(method.metadata, 'singleton');
+
+    // Получаем имя из @named(), если есть
+    final named = _MetadataUtils.getNamedValue(method.metadata);
+
+    // Для каждого параметра метода
+    final params = <BindParameterSpec>[];
+    for (final p in method.parameters) {
+      final typeStr = p.type.getDisplayString();
+      final paramNamed = _MetadataUtils.getNamedValue(p.metadata);
+      params.add(BindParameterSpec(typeStr, paramNamed));
     }
 
-    buffer.writeln('  }');
+    return BindSpec(
+      returnType: returnType,
+      methodName: methodName,
+      isSingleton: isSingleton,
+      named: named,
+      parameters: params,
+    );
+  }
+}
+
+///
+/// Описывает один параметр метода и возможность его разрешения из контейнера.
+///
+/// Например, если метод принимает SomeDep dep, то
+/// BindParameterSpec хранит тип SomeDep, а generateArg отдаст строку
+///   currentScope.resolve<SomeDep>()
+///
+class BindParameterSpec {
+  /// Имя типа параметра (например, SomeService)
+  final String typeName;
+
+  /// Необязательное имя для разрешения по имени (если аннотировано через @named)
+  final String? named;
+
+  BindParameterSpec(this.typeName, this.named);
+
+  /// Генерирует строку для получения зависимости из DI scope (с учётом имени)
+  String generateArg() {
+    if (named != null) {
+      return "currentScope.resolve<$typeName>(named: '$named')";
+    }
+    return "currentScope.resolve<$typeName>()";
+  }
+}
+
+///
+/// Результат обработки одного класса-модуля: имя класса, его биндинги,
+/// имя генерируемого класса и т.д.
+///
+class _GeneratedClass {
+  /// Имя исходного класса-модуля
+  final String className;
+
+  /// Имя генерируемого класса (например, $SomeModule)
+  final String generatedClassName;
+
+  /// Список всех обнаруженных биндингов
+  final List<BindSpec> binds;
+
+  _GeneratedClass(
+    this.className,
+    this.generatedClassName,
+    this.binds,
+  );
+
+  /// Обрабатывает объект ClassElement (отображение класса в AST)
+  /// и строит структуру _GeneratedClass для генерации кода.
+  static _GeneratedClass fromClassElement(ClassElement element) {
+    final className = element.displayName;
+    // Имя с префиксом $ (стандартная практика для ген-кода)
+    final generatedClassName = r'$' + className;
+    // Собираем биндинги по всем методам класса, игнорируем абстрактные (без реализации)
+    final binds = element.methods
+        .where((m) => !m.isAbstract)
+        .map(BindSpec.fromMethod)
+        .toList();
+
+    return _GeneratedClass(className, generatedClassName, binds);
+  }
+
+  /// Генерирует исходный Dart-код для созданного класса DI-модуля.
+  ///
+  /// Внутри builder(Scope currentScope) регистрируются все bind-методы.
+  String generate() {
+    final buffer = StringBuffer();
+
+    buffer.writeln('final class $generatedClassName extends $className {');
+    buffer.writeln(' @override');
+    buffer.writeln(' void builder(Scope currentScope) {');
+
+    // Для каждого биндинга — генерируем строку bind<Type>()...
+    for (final bind in binds) {
+      buffer.writeln(bind.generateBind(4));
+    }
+
+    buffer.writeln(' }');
     buffer.writeln('}');
 
     return buffer.toString();
   }
 }
 
-/// Фабрика Builder-го класса для build_runner
-/// Генерирует .cherrypick.g.dart файл для каждого модуля.
+///
+/// Утилиты для разбора аннотаций методов и параметров.
+/// Позволяют найти @named() и @singleton() у метода/параметра.
+///
+class _MetadataUtils {
+  /// Проверяет: есть ли среди аннотаций метка, имя которой содержит [typeName]
+  /// (регистр не учитывается)
+  static bool anyMeta(List<ElementAnnotation> meta, String typeName) {
+    return meta.any((m) =>
+        m
+            .computeConstantValue()
+            ?.type
+            ?.getDisplayString()
+            .toLowerCase()
+            .contains(typeName.toLowerCase()) ??
+        false);
+  }
+
+  /// Находит значение из аннотации @named('значение').
+  /// Возвращает строку значения, если аннотация присутствует; иначе null.
+  static String? getNamedValue(List<ElementAnnotation> meta) {
+    for (final m in meta) {
+      final cv = m.computeConstantValue();
+
+      final typeStr = cv?.type?.getDisplayString().toLowerCase();
+
+      if (typeStr?.contains('named') ?? false) {
+        return cv?.getField('value')?.toStringValue();
+      }
+    }
+
+    return null;
+  }
+}
+
+///
+/// Точка входа для генератора build_runner.
+/// Возвращает Builder, используемый build_runner для генерации кода для всех
+/// файлов, где встречается @module().
+///
 Builder moduleBuilder(BuilderOptions options) =>
     PartBuilder([ModuleGenerator()], '.cherrypick.g.dart');
