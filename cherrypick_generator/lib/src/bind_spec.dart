@@ -64,75 +64,71 @@ class BindSpec {
   /// Параметр [indent] задаёт отступ для красивого форматирования кода.
   String generateBind(int indent) {
     final indentStr = ' ' * indent;
-
-    // Если есть @params()
-    const paramVar = 'args'; // <= новое имя для безопасности
-
-    if (hasParams) {
-      final fnArgs = parameters
-          .map((p) => p.isParams ? paramVar : p.generateArg(paramVar))
-          .join(', ');
-      String provide;
-      if (bindingType == 'instance') {
-        provide = isAsyncInstance
-            ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
-            : '.toInstance(($fnArgs) => $methodName($fnArgs))';
-      } else if (isAsyncProvide) {
-        provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
-            ? '.toProvideAsyncWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
-            : '.toProvideAsyncWithParams(($paramVar) => $methodName($fnArgs))';
-      } else {
-        provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
-            ? '.toProvideWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
-            : '.toProvideWithParams(($paramVar) => $methodName($fnArgs))';
-      }
-      final namePart = named != null ? ".withName('$named')" : '';
-      final singletonPart = isSingleton ? '.singleton()' : '';
-      return '$indentStr'
-          'bind<$returnType>()'
-          '$provide'
-          '$namePart'
-          '$singletonPart;';
-    }
-
-    // Собираем строку аргументов для вызова метода
-    final argsStr = parameters.map((p) => p.generateArg()).join(', ');
-
-    // Если аргументов много или они длинные — разбиваем вызов на несколько строк
-    //final needMultiline = argsStr.length > 60 || argsStr.contains('\n');
-
-    String provide;
-    if (bindingType == 'instance') {
-      // Добавляем async вариант для Future<T>
-      if (isAsyncInstance) {
-        provide = '.toInstanceAsync($methodName($argsStr))';
-      } else {
-        provide = '.toInstance($methodName($argsStr))';
-      }
-    } else {
-      // provide
-      if (isAsyncProvide) {
-        // Асинхронная фабрика
-        provide = (argsStr.length > 60 || argsStr.contains('\n'))
-            ? '.toProvideAsync(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
-            : '.toProvideAsync(() => $methodName($argsStr))';
-      } else {
-        provide = (argsStr.length > 60 || argsStr.contains('\n'))
-            ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
-            : '.toProvide(() => $methodName($argsStr))';
-      }
-    }
-
-    final namePart = named != null ? ".withName('$named')" : '';
-    final singletonPart = isSingleton ? '.singleton()' : '';
-
-    // Итоговый bind: bind<Type>().toProvide(...).withName(...).singleton();
+    final provide = _generateProvideClause(indent);
+    final postfix = _generatePostfix();
     return '$indentStr'
         'bind<$returnType>()'
         '$provide'
-        '$namePart'
-        '$singletonPart;';
-    // Всегда заканчиваем точкой с запятой!
+        '$postfix;';
+  }
+
+  String _generateProvideClause(int indent) {
+    if (hasParams) return _generateWithParamsProvideClause(indent);
+    return _generatePlainProvideClause(indent);
+  }
+
+  String _generateWithParamsProvideClause(int indent) {
+    // Безопасное имя для параметра
+    const paramVar = 'args';
+    final fnArgs = parameters
+        .map((p) => p.isParams ? paramVar : p.generateArg(paramVar))
+        .join(', ');
+    final multiLine = fnArgs.length > 60 || fnArgs.contains('\n');
+    switch (bindingType) {
+      case 'instance':
+        return isAsyncInstance
+            ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
+            : '.toInstance(($fnArgs) => $methodName($fnArgs))';
+      case 'provide':
+      default:
+        if (isAsyncProvide) {
+          return multiLine
+              ? '.toProvideAsyncWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
+              : '.toProvideAsyncWithParams(($paramVar) => $methodName($fnArgs))';
+        } else {
+          return multiLine
+              ? '.toProvideWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
+              : '.toProvideWithParams(($paramVar) => $methodName($fnArgs))';
+        }
+    }
+  }
+
+  String _generatePlainProvideClause(int indent) {
+    final argsStr = parameters.map((p) => p.generateArg()).join(', ');
+    final multiLine = argsStr.length > 60 || argsStr.contains('\n');
+    switch (bindingType) {
+      case 'instance':
+        return isAsyncInstance
+            ? '.toInstanceAsync($methodName($argsStr))'
+            : '.toInstance($methodName($argsStr))';
+      case 'provide':
+      default:
+        if (isAsyncProvide) {
+          return multiLine
+              ? '.toProvideAsync(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+              : '.toProvideAsync(() => $methodName($argsStr))';
+        } else {
+          return multiLine
+              ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+              : '.toProvide(() => $methodName($argsStr))';
+        }
+    }
+  }
+
+  String _generatePostfix() {
+    final namePart = named != null ? ".withName('$named')" : '';
+    final singletonPart = isSingleton ? '.singleton()' : '';
+    return '$namePart$singletonPart';
   }
 
   /// Создаёт спецификацию биндинга (BindSpec) из метода класса-модуля
@@ -171,14 +167,11 @@ class BindSpec {
     // --- Новый участок: извлекаем внутренний тип из Future<> и выставляем флаги
     bool isAsyncInstance = false;
     bool isAsyncProvide = false;
-
-    if (returnType.startsWith('Future<')) {
-      final futureMatch = RegExp(r'^Future<(.+)>$').firstMatch(returnType);
-      if (futureMatch != null) {
-        returnType = futureMatch.group(1)!.trim();
-        if (bindingType == 'instance') isAsyncInstance = true;
-        if (bindingType == 'provide') isAsyncProvide = true;
-      }
+    final futureInnerType = _extractFutureInnerType(returnType);
+    if (futureInnerType != null) {
+      returnType = futureInnerType;
+      if (bindingType == 'instance') isAsyncInstance = true;
+      if (bindingType == 'provide') isAsyncProvide = true;
     }
 
     return BindSpec(
@@ -192,5 +185,10 @@ class BindSpec {
       isAsyncProvide: isAsyncProvide,
       hasParams: hasParams,
     );
+  }
+
+  static String? _extractFutureInnerType(String typeName) {
+    final match = RegExp(r'^Future<(.+)>$').firstMatch(typeName);
+    return match?.group(1)?.trim();
   }
 }
