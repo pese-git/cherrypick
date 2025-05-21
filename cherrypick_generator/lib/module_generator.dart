@@ -82,6 +82,8 @@ class BindSpec {
 
   final bool isAsyncProvide;
 
+  final bool hasParams;
+
   BindSpec({
     required this.returnType,
     required this.methodName,
@@ -91,6 +93,7 @@ class BindSpec {
     required this.bindingType,
     required this.isAsyncInstance,
     required this.isAsyncProvide,
+    required this.hasParams,
   });
 
   /// Формирует dart-код для биндинга, например:
@@ -99,6 +102,42 @@ class BindSpec {
   /// Параметр [indent] задаёт отступ для красивого форматирования кода.
   String generateBind(int indent) {
     final indentStr = ' ' * indent;
+
+    // Если есть @params()
+    if (hasParams) {
+      // Параметры метода: все, кроме isParams --> resolve(...)
+      //                    последний isParams --> "params"
+      final paramsArgs = parameters.map((p) => p.generateArg()).join(', ');
+
+      String provide;
+      if (bindingType == 'instance') {
+        // По умолчанию instance с @params, делать нельзя — но если нужно, аналогично provide.
+        provide = isAsyncInstance
+            ? '.toInstanceAsync(($paramsArgs) => $methodName($paramsArgs))'
+            : '.toInstance(($paramsArgs) => $methodName($paramsArgs))';
+      } else {
+        final fnArgs = parameters
+            .map((p) => p.isParams ? 'params' : p.generateArg())
+            .join(', ');
+        if (isAsyncProvide) {
+          provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
+              ? '.toProvideAsyncWithParams(\n${' ' * (indent + 2)}(params) => $methodName($fnArgs))'
+              : '.toProvideAsyncWithParams((params) => $methodName($fnArgs))';
+        } else {
+          provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
+              ? '.toProvideWithParams(\n${' ' * (indent + 2)}(params) => $methodName($fnArgs))'
+              : '.toProvideWithParams((params) => $methodName($fnArgs))';
+        }
+      }
+
+      final namePart = named != null ? ".withName('$named')" : '';
+      final singletonPart = isSingleton ? '.singleton()' : '';
+      return '$indentStr'
+          'bind<$returnType>()'
+          '$provide'
+          '$namePart'
+          '$singletonPart;';
+    }
 
     // Собираем строку аргументов для вызова метода
     final argsStr = parameters.map((p) => p.generateArg()).join(', ');
@@ -153,10 +192,13 @@ class BindSpec {
 
     // Для каждого параметра метода
     final params = <BindParameterSpec>[];
+    bool hasParams = false;
     for (final p in method.parameters) {
       final typeStr = p.type.getDisplayString();
       final paramNamed = _MetadataUtils.getNamedValue(p.metadata);
-      params.add(BindParameterSpec(typeStr, paramNamed));
+      final isParams = _MetadataUtils.anyMeta(p.metadata, 'params');
+      if (isParams) hasParams = true;
+      params.add(BindParameterSpec(typeStr, paramNamed, isParams: isParams));
     }
 
     // определяем bindingType
@@ -192,6 +234,7 @@ class BindSpec {
       bindingType: bindingType,
       isAsyncInstance: isAsyncInstance,
       isAsyncProvide: isAsyncProvide,
+      hasParams: hasParams,
     );
   }
 }
@@ -210,10 +253,15 @@ class BindParameterSpec {
   /// Необязательное имя для разрешения по имени (если аннотировано через @named)
   final String? named;
 
-  BindParameterSpec(this.typeName, this.named);
+  final bool isParams;
+
+  BindParameterSpec(this.typeName, this.named, {this.isParams = false});
 
   /// Генерирует строку для получения зависимости из DI scope (с учётом имени)
-  String generateArg() {
+  String generateArg([String paramsVar = 'params']) {
+    if (isParams) {
+      return paramsVar;
+    }
     if (named != null) {
       return "currentScope.resolve<$typeName>(named: '$named')";
     }

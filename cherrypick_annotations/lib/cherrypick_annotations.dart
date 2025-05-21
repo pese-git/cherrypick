@@ -14,8 +14,8 @@ library;
 //
 
 export 'src/module.dart';
-export 'src/bind.dart';
 export 'src/provide.dart';
 export 'src/instance.dart';
 export 'src/singleton.dart';
 export 'src/named.dart';
+export 'src/params.dart';

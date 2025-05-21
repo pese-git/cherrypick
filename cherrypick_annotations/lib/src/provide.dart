@@ -12,6 +12,6 @@
 //
 
 // ignore: camel_case_types
-class provide {
+final class provide {
   const provide();
 }

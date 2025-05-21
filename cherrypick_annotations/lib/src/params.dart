@@ -12,6 +12,6 @@
 //
 
 // ignore: camel_case_types
-class Bind {
-  const Bind();
+final class params {
+  const params();
 }

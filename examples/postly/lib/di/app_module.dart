@@ -45,4 +45,25 @@ abstract class AppModule extends Module {
   @provide()
   @named('repo')
   PostRepository repo(JsonPlaceholderApi api) => PostRepositoryImpl(api);
+
+  @provide()
+  @named('TestProvideWithParams')
+  String testProvideWithParams(@params() dynamic params) => "hello $params";
+
+  @provide()
+  @named('TestProvideAsyncWithParams')
+  Future<String> testProvideAsyncWithParams(@params() dynamic params) async =>
+      "hello $params";
+
+  @provide()
+  @named('TestProvideWithParams1')
+  String testProvideWithParams1(
+          @named('baseUrl') String baseUrl, @params() dynamic params) =>
+      "hello $params";
+
+  @provide()
+  @named('TestProvideAsyncWithParams1')
+  Future<String> testProvideAsyncWithParams1(
+          @named('baseUrl') String baseUrl, @params() dynamic params) async =>
+      "hello $params";
 }
