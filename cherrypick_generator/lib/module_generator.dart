@@ -78,6 +78,8 @@ class BindSpec {
 
   final String bindingType; // 'instance' | 'provide'
 
+  final bool isAsyncInstance;
+
   BindSpec({
     required this.returnType,
     required this.methodName,
@@ -85,6 +87,7 @@ class BindSpec {
     required this.parameters,
     this.named,
     required this.bindingType,
+    required this.isAsyncInstance,
   });
 
   /// Формирует dart-код для биндинга, например:
@@ -100,12 +103,19 @@ class BindSpec {
     // Если аргументов много или они длинные — разбиваем вызов на несколько строк
     //final needMultiline = argsStr.length > 60 || argsStr.contains('\n');
 
-    // Важно: для .toInstance всегда просто method(), для .toProvide нужна лямбда
-    final provide = bindingType == 'instance'
-        ? '.toInstance($methodName($argsStr))'
-        : (argsStr.length > 60 || argsStr.contains('\n')
-            ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
-            : '.toProvide(() => $methodName($argsStr))');
+    String provide;
+    if (bindingType == 'instance') {
+      // Добавляем async вариант для Future<T>
+      if (isAsyncInstance) {
+        provide = '.toInstanceAsync($methodName($argsStr))';
+      } else {
+        provide = '.toInstance($methodName($argsStr))';
+      }
+    } else {
+      provide = (argsStr.length > 60 || argsStr.contains('\n'))
+          ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+          : '.toProvide(() => $methodName($argsStr))';
+    }
 
     final namePart = named != null ? ".withName('$named')" : '';
     final singletonPart = isSingleton ? '.singleton()' : '';
@@ -121,7 +131,7 @@ class BindSpec {
 
   /// Создаёт спецификацию биндинга (BindSpec) из метода класса-модуля
   static BindSpec fromMethod(MethodElement method) {
-    final returnType = method.returnType.getDisplayString();
+    var returnType = method.returnType.getDisplayString();
 
     final methodName = method.displayName;
     // Проверим, помечен ли метод аннотацией @singleton
@@ -149,6 +159,16 @@ class BindSpec {
     }
     final bindingType = hasInstance ? 'instance' : 'provide';
 
+    // Новый кусок — для async instance возвращаем базовый тип без Future<>
+    bool isAsyncInstance = false;
+    if (bindingType == 'instance' && returnType.startsWith('Future<')) {
+      final futureMatch = RegExp(r'^Future<(.+)>$').firstMatch(returnType);
+      if (futureMatch != null) {
+        returnType = futureMatch.group(1)!.trim();
+        isAsyncInstance = true;
+      }
+    }
+
     return BindSpec(
       returnType: returnType,
       methodName: methodName,
@@ -156,6 +176,7 @@ class BindSpec {
       named: named,
       parameters: params,
       bindingType: bindingType,
+      isAsyncInstance: isAsyncInstance,
     );
   }
 }

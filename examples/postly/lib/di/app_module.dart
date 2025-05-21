@@ -13,6 +13,14 @@ abstract class AppModule extends Module {
   int timeout() => 1000;
 
   @instance()
+  @named('Delay')
+  Future<int> delay() => Future.value(1000);
+
+  @instance()
+  @named('Size')
+  Future<int> size() async => 10;
+
+  @instance()
   @named('baseUrl')
   String baseUrl() => "https://google.com";
 
