@@ -80,6 +80,8 @@ class BindSpec {
 
   final bool isAsyncInstance;
 
+  final bool isAsyncProvide;
+
   BindSpec({
     required this.returnType,
     required this.methodName,
@@ -88,6 +90,7 @@ class BindSpec {
     this.named,
     required this.bindingType,
     required this.isAsyncInstance,
+    required this.isAsyncProvide,
   });
 
   /// Формирует dart-код для биндинга, например:
@@ -112,9 +115,17 @@ class BindSpec {
         provide = '.toInstance($methodName($argsStr))';
       }
     } else {
-      provide = (argsStr.length > 60 || argsStr.contains('\n'))
-          ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
-          : '.toProvide(() => $methodName($argsStr))';
+      // provide
+      if (isAsyncProvide) {
+        // Асинхронная фабрика
+        provide = (argsStr.length > 60 || argsStr.contains('\n'))
+            ? '.toProvideAsync(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+            : '.toProvideAsync(() => $methodName($argsStr))';
+      } else {
+        provide = (argsStr.length > 60 || argsStr.contains('\n'))
+            ? '.toProvide(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
+            : '.toProvide(() => $methodName($argsStr))';
+      }
     }
 
     final namePart = named != null ? ".withName('$named')" : '';
@@ -159,13 +170,16 @@ class BindSpec {
     }
     final bindingType = hasInstance ? 'instance' : 'provide';
 
-    // Новый кусок — для async instance возвращаем базовый тип без Future<>
+    // --- Новый участок: извлекаем внутренний тип из Future<> и выставляем флаги
     bool isAsyncInstance = false;
-    if (bindingType == 'instance' && returnType.startsWith('Future<')) {
+    bool isAsyncProvide = false;
+
+    if (returnType.startsWith('Future<')) {
       final futureMatch = RegExp(r'^Future<(.+)>$').firstMatch(returnType);
       if (futureMatch != null) {
         returnType = futureMatch.group(1)!.trim();
-        isAsyncInstance = true;
+        if (bindingType == 'instance') isAsyncInstance = true;
+        if (bindingType == 'provide') isAsyncProvide = true;
       }
     }
 
@@ -177,6 +191,7 @@ class BindSpec {
       parameters: params,
       bindingType: bindingType,
       isAsyncInstance: isAsyncInstance,
+      isAsyncProvide: isAsyncProvide,
     );
   }
 }

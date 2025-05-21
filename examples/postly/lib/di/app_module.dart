@@ -25,6 +25,14 @@ abstract class AppModule extends Module {
   String baseUrl() => "https://google.com";
 
   @provide()
+  @named('Delay1')
+  Future<int> delay1() => Future.value(1000);
+
+  @provide()
+  @named('Size1')
+  Future<int> size1() async => 10;
+
+  @provide()
   @singleton()
   @named('dio')
   Dio dio(@named('baseUrl') String baseUrl) =>
