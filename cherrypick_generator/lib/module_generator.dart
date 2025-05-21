@@ -104,32 +104,26 @@ class BindSpec {
     final indentStr = ' ' * indent;
 
     // Если есть @params()
-    if (hasParams) {
-      // Параметры метода: все, кроме isParams --> resolve(...)
-      //                    последний isParams --> "params"
-      final paramsArgs = parameters.map((p) => p.generateArg()).join(', ');
+    const paramVar = 'args'; // <= новое имя для безопасности
 
+    if (hasParams) {
+      final fnArgs = parameters
+          .map((p) => p.isParams ? paramVar : p.generateArg(paramVar))
+          .join(', ');
       String provide;
       if (bindingType == 'instance') {
-        // По умолчанию instance с @params, делать нельзя — но если нужно, аналогично provide.
         provide = isAsyncInstance
-            ? '.toInstanceAsync(($paramsArgs) => $methodName($paramsArgs))'
-            : '.toInstance(($paramsArgs) => $methodName($paramsArgs))';
+            ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
+            : '.toInstance(($fnArgs) => $methodName($fnArgs))';
+      } else if (isAsyncProvide) {
+        provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
+            ? '.toProvideAsyncWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
+            : '.toProvideAsyncWithParams(($paramVar) => $methodName($fnArgs))';
       } else {
-        final fnArgs = parameters
-            .map((p) => p.isParams ? 'params' : p.generateArg())
-            .join(', ');
-        if (isAsyncProvide) {
-          provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
-              ? '.toProvideAsyncWithParams(\n${' ' * (indent + 2)}(params) => $methodName($fnArgs))'
-              : '.toProvideAsyncWithParams((params) => $methodName($fnArgs))';
-        } else {
-          provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
-              ? '.toProvideWithParams(\n${' ' * (indent + 2)}(params) => $methodName($fnArgs))'
-              : '.toProvideWithParams((params) => $methodName($fnArgs))';
-        }
+        provide = (fnArgs.length > 60 || fnArgs.contains('\n'))
+            ? '.toProvideWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
+            : '.toProvideWithParams(($paramVar) => $methodName($fnArgs))';
       }
-
       final namePart = named != null ? ".withName('$named')" : '';
       final singletonPart = isSingleton ? '.singleton()' : '';
       return '$indentStr'
@@ -258,7 +252,7 @@ class BindParameterSpec {
   BindParameterSpec(this.typeName, this.named, {this.isParams = false});
 
   /// Генерирует строку для получения зависимости из DI scope (с учётом имени)
-  String generateArg([String paramsVar = 'params']) {
+  String generateArg([String paramsVar = 'args']) {
     if (isParams) {
       return paramsVar;
     }
