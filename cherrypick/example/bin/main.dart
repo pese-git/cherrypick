@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:meta/meta.dart';
 import 'package:cherrypick/cherrypick.dart';
 
 class AppModule extends Module {
@@ -95,21 +94,19 @@ class NetworkDataRepository implements DataRepository {
 }
 
 abstract class ApiClient {
-  Future sendRequest({@required String url, String token, Map requestBody});
+  Future sendRequest({String url, String token, Map requestBody});
 }
 
 class ApiClientMock implements ApiClient {
   @override
-  Future sendRequest(
-      {@required String? url, String? token, Map? requestBody}) async {
+  Future sendRequest({String? url, String? token, Map? requestBody}) async {
     return 'Local Data';
   }
 }
 
 class ApiClientImpl implements ApiClient {
   @override
-  Future sendRequest(
-      {@required String? url, String? token, Map? requestBody}) async {
+  Future sendRequest({String? url, String? token, Map? requestBody}) async {
     return 'Network data';
   }
 }
