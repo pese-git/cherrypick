@@ -1,16 +1,16 @@
 name: cherrypick_generator
 description: Code generator for cherrypick annotations
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
-publish_to: none
+documentation: https://github.com/pese-git/cherrypick/wiki
+repository: https://github.com/pese-git/cherrypick
+issue_tracker: https://github.com/pese-git/cherrypick/issues
 
 environment:
   sdk: ">=3.5.2 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
-  cherrypick_annotations:
-    path: ../cherrypick_annotations
+  cherrypick_annotations: any
   analyzer: any
   dart_style: any
   build: any

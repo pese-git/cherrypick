@@ -1,7 +1,9 @@
 name: cherrypick_annotations
 description: A starting point for Dart libraries or applications.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+documentation: https://github.com/pese-git/cherrypick/wiki
+repository: https://github.com/pese-git/cherrypick
+issue_tracker: https://github.com/pese-git/cherrypick/issues
 
 environment:
   sdk: ">=3.5.2 <4.0.0"
