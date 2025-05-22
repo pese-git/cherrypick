@@ -1,3 +1,8 @@
+## 2.2.0-dev.0
+
+ - **FEAT**: Add async dependency resolution and enhance example.
+ - **FEAT**: implement toInstanceAync binding.
+
 ## 2.1.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

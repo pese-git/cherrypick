@@ -11,10 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cherrypick: ^2.1.0
-  cherrypick_flutter: ^1.1.1
+  cherrypick: ^2.2.0-dev.0
+  cherrypick_flutter: ^1.1.2-dev.0
 
-  cherrypick_annotations: any
+  cherrypick_annotations: ^1.1.0-dev.0
 
   cupertino_icons: ^1.0.8
 
@@ -24,7 +24,7 @@ dev_dependencies:
 
   flutter_lints: ^4.0.0
 
-  cherrypick_generator: any
+  cherrypick_generator: ^1.1.0-dev.0
   build_runner: any
 
 # For information on the generic Dart part of this file, see the

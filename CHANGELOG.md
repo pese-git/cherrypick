@@ -3,6 +3,59 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-05-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v2.2.0-dev.0`](#cherrypick---v220-dev0)
+ - [`cherrypick_annotations` - `v1.1.0-dev.0`](#cherrypick_annotations---v110-dev0)
+ - [`cherrypick_flutter` - `v1.1.2-dev.0`](#cherrypick_flutter---v112-dev0)
+ - [`cherrypick_generator` - `v1.1.0-dev.0`](#cherrypick_generator---v110-dev0)
+
+---
+
+#### `cherrypick` - `v2.2.0-dev.0`
+
+ - **FEAT**: Add async dependency resolution and enhance example.
+ - **FEAT**: implement toInstanceAync binding.
+
+#### `cherrypick_annotations` - `v1.1.0-dev.0`
+
+ - **FEAT**: implement generator for dynamic params.
+ - **FEAT**: implement instance/provide annotations.
+ - **FEAT**: implement generator for named annotation.
+ - **FEAT**: implement generator di module.
+ - **FEAT**: implement annotations.
+
+#### `cherrypick_flutter` - `v1.1.2-dev.0`
+
+ - **FIX**: fix warning.
+ - **FIX**: fix warnings.
+
+#### `cherrypick_generator` - `v1.1.0-dev.0`
+
+ - **FIX**: fix warning conflict with names.
+ - **FIX**: fix warnings.
+ - **FIX**: fix module generator.
+ - **FIX**: fix generator for  singletone annotation.
+ - **FEAT**: implement generator for dynamic params.
+ - **FEAT**: implement async mode for instance/provide annotations.
+ - **FEAT**: generate instance async code.
+ - **FEAT**: implement instance/provide annotations.
+ - **FEAT**: implement named dependency.
+ - **FEAT**: implement generator for named annotation.
+ - **FEAT**: implement generator di module.
+ - **FEAT**: implement annotations.
+
+
 ## 2025-05-19
 
 ### Changes
