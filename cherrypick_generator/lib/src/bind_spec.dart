@@ -17,6 +17,11 @@ import 'package:source_gen/source_gen.dart';
 import 'bind_parameters_spec.dart';
 import 'metadata_utils.dart';
 
+enum BindingType {
+  instance,
+  provide;
+}
+
 /// ---------------------------------------------------------------------------
 /// BindSpec -- describes a binding specification generated for a dependency.
 ///
@@ -59,7 +64,7 @@ class BindSpec {
   final List<BindParameterSpec> parameters;
 
   /// Binding type: 'instance' or 'provide' (@instance or @provide)
-  final String bindingType; // 'instance' | 'provide'
+  final BindingType bindingType; // 'instance' | 'provide'
 
   /// True if the method is asynchronous and uses instance binding (Future)
   final bool isAsyncInstance;
@@ -119,11 +124,11 @@ class BindSpec {
     final fnArgs = parameters.map((p) => p.generateArg(paramVar)).join(', ');
     final multiLine = fnArgs.length > 60 || fnArgs.contains('\n');
     switch (bindingType) {
-      case 'instance':
+      case BindingType.instance:
         return isAsyncInstance
             ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
             : '.toInstance(($fnArgs) => $methodName($fnArgs))';
-      case 'provide':
+      case BindingType.provide:
       default:
         if (isAsyncProvide) {
           return multiLine
@@ -142,11 +147,11 @@ class BindSpec {
     final argsStr = parameters.map((p) => p.generateArg()).join(', ');
     final multiLine = argsStr.length > 60 || argsStr.contains('\n');
     switch (bindingType) {
-      case 'instance':
+      case BindingType.instance:
         return isAsyncInstance
             ? '.toInstanceAsync($methodName($argsStr))'
             : '.toInstance($methodName($argsStr))';
-      case 'provide':
+      case BindingType.provide:
       default:
         if (isAsyncProvide) {
           return multiLine
@@ -210,7 +215,8 @@ class BindSpec {
         element: method,
       );
     }
-    final bindingType = hasInstance ? 'instance' : 'provide';
+    final bindingType =
+        hasInstance ? BindingType.instance : BindingType.provide;
 
     // -- Extract inner type for Future<T> and set async flags.
     bool isAsyncInstance = false;
@@ -218,8 +224,8 @@ class BindSpec {
     final futureInnerType = _extractFutureInnerType(returnType);
     if (futureInnerType != null) {
       returnType = futureInnerType;
-      if (bindingType == 'instance') isAsyncInstance = true;
-      if (bindingType == 'provide') isAsyncProvide = true;
+      if (bindingType == BindingType.instance) isAsyncInstance = true;
+      if (bindingType == BindingType.provide) isAsyncProvide = true;
     }
 
     return BindSpec(
