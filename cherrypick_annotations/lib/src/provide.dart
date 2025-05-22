@@ -11,6 +11,31 @@
 // limitations under the License.
 //
 
+/// An annotation to indicate that a method provides a dependency to the module.
+///
+/// This annotation is typically used in conjunction with dependency injection,
+/// marking methods whose return value should be registered as a provider.
+/// The annotated method can optionally declare dependencies as parameters,
+/// which will be resolved and injected automatically.
+///
+/// Example:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   @provide()
+///   Foo foo(Bar bar) => Foo(bar);
+/// }
+/// ```
+///
+/// This will generate:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Foo>().toProvide(() => foo(currentScope.resolve<Bar>()));
+///   }
+/// }
+/// ```
 // ignore: camel_case_types
 final class provide {
   const provide();

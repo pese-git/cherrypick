@@ -11,6 +11,22 @@
 // limitations under the License.
 //
 
+/// An annotation to indicate that a parameter is to be injected with run-time provided arguments.
+///
+/// Use this annotation to mark a method parameter that should receive arguments
+/// passed during the resolution of a dependency (for example, through the
+/// `.withParams(...)` method in the generated code).
+///
+/// Example:
+/// ```dart
+/// @provide()
+/// String greet(@params() dynamic params) => 'Hello $params';
+/// ```
+///
+/// This will generate:
+/// ```dart
+/// bind<String>().toProvideWithParams((args) => greet(args));
+/// ```
 // ignore: camel_case_types
 final class params {
   const params();

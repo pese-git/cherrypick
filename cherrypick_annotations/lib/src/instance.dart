@@ -11,6 +11,30 @@
 // limitations under the License.
 //
 
+/// An annotation to specify that a method or class provides a new instance
+/// each time it is requested.
+///
+/// This is typically used to indicate that the annotated binding should
+/// not be a singleton and a new object is created for every injection.
+///
+/// Example:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   @instance()
+///   Foo foo() => Foo();
+/// }
+/// ```
+///
+/// This will generate:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Foo>().toInstance(() => foo());
+///   }
+/// }
+/// ```
 // ignore: camel_case_types
 final class instance {
   const instance();
