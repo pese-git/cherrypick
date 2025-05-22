@@ -1,8 +1,10 @@
 name: cherrypick_generator
-description: Code generator for cherrypick annotations
+description: |
+  Source code generator for the cherrypick dependency injection system. Processes annotations to generate binding and module code for Dart & Flutter projects.
+
 version: 1.1.0-dev.1
 documentation: https://github.com/pese-git/cherrypick/wiki
-repository: https://github.com/pese-git/cherrypick
+repository: https://github.com/pese-git/cherrypick/cherrypick_generator
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 
 environment:
