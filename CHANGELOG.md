@@ -15,6 +15,39 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick` - `v2.2.0-dev.1`](#cherrypick---v220-dev1)
+ - [`cherrypick_generator` - `v1.1.0-dev.1`](#cherrypick_generator---v110-dev1)
+ - [`cherrypick_flutter` - `v1.1.2-dev.1`](#cherrypick_flutter---v112-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.2-dev.1`
+
+---
+
+#### `cherrypick` - `v2.2.0-dev.1`
+
+ - **FIX**: fix warnings.
+
+#### `cherrypick_generator` - `v1.1.0-dev.1`
+
+ - **FIX**: optimize code.
+
+
+## 2025-05-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick` - `v2.2.0-dev.0`](#cherrypick---v220-dev0)
  - [`cherrypick_annotations` - `v1.1.0-dev.0`](#cherrypick_annotations---v110-dev0)
  - [`cherrypick_flutter` - `v1.1.2-dev.0`](#cherrypick_flutter---v112-dev0)

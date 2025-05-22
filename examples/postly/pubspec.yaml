@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cherrypick: ^2.2.0-dev.0
+  cherrypick: ^2.2.0-dev.1
   cherrypick_annotations: ^1.1.0-dev.0
   
   dio: ^5.4.0
@@ -30,7 +30,7 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
 
-  cherrypick_generator: ^1.1.0-dev.0
+  cherrypick_generator: ^1.1.0-dev.1
   build_runner: 2.4.13
   
   retrofit_generator: ^9.1.5

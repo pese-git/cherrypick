@@ -1,3 +1,7 @@
+## 2.2.0-dev.1
+
+ - **FIX**: fix warnings.
+
 ## 2.2.0-dev.0
 
  - **FEAT**: Add async dependency resolution and enhance example.

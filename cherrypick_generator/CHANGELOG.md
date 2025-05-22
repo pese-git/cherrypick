@@ -1,3 +1,7 @@
+## 1.1.0-dev.1
+
+ - **FIX**: optimize code.
+
 ## 1.1.0-dev.0
 
  - **FIX**: fix warning conflict with names.

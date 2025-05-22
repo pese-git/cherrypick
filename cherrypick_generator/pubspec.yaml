@@ -1,6 +1,6 @@
 name: cherrypick_generator
 description: Code generator for cherrypick annotations
-version: 1.1.0-dev.0
+version: 1.1.0-dev.1
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
 issue_tracker: https://github.com/pese-git/cherrypick/issues
