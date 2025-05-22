@@ -116,9 +116,7 @@ class BindSpec {
   String _generateWithParamsProvideClause(int indent) {
     // Safe variable name for parameters.
     const paramVar = 'args';
-    final fnArgs = parameters
-        .map((p) => p.isParams ? paramVar : p.generateArg(paramVar))
-        .join(', ');
+    final fnArgs = parameters.map((p) => p.generateArg(paramVar)).join(', ');
     final multiLine = fnArgs.length > 60 || fnArgs.contains('\n');
     switch (bindingType) {
       case 'instance':
