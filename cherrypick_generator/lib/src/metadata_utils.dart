@@ -13,13 +13,31 @@
 
 import 'package:analyzer/dart/element/element.dart';
 
+/// ---------------------------------------------------------------------------
+/// MetadataUtils -- utilities for analyzing method and parameter annotations.
 ///
+/// ENGLISH
+/// Provides static utility methods to analyze Dart annotations on methods or
+/// parameters. For instance, helps to find if an element is annotated with
+/// `@named()`, `@singleton()`, or other meta-annotations used in this DI framework.
+///
+/// RUSSIAN
 /// Утилиты для разбора аннотаций методов и параметров.
-/// Позволяют найти @named() и @singleton() у метода/параметра.
-///
+/// Позволяют находить наличие аннотаций, например, @named() и @singleton(),
+/// у методов и параметров. Используется для анализа исходного кода при генерации.
+/// ---------------------------------------------------------------------------
 class MetadataUtils {
+  /// -------------------------------------------------------------------------
+  /// anyMeta
+  ///
+  /// ENGLISH
+  /// Checks if any annotation in the list has a type name that contains
+  /// [typeName] (case insensitive).
+  ///
+  /// RUSSIAN
   /// Проверяет: есть ли среди аннотаций метка, имя которой содержит [typeName]
-  /// (регистр не учитывается)
+  /// (регистр не учитывается).
+  /// -------------------------------------------------------------------------
   static bool anyMeta(List<ElementAnnotation> meta, String typeName) {
     return meta.any((m) =>
         m
@@ -31,8 +49,17 @@ class MetadataUtils {
         false);
   }
 
+  /// -------------------------------------------------------------------------
+  /// getNamedValue
+  ///
+  /// ENGLISH
+  /// Retrieves the value from a `@named('value')` annotation if present.
+  /// Returns the string value or null if not found.
+  ///
+  /// RUSSIAN
   /// Находит значение из аннотации @named('значение').
   /// Возвращает строку значения, если аннотация присутствует; иначе null.
+  /// -------------------------------------------------------------------------
   static String? getNamedValue(List<ElementAnnotation> meta) {
     for (final m in meta) {
       final cv = m.computeConstantValue();

@@ -15,17 +15,37 @@ import 'package:analyzer/dart/element/element.dart';
 
 import 'bind_spec.dart';
 
+/// ---------------------------------------------------------------------------
+/// GeneratedClass -- represents the result of processing a single module class.
 ///
-/// Результат обработки одного класса-модуля: имя класса, его биндинги,
-/// имя генерируемого класса и т.д.
+/// ENGLISH
+/// Encapsulates all the information produced from analyzing a DI module class:
+/// - The original class name,
+/// - Its generated class name (e.g., `$SomeModule`),
+/// - The collection of bindings (BindSpec) for all implemented provider methods.
 ///
+/// Also provides code generation functionality, allowing to generate the source
+/// code for the derived DI module class, including all binding registrations.
+///
+/// RUSSIAN
+/// Описывает результат обработки одного класса-модуля DI:
+/// - Имя оригинального класса,
+/// - Имя генерируемого класса (например, `$SomeModule`),
+/// - Список всех бидингов (BindSpec) — по публичным методам модуля.
+///
+/// Также содержит функцию генерации исходного кода для этого класса и
+/// регистрации всех зависимостей через bind(...).
+/// ---------------------------------------------------------------------------
 class GeneratedClass {
+  /// The name of the original module class.
   /// Имя исходного класса-модуля
   final String className;
 
+  /// The name of the generated class (e.g., $SomeModule).
   /// Имя генерируемого класса (например, $SomeModule)
   final String generatedClassName;
 
+  /// List of all discovered bindings for the class.
   /// Список всех обнаруженных биндингов
   final List<BindSpec> binds;
 
@@ -35,13 +55,24 @@ class GeneratedClass {
     this.binds,
   );
 
-  /// Обрабатывает объект ClassElement (отображение класса в AST)
-  /// и строит структуру _GeneratedClass для генерации кода.
+  /// -------------------------------------------------------------------------
+  /// fromClassElement
+  ///
+  /// ENGLISH
+  /// Static factory: creates a GeneratedClass from a Dart ClassElement (AST representation).
+  /// Discovers all non-abstract methods, builds BindSpec for each, and computes the
+  /// generated class name by prefixing `$`.
+  ///
+  /// RUSSIAN
+  /// Строит объект класса по элементу AST (ClassElement): имя класса,
+  /// сгенерированное имя, список BindSpec по всем не абстрактным методам.
+  /// Имя ген-класса строится с префиксом `$`.
+  /// -------------------------------------------------------------------------
   static GeneratedClass fromClassElement(ClassElement element) {
     final className = element.displayName;
-    // Имя с префиксом $ (стандартная практика для ген-кода)
+    // Generated class name with '$' prefix (standard for generated Dart code).
     final generatedClassName = r'$' + className;
-    // Собираем биндинги по всем методам класса, игнорируем абстрактные (без реализации)
+    // Collect bindings for all non-abstract methods.
     final binds = element.methods
         .where((m) => !m.isAbstract)
         .map(BindSpec.fromMethod)
@@ -50,9 +81,19 @@ class GeneratedClass {
     return GeneratedClass(className, generatedClassName, binds);
   }
 
-  /// Генерирует исходный Dart-код для созданного класса DI-модуля.
+  /// -------------------------------------------------------------------------
+  /// generate
   ///
-  /// Внутри builder(Scope currentScope) регистрируются все bind-методы.
+  /// ENGLISH
+  /// Generates Dart source code for the DI module class. The generated class
+  /// inherits from the original, overrides the 'builder' method, and registers
+  /// all bindings in the DI scope.
+  ///
+  /// RUSSIAN
+  /// Генерирует исходный Dart-код для класса-модуля DI.
+  /// Новая версия класса наследует оригинальный, переопределяет builder(Scope),
+  /// и регистрирует все зависимости через методы bind<Type>()...
+  /// -------------------------------------------------------------------------
   String generate() {
     final buffer = StringBuffer();
 
@@ -60,6 +101,7 @@ class GeneratedClass {
     buffer.writeln(' @override');
     buffer.writeln(' void builder(Scope currentScope) {');
 
+    // For each binding, generate bind<Type>() code string.
     // Для каждого биндинга — генерируем строку bind<Type>()...
     for (final bind in binds) {
       buffer.writeln(bind.generateBind(4));
