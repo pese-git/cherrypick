@@ -24,8 +24,11 @@ scripts:
     run: |
       melos exec --scope="postly" -- dart run build_runner build --delete-conflicting-outputs
 
+  outdated:
+    exec: dart pub outdated 
+
   upgrade:
-    exec: darp pub upgrade 
+    exec: dart pub upgrade --major-versions
 
   drop:
     exec: flutter clean 
