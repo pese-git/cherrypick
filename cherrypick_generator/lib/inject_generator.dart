@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -44,18 +45,32 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
         }
       }
 
-      final String fieldType = field.type.getDisplayString();
+      // --- Фикс: определяем resolveAsync для Future<T> ---
+      final DartType type = field.type;
+      String genericType;
+      String resolveMethod;
 
+      if (type.isDartAsyncFuture) {
+        // Если поле Future<T>
+        final typeArg = (type as ParameterizedType).typeArguments.first;
+        genericType = typeArg.getDisplayString();
+        resolveMethod = 'resolveAsync<$genericType>';
+      } else {
+        genericType = type.getDisplayString();
+        resolveMethod = 'resolve<$genericType>';
+      }
+
+      // Вызываем openScope или openRootScope
       String accessor = (scopeName != null && scopeName.isNotEmpty)
-          ? "CherryPick.openScope(scopeName: '$scopeName').resolve"
-          : "CherryPick.openRootScope().resolve";
+          ? "CherryPick.openScope(scopeName: '$scopeName').$resolveMethod"
+          : "CherryPick.openRootScope().$resolveMethod";
 
-      String generic = fieldType != 'dynamic' ? '<$fieldType>' : '';
+      // Аргументы resolve
       String params = (namedValue != null && namedValue.isNotEmpty)
           ? "(named: '$namedValue')"
           : '()';
 
-      buffer.writeln("    instance.${field.name} = $accessor$generic$params;");
+      buffer.writeln("    instance.${field.name} = $accessor$params;");
     }
 
     buffer.writeln('  }');

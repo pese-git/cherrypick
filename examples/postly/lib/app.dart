@@ -13,24 +13,16 @@ part 'app.inject.cherrypick.g.dart';
 class MyApp extends StatelessWidget with _$MyApp {
   final _appRouter = AppRouter();
 
-  @scope('authZone')
-  @inject()
-  late final String text;
-
-  @scope('authZone')
-  @named('timeout')
-  @inject()
-  late final int timeout;
-
   @named('repo')
   @inject()
   late final PostRepository repository;
 
-  MyApp({super.key});
+  MyApp({super.key}) {
+    _inject(this);
+  }
 
   @override
   Widget build(BuildContext context) {
-    _inject(this);
     return BlocProvider(
       create: (_) => PostBloc(repository),
       child: MaterialApp.router(

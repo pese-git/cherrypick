@@ -11,6 +11,9 @@
 // limitations under the License.
 //
 
+import 'package:meta/meta.dart';
+
+@experimental
 // ignore: camel_case_types
 final class scope {
   final String? name;
