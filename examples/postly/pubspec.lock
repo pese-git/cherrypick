@@ -156,7 +156,7 @@ packages:
       path: "../../cherrypick"
       relative: true
     source: path
-    version: "2.2.0-dev.0"
+    version: "2.2.0-dev.1"
   cherrypick_annotations:
     dependency: "direct main"
     description:
@@ -170,7 +170,7 @@ packages:
       path: "../../cherrypick_generator"
       relative: true
     source: path
-    version: "1.1.0-dev.0"
+    version: "1.1.0-dev.1"
   clock:
     dependency: transitive
     description:
