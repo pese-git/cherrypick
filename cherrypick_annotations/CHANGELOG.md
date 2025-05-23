@@ -1,3 +1,7 @@
+## 1.1.0-dev.1
+
+ - **FEAT**: implement InjectGenerator.
+
 ## 1.1.0-dev.0
 
  - **FEAT**: implement generator for dynamic params.

@@ -15,6 +15,32 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick_annotations` - `v1.1.0-dev.1`](#cherrypick_annotations---v110-dev1)
+ - [`cherrypick_generator` - `v1.1.0-dev.3`](#cherrypick_generator---v110-dev3)
+
+---
+
+#### `cherrypick_annotations` - `v1.1.0-dev.1`
+
+ - **FEAT**: implement InjectGenerator.
+
+#### `cherrypick_generator` - `v1.1.0-dev.3`
+
+ - **FEAT**: implement InjectGenerator.
+
+
+## 2025-05-23
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick_generator` - `v1.1.0-dev.2`](#cherrypick_generator---v110-dev2)
 
 ---
