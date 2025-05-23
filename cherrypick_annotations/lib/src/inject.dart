@@ -13,6 +13,20 @@
 
 import 'package:meta/meta.dart';
 
+/// Annotation for field injection in CherryPick DI framework.
+/// Apply this to a field, and the code generator will automatically inject
+/// the appropriate dependency into it.
+///
+/// ---
+///
+/// Аннотация для внедрения зависимости в поле через фреймворк CherryPick DI.
+/// Поместите её на поле класса — генератор кода автоматически подставит нужную зависимость.
+///
+/// Example / Пример:
+/// ```dart
+/// @inject()
+/// late final SomeService service;
+/// ```
 @experimental
 // ignore: camel_case_types
 final class inject {

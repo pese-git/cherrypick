@@ -13,6 +13,22 @@
 
 import 'package:meta/meta.dart';
 
+/// Annotation to specify a scope for dependency injection in CherryPick.
+/// Use this on an injected field to indicate from which scope
+/// the dependency must be resolved.
+///
+/// ---
+///
+/// Аннотация для указания области внедрения (scope) в CherryPick.
+/// Используйте её на инъецируемом поле, чтобы определить из какой области
+/// должна быть получена зависимость.
+///
+/// Example / Пример:
+/// ```dart
+/// @inject()
+/// @scope('profile')
+/// late final ProfileManager profileManager;
+/// ```
 @experimental
 // ignore: camel_case_types
 final class scope {

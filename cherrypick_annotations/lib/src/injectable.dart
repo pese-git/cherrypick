@@ -13,6 +13,24 @@
 
 import 'package:meta/meta.dart';
 
+/// Marks a class as injectable for the CherryPick dependency injection framework.
+/// If a class is annotated with [@injectable()], the code generator will
+/// create a mixin to perform automatic injection of fields marked with [@inject].
+///
+/// ---
+///
+/// Помечает класс как внедряемый для фреймворка внедрения зависимостей CherryPick.
+/// Если класс помечен аннотацией [@injectable()], генератор создаст миксин
+/// для автоматического внедрения полей, отмеченных [@inject].
+///
+/// Example / Пример:
+/// ```dart
+/// @injectable()
+/// class MyWidget extends StatelessWidget {
+///   @inject()
+///   late final MyService service;
+/// }
+/// ```
 @experimental
 // ignore: camel_case_types
 final class injectable {
