@@ -11,28 +11,56 @@
 // limitations under the License.
 //
 
-/// An annotation to indicate that a method provides a dependency to the module.
+/// ENGLISH:
+/// Annotation to declare a factory/provider method or class as a singleton.
 ///
-/// This annotation is typically used in conjunction with dependency injection,
-/// marking methods whose return value should be registered as a provider.
-/// The annotated method can optionally declare dependencies as parameters,
-/// which will be resolved and injected automatically.
+/// Use the `@singleton()` annotation on methods in your DI module to specify
+/// that only one instance of the resulting object should be created and shared
+/// for all consumers. This is especially useful in dependency injection
+/// frameworks and service locators.
 ///
 /// Example:
 /// ```dart
 /// @module()
 /// abstract class AppModule extends Module {
-///   @provide()
-///   Foo foo(Bar bar) => Foo(bar);
+///   @singleton()
+///   Dio dio() => Dio();
 /// }
 /// ```
 ///
-/// This will generate:
+/// This generates the following code:
 /// ```dart
 /// final class $AppModule extends AppModule {
 ///   @override
 ///   void builder(Scope currentScope) {
-///     bind<Foo>().toProvide(() => foo(currentScope.resolve<Bar>()));
+///     bind<Dio>().toProvide(() => dio()).singleton();
+///   }
+/// }
+/// ```
+///
+/// RUSSIAN (Русский):
+/// Аннотация для объявления фабричного/провайдерного метода или класса синглтоном.
+///
+/// Используйте `@singleton()` для методов внутри DI-модуля, чтобы указать,
+/// что соответствующий объект (экземпляр класса) должен быть создан только один раз
+/// и использоваться всеми компонентами приложения (единый общий экземпляр).
+/// Это характерно для систем внедрения зависимостей и сервис-локаторов.
+///
+/// Пример:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   @singleton()
+///   Dio dio() => Dio();
+/// }
+/// ```
+///
+/// Будет сгенерирован следующий код:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Dio>().toProvide(() => dio()).singleton();
 ///   }
 /// }
 /// ```

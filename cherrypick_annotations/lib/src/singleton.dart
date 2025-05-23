@@ -11,11 +11,14 @@
 // limitations under the License.
 //
 
-/// An annotation to declare a class as a singleton.
+/// ENGLISH:
+/// Annotation to declare a dependency as a singleton.
 ///
-/// This can be used to indicate that only one instance of the class
-/// should be created, which is often useful in dependency injection
-/// frameworks or service locators.
+/// Use the `@singleton()` annotation on provider methods inside a module
+/// to indicate that only a single instance of this dependency should be
+/// created and shared throughout the application's lifecycle. This is
+/// typically used in dependency injection frameworks or service locators
+/// to guarantee a single shared instance.
 ///
 /// Example:
 /// ```dart
@@ -25,7 +28,36 @@
 ///   Dio dio() => Dio();
 /// }
 /// ```
-/// Сгенерирует код:
+///
+/// This will generate code like:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Dio>().toProvide(() => dio()).singleton();
+///   }
+/// }
+/// ```
+///
+/// RUSSIAN (Русский):
+/// Аннотация для объявления зависимости как синглтона.
+///
+/// Используйте `@singleton()` для методов-провайдеров внутри модуля,
+/// чтобы указать, что соответствующий объект должен быть создан
+/// единожды и использоваться во всём приложении (общий синглтон).
+/// Это характерно для систем внедрения зависимостей и сервис-локаторов,
+/// чтобы гарантировать один общий экземпляр.
+///
+/// Пример:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   @singleton()
+///   Dio dio() => Dio();
+/// }
+/// ```
+///
+/// Будет сгенерирован следующий код:
 /// ```dart
 /// final class $AppModule extends AppModule {
 ///   @override

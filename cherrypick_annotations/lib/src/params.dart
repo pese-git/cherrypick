@@ -11,11 +11,14 @@
 // limitations under the License.
 //
 
-/// An annotation to indicate that a parameter is to be injected with run-time provided arguments.
+/// ENGLISH:
+/// Annotation to mark a method parameter for injection with run-time arguments.
 ///
-/// Use this annotation to mark a method parameter that should receive arguments
-/// passed during the resolution of a dependency (for example, through the
-/// `.withParams(...)` method in the generated code).
+/// Use the `@params()` annotation to specify that a particular parameter of a
+/// provider method should be assigned a value supplied at resolution time,
+/// rather than during static dependency graph creation. This is useful in DI
+/// when a dependency must receive dynamic data passed by the consumer
+/// (via `.withParams(...)` in the generated code).
 ///
 /// Example:
 /// ```dart
@@ -24,6 +27,26 @@
 /// ```
 ///
 /// This will generate:
+/// ```dart
+/// bind<String>().toProvideWithParams((args) => greet(args));
+/// ```
+///
+/// RUSSIAN (Русский):
+/// Аннотация для пометки параметра метода, который будет внедряться со значением во время выполнения.
+///
+/// Используйте `@params()` чтобы указать, что конкретный параметр метода-провайдера
+/// должен получать значение, передаваемое в момент обращения к зависимости,
+/// а не на этапе построения графа зависимостей. Это полезно, если зависимость
+/// должна получать данные динамически от пользователя или другого процесса
+/// через `.withParams(...)` в сгенерированном коде.
+///
+/// Пример:
+/// ```dart
+/// @provide()
+/// String greet(@params() dynamic params) => 'Hello $params';
+/// ```
+///
+/// Будет сгенерировано:
 /// ```dart
 /// bind<String>().toProvideWithParams((args) => greet(args));
 /// ```

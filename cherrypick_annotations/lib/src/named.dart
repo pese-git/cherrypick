@@ -11,10 +11,13 @@
 // limitations under the License.
 //
 
-/// An annotation to assign a name or identifier to a class, method, or other element.
+/// ENGLISH:
+/// Annotation to assign a name or identifier to a class, method, or other element.
 ///
-/// This can be useful for code generation, dependency injection,
-/// or providing metadata within a framework.
+/// The `@named('value')` annotation allows you to specify a string name
+/// for a dependency, factory, or injectable. This is useful for distinguishing
+/// between multiple registrations of the same type in dependency injection,
+/// code generation, and for providing human-readable metadata.
 ///
 /// Example:
 /// ```dart
@@ -25,7 +28,33 @@
 /// }
 /// ```
 ///
-/// Сгенерирует код:
+/// This will generate:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Dio>().toProvide(() => dio()).withName('dio').singleton();
+///   }
+/// }
+/// ```
+///
+/// RUSSIAN (Русский):
+/// Аннотация для задания имени или идентификатора классу, методу или другому элементу.
+///
+/// Аннотация `@named('значение')` позволяет указать строковое имя для зависимости,
+/// фабрики или внедряемого значения. Это удобно для различения нескольких
+/// регистраций одного типа в DI, генерации кода.
+///
+/// Пример:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   @named('dio')
+///   Dio dio() => Dio();
+/// }
+/// ```
+///
+/// Будет сгенерирован следующий код:
 /// ```dart
 /// final class $AppModule extends AppModule {
 ///   @override
@@ -36,9 +65,13 @@
 /// ```
 // ignore: camel_case_types
 final class named {
-  /// The assigned name or identifier.
+  /// EN: The assigned name or identifier for the element.
+  ///
+  /// RU: Назначенное имя или идентификатор для элемента.
   final String value;
 
-  /// Creates a [named] annotation with the given [value].
+  /// EN: Creates a [named] annotation with the given [value].
+  ///
+  /// RU: Создаёт аннотацию [named] с заданным значением [value].
   const named(this.value);
 }

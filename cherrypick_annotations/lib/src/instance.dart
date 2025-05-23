@@ -11,11 +11,12 @@
 // limitations under the License.
 //
 
-/// An annotation to specify that a method or class provides a new instance
-/// each time it is requested.
+/// ENGLISH:
+/// Annotation to specify that a new instance should be provided on each request.
 ///
-/// This is typically used to indicate that the annotated binding should
-/// not be a singleton and a new object is created for every injection.
+/// Use the `@instance()` annotation for methods or classes in your DI module
+/// to declare that the DI container must create a new object every time
+/// the dependency is injected (i.e., no singleton behavior).
 ///
 /// Example:
 /// ```dart
@@ -27,6 +28,32 @@
 /// ```
 ///
 /// This will generate:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Foo>().toInstance(() => foo());
+///   }
+/// }
+/// ```
+///
+/// RUSSIAN (Русский):
+/// Аннотация для создания нового экземпляра при каждом запросе.
+///
+/// Используйте `@instance()` для методов или классов в DI-модуле,
+/// чтобы указать, что контейнер внедрения зависимостей должен создавать
+/// новый объект при каждом обращении к зависимости (то есть, не синглтон).
+///
+/// Пример:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   @instance()
+///   Foo foo() => Foo();
+/// }
+/// ```
+///
+/// Будет сгенерирован следующий код:
 /// ```dart
 /// final class $AppModule extends AppModule {
 ///   @override

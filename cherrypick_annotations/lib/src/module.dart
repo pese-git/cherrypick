@@ -11,25 +11,57 @@
 // limitations under the License.
 //
 
-/// An annotation used to mark a Dart class or library as a module.
+/// ENGLISH:
+/// Annotation for marking Dart classes or libraries as modules.
 ///
-/// This annotation can be used for tooling, code generation,
-/// or to provide additional metadata about the module.
+/// Use the `@module()` annotation on abstract classes (or on a library)
+/// to indicate that the class represents a DI (Dependency Injection) module.
+/// This is commonly used in code generation tools to automatically register
+/// and configure dependencies defined within the module.
 ///
 /// Example:
 /// ```dart
 /// @module()
 /// abstract class AppModule extends Module {
+///   // Dependency definitions go here.
 /// }
 /// ```
-/// Сгенерирует код:
+///
+/// Generates code like:
 /// ```dart
 /// final class $AppModule extends AppModule {
 ///   @override
 ///   void builder(Scope currentScope) {
-///
+///     // Dependency registration...
 ///   }
 /// }
+/// ```
+///
+/// RUSSIAN (Русский):
+/// Аннотация для пометки классов или библиотек Dart как модуля.
+///
+/// Используйте `@module()` для абстрактных классов (или библиотек), чтобы
+/// показать, что класс реализует DI-модуль (Dependency Injection).
+/// Обычно используется генераторами кода для автоматической регистрации
+/// и конфигурирования зависимостей, определённых в модуле.
+///
+/// Пример:
+/// ```dart
+/// @module()
+/// abstract class AppModule extends Module {
+///   // Определения зависимостей
+/// }
+/// ```
+///
+/// Будет сгенерирован код:
+/// ```dart
+/// final class $AppModule extends AppModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     // Регистрация зависимостей...
+///   }
+/// }
+/// ```
 // ignore: camel_case_types
 final class module {
   /// Creates a [module] annotation.
