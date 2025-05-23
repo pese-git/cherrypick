@@ -125,9 +125,11 @@ class BindSpec {
     final multiLine = fnArgs.length > 60 || fnArgs.contains('\n');
     switch (bindingType) {
       case BindingType.instance:
-        return isAsyncInstance
-            ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
-            : '.toInstance(($fnArgs) => $methodName($fnArgs))';
+        throw StateError(
+            'Internal error: _generateWithParamsProvideClause called for @instance binding with @params.');
+      //return isAsyncInstance
+      //    ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
+      //    : '.toInstance(($fnArgs) => $methodName($fnArgs))';
       case BindingType.provide:
       default:
         if (isAsyncProvide) {
@@ -217,6 +219,15 @@ class BindSpec {
     }
     final bindingType =
         hasInstance ? BindingType.instance : BindingType.provide;
+
+    // PROHIBIT @params with @instance bindings!
+    if (bindingType == BindingType.instance && hasParams) {
+      throw InvalidGenerationSourceError(
+        '@params() (runtime arguments) cannot be used together with @instance() on method $methodName. '
+        'Use @provide() instead if you want runtime arguments.',
+        element: method,
+      );
+    }
 
     // -- Extract inner type for Future<T> and set async flags.
     bool isAsyncInstance = false;
