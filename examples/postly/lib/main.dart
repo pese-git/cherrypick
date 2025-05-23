@@ -4,8 +4,6 @@ import 'package:postly/app.dart';
 import 'di/app_module.dart';
 
 void main() {
-  final scope = CherryPick.openRootScope();
-  scope.installModules([$AppModule()]);
-
-  runApp(MyApp(scope: scope));
+  CherryPick.openRootScope().installModules([$AppModule()]);
+  runApp(MyApp());
 }

@@ -11,14 +11,22 @@ part 'app.inject.cherrypick.g.dart';
 
 @injectable()
 class MyApp extends StatelessWidget with _$MyApp {
-  final Scope scope;
   final _appRouter = AppRouter();
+
+  @scope('authZone')
+  @inject()
+  late final String text;
+
+  @scope('authZone')
+  @named('timeout')
+  @inject()
+  late final int timeout;
 
   @named('repo')
   @inject()
   late final PostRepository repository;
 
-  MyApp({super.key, required this.scope});
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
