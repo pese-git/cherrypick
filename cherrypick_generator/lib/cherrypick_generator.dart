@@ -14,3 +14,4 @@ library;
 //
 
 export 'module_generator.dart';
+export 'inject_generator.dart';

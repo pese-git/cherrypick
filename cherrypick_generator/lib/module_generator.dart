@@ -90,4 +90,4 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
 /// файлов, где встречается @module().
 /// ---------------------------------------------------------------------------
 Builder moduleBuilder(BuilderOptions options) =>
-    PartBuilder([ModuleGenerator()], '.cherrypick.g.dart');
+    PartBuilder([ModuleGenerator()], '.module.cherrypick.g.dart');

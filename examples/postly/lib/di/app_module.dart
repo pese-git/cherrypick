@@ -5,7 +5,7 @@ import '../data/network/json_placeholder_api.dart';
 import '../data/post_repository_impl.dart';
 import '../domain/repository/post_repository.dart';
 
-part 'app_module.cherrypick.g.dart';
+part 'app_module.module.cherrypick.g.dart';
 
 @module()
 abstract class AppModule extends Module {
