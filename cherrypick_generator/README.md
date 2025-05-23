@@ -1,54 +1,95 @@
 # Cherrypick Generator
 
-**Cherrypick Generator** is a Dart code generation library for automatic boilerplate creation in dependency injection (DI) modules. It processes classes annotated with `@module()` (from [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)) and generates code for registering dependencies, handling singletons, named bindings, runtime parameters, and more.
+**Cherrypick Generator** is a Dart code generation library for automating dependency injection (DI) boilerplate. It processes classes and fields annotated with [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations) and generates registration code for services, modules, and field injection for classes marked as `@injectable`. It supports advanced DI features such as scopes, named bindings, parameters, and asynchronous dependencies.
 
 ---
 
 ## Features
 
-- **Automatic Binding Generation:**  
-  Generates `bind<Type>()` registration code for every method in a DI module marked with `@module()`.
+- **Automatic Field Injection:**  
+  Detects classes annotated with `@injectable()`, and generates mixins to inject all fields annotated with `@inject()`, supporting scope and named qualifiers.
 
-- **Support for DI Annotations:**  
-  Understands and processes meta-annotations such as `@singleton`, `@named`, `@instance`, `@provide`, and `@params`.
+- **Module and Service Registration:**  
+  For classes annotated with `@module()`, generates service registration code for methods using annotations such as `@provide`, `@instance`, `@singleton`, `@named`, and `@params`.
 
-- **Runtime & Compile-Time Parameters:**  
-  Handles both injected (compile-time) and runtime parameters for provider/binding methods.
+- **Scope & Named Qualifier Support:**  
+  Supports advanced DI features:  
+  &nbsp;&nbsp;• Field-level scoping with `@scope('scopename')`  
+  &nbsp;&nbsp;• Named dependencies via `@named('value')`
 
 - **Synchronous & Asynchronous Support:**  
-  Correctly distinguishes between synchronous and asynchronous bindings (including `Future<T>` return types).
+  Handles both synchronous and asynchronous services (including `Future<T>`) for both field injection and module registration.
 
-- **Named Bindings:**  
-  Allows registration of named services via the `@named()` annotation.
+- **Parameters and Runtime Arguments:**  
+  Recognizes and wires both injected dependencies and runtime parameters using `@params`.
 
-- **Singletons:**  
-  Registers singletons via the `@singleton` annotation.
+- **Error Handling:**  
+  Validates annotations at generation time. Provides helpful errors for incorrect usage (e.g., using `@injectable` on non-class elements).
 
 ---
 
 ## How It Works
 
-1. **Annotations**  
-   Annotate your module classes and methods using `@module()`, `@instance`, `@provide`, `@singleton`, and `@named` as needed.
+### 1. Annotate your code
 
-2. **Code Scanning**  
-   During the build process (with `build_runner`), the generator scans your annotated classes.
+Use annotations from [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations):
 
-3. **Code Generation**  
-   For each `@module()` class, a new class (with a `$` prefix) is generated.  
-   This class overrides the `builder(Scope)` method to register all bindings.
+- `@injectable()` — on classes to enable field injection  
+- `@inject()` — on fields to specify they should be injected  
+- `@scope()`, `@named()` — on fields or parameters for advanced wiring  
+- `@module()` — on classes to mark as DI modules  
+- `@provide`, `@instance`, `@singleton`, `@params` — on methods and parameters for module-based DI
 
-4. **Binding Logic**  
-   Each binding method's signature and annotations are analyzed. Registration code is generated according to:
-   - Return type (sync/async)
-   - Annotations (`@singleton`, `@named`, etc.)
-   - Parameter list (DI dependencies, `@named`, or `@params` for runtime values)
+### 2. Run the generator
+
+Use `build_runner` to process your code and generate `.module.cherrypick.g.dart` and `.inject.cherrypick.g.dart` files.
+
+### 3. Use the output in your application
+
+- For modules: Register DI providers using the generated `$YourModule` class.
+- For services: Enable field injection on classes using the generated mixin.
 
 ---
 
-## Example
+## Field Injection Example
 
-Given the following annotated Dart code:
+Given the following:
+
+```dart
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+@injectable()
+class MyWidget with _$MyWidget {
+  @inject()
+  late final AuthService auth;
+
+  @inject()
+  @scope('profile')
+  late final ProfileManager manager;
+
+  @inject()
+  @named('special')
+  late final ApiClient specialApi;
+}
+```
+
+**The generator will output (simplified):**
+```dart
+mixin _$MyWidget {
+  void _inject(MyWidget instance) {
+    instance.auth = CherryPick.openRootScope().resolve<AuthService>();
+    instance.manager = CherryPick.openScope(scopeName: 'profile').resolve<ProfileManager>();
+    instance.specialApi = CherryPick.openRootScope().resolve<ApiClient>(named: 'special');
+  }
+}
+```
+You can then mix this into your widget to enable automatic DI at runtime.
+
+---
+
+## Module Registration Example
+
+Given:
 
 ```dart
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
@@ -57,98 +98,92 @@ import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 class MyModule {
   @singleton
   @instance
-  SomeService provideService(ApiClient client);
+  AuthService provideAuth(Api api);
 
   @provide
-  @named('special')
-  Future<Handler> createHandler(@params Map<String, dynamic> params);
+  @named('logging')
+  Future<Logger> provideLogger(@params Map<String, dynamic> args);
 }
 ```
 
-The generator will output (simplified):
-
+**The generator will output (simplified):**
 ```dart
 final class $MyModule extends MyModule {
   @override
   void builder(Scope currentScope) {
-    bind<SomeService>()
-      .toInstance(provideService(currentScope.resolve<ApiClient>()))
+    bind<AuthService>()
+      .toInstance(provideAuth(currentScope.resolve<Api>()))
       .singleton();
 
-    bind<Handler>()
-      .toProvideAsyncWithParams((args) => createHandler(args))
-      .withName('special');
+    bind<Logger>()
+      .toProvideAsyncWithParams((args) => provideLogger(args))
+      .withName('logging');
   }
 }
 ```
 
 ---
 
-## Generated Code Overview
+## Key Points
 
-- **Constructor Registration:**  
-  All non-abstract methods are considered as providers and processed for DI registration.
-
-- **Parameter Handling:**  
-  Each method parameter is analyzed:
-    - Standard DI dependency: resolved via `currentScope.resolve<Type>()`.
-    - Named dependency: resolved via `currentScope.resolve<Type>(named: 'name')`.
-    - Runtime parameter (`@params`): passed through as-is (e.g., `args`).
-
-- **Binding Types:**  
-  Supports both `.toInstance()` and `.toProvide()` (including async variants).
-
-- **Singleton/Named:**  
-  Appends `.singleton()` and/or `.withName('name')` as appropriate.
+- **Rich Annotation Support:** 
+  Mix and match field, parameter, and method annotations for maximum flexibility.
+- **Scope and Named Resolution:**
+  Use `@scope('...')` and `@named('...')` to precisely control where and how dependencies are wired.
+- **Async/Synchronous:**  
+  The generator distinguishes between sync (`resolve<T>`) and async (`resolveAsync<T>`) dependencies.
+- **Automatic Mixins:**  
+  For classes with `@injectable()`, a mixin is generated that injects all relevant fields (using constructor or setter).
+- **Comprehensive Error Checking:**  
+  Misapplied annotations (e.g., `@injectable()` on non-class) produce clear build-time errors.
 
 ---
 
 ## Usage
 
-1. **Add dependencies**  
-   In your `pubspec.yaml`:
+1. **Add dependencies**
+
    ```yaml
    dependencies:
-     cherrypick_annotations: ^x.y.z
+     cherrypick_annotations: ^latest
 
    dev_dependencies:
+     cherrypick_generator: ^latest
      build_runner: ^2.1.0
-     cherrypick_generator: ^x.y.z
    ```
 
-2. **Apply annotations**  
-   Annotate your DI modules and provider methods as shown above.
+2. **Annotate your classes and modules as above**
 
-3. **Run the generator**  
-   ```
+3. **Run the generator**
+
+   ```shell
    dart run build_runner build
-   # or with Flutter:
+   # or, if using Flutter:
    flutter pub run build_runner build
    ```
 
-4. **Import and use the generated code**  
-   The generated files (suffix `.cherrypick.g.dart`) contain your `$YourModule` classes ready for use with your DI framework.
+4. **Use generated code**
+
+   - Import the generated `.inject.cherrypick.g.dart` or `.cherrypick.g.dart` files where needed
 
 ---
 
-## Advanced
+## Advanced Usage
 
-- **Customizing Parameter Names:**  
-  Use the `@named('value')` annotation on methods and parameters for named bindings.
-
-- **Runtime Arguments:**  
-  Use `@params` to designate parameters as runtime arguments that are supplied at injection time.
-
+- **Combining Modules and Field Injection:**  
+  It's possible to mix both style of DI — modules for binding, and field injection for consuming services.
+- **Parameter and Named Injection:**  
+  Use `@named` on both provider and parameter for named registration and lookup; use `@params` to pass runtime arguments.
 - **Async Factories:**  
-  Methods returning `Future<T>` generate the appropriate `.toProvideAsync()` or `.toInstanceAsync()` bindings.
+  Methods returning Future<T> generate async bindings and async field resolution logic.
 
 ---
 
 ## Developer Notes
 
-- The generator relies on Dart's analyzer, source_gen, and build packages.
-- Each class and method is parsed for annotations; missing required annotations (like `@instance` or `@provide`) will result in a generation error.
-- The generated code is designed to extend your original module classes while injecting all binding logic.
+- The generator relies on the Dart analyzer, `source_gen`, and `build` packages.
+- All classes and methods are parsed for annotations.
+- Improper annotation usage will result in generator errors.
 
 ---
 
@@ -162,6 +197,7 @@ Licensed under the Apache License, Version 2.0
 
 ## Contribution
 
-Pull requests and issues are welcome! Please open git issues or submit improvements as needed.
+Pull requests and issues are welcome! Please open GitHub issues or submit improvements.
 
 ---
+
