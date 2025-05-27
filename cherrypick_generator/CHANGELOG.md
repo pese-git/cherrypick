@@ -1,3 +1,7 @@
+## 1.1.0-dev.4
+
+ - **FIX**: fixed warnings.
+
 ## 1.1.0-dev.3
 
  - **FEAT**: implement InjectGenerator.

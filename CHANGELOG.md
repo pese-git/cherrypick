@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-05-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_generator` - `v1.1.0-dev.4`](#cherrypick_generator---v110-dev4)
+
+---
+
+#### `cherrypick_generator` - `v1.1.0-dev.4`
+
+ - **FIX**: fixed warnings.
+
+
 ## 2025-05-23
 
 ### Changes
