@@ -17,7 +17,7 @@ dependencies:
   
   dio: ^5.4.0
   retrofit: ^4.0.3
-  freezed_annotation: ^2.3.2
+  freezed_annotation: ^2.4.4
   dartz: ^0.10.1
   flutter_bloc: ^9.1.1
   auto_route: ^9.3.0+1
@@ -31,10 +31,10 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
   cherrypick_generator: ^1.1.0-dev.3
-  build_runner: 2.4.13
+  build_runner: 2.4.15
   
   retrofit_generator: ^9.1.5
-  freezed: ^2.3.2
+  freezed: ^2.5.8
   json_serializable: ^6.9.0
   auto_route_generator: ^9.0.0
 
