@@ -1,3 +1,16 @@
+## 1.1.2-dev.1
+
+ - Update a dependency to the latest release.
+
+## 1.1.2-dev.0
+
+ - **FIX**: fix warning.
+ - **FIX**: fix warnings.
+
+## 1.1.1
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 1.1.1-dev.1
 
  - **FIX**: fix warnings.
