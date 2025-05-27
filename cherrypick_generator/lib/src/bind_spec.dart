@@ -131,7 +131,6 @@ class BindSpec {
       //    ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
       //    : '.toInstance(($fnArgs) => $methodName($fnArgs))';
       case BindingType.provide:
-      default:
         if (isAsyncProvide) {
           return multiLine
               ? '.toProvideAsyncWithParams(\n${' ' * (indent + 2)}($paramVar) => $methodName($fnArgs))'
@@ -154,7 +153,6 @@ class BindSpec {
             ? '.toInstanceAsync($methodName($argsStr))'
             : '.toInstance($methodName($argsStr))';
       case BindingType.provide:
-      default:
         if (isAsyncProvide) {
           return multiLine
               ? '.toProvideAsync(\n${' ' * (indent + 2)}() => $methodName($argsStr))'
