@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-06-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_generator` - `v1.1.0-dev.5`](#cherrypick_generator---v110-dev5)
+
+---
+
+#### `cherrypick_generator` - `v1.1.0-dev.5`
+
+ - **FEAT**: implement tryResolve via generate code.
+
+
 ## 2025-05-28
 
 ### Changes

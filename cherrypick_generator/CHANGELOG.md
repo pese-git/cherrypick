@@ -1,3 +1,7 @@
+## 1.1.0-dev.5
+
+ - **FEAT**: implement tryResolve via generate code.
+
 ## 1.1.0-dev.4
 
  - **FIX**: fixed warnings.
