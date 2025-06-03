@@ -13,6 +13,7 @@
 
 import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -119,10 +120,20 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
       isFuture = false;
     }
 
+    // ***
+    // Добавим определение nullable для типа (например PostRepository? или Future<PostRepository?>)
+    bool isNullable = dartType.nullabilitySuffix ==
+            NullabilitySuffix.question ||
+        (dartType is ParameterizedType &&
+            (dartType)
+                .typeArguments
+                .any((t) => t.nullabilitySuffix == NullabilitySuffix.question));
+
     return _ParsedInjectField(
       fieldName: field.name,
-      coreType: coreTypeName,
+      coreType: coreTypeName.replaceAll('?', ''), // удаляем "?" на всякий
       isFuture: isFuture,
+      isNullable: isNullable,
       scopeName: scopeName,
       namedValue: namedValue,
     );
@@ -134,17 +145,24 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// Генерирует строку кода, которая внедряет зависимость для поля.
   /// Учитывает resolve/resolveAsync, scoping и named qualifier.
   String _generateInjectionLine(_ParsedInjectField field) {
-    final methodName = field.isFuture
-        ? 'resolveAsync<${field.coreType}>'
-        : 'resolve<${field.coreType}>';
+    // Используем tryResolve для nullable, иначе resolve
+    final resolveMethod = field.isFuture
+        ? (field.isNullable
+            ? 'tryResolveAsync<${field.coreType}>'
+            : 'resolveAsync<${field.coreType}>')
+        : (field.isNullable
+            ? 'tryResolve<${field.coreType}>'
+            : 'resolve<${field.coreType}>');
+
     final openCall = (field.scopeName != null && field.scopeName!.isNotEmpty)
         ? "CherryPick.openScope(scopeName: '${field.scopeName}')"
         : "CherryPick.openRootScope()";
+
     final params = (field.namedValue != null && field.namedValue!.isNotEmpty)
         ? "(named: '${field.namedValue}')"
         : '()';
 
-    return "    instance.${field.fieldName} = $openCall.$methodName$params;";
+    return "    instance.${field.fieldName} = $openCall.$resolveMethod$params;";
   }
 }
 
@@ -170,10 +188,13 @@ class _ParsedInjectField {
   /// Optional named annotation argument / Опциональное имя named.
   final String? namedValue;
 
+  final bool isNullable;
+
   _ParsedInjectField({
     required this.fieldName,
     required this.coreType,
     required this.isFuture,
+    required this.isNullable,
     this.scopeName,
     this.namedValue,
   });
