@@ -13,6 +13,8 @@
 
 enum Mode { simple, instance, providerInstance, providerInstanceWithParams }
 
+typedef Provider<T> = T? Function();
+
 typedef ProviderWithParams<T> = T Function(dynamic params);
 
 typedef AsyncProvider<T> = Future<T> Function();
@@ -27,11 +29,13 @@ class Binding<T> {
   late Type _key;
   late String _name;
   T? _instance;
-  T? Function()? _provider;
+  Future<T>? _instanceAsync;
+  Provider<T>? _provider;
+  ProviderWithParams<T>? _providerWithParams;
+
   AsyncProvider<T>? asyncProvider;
   AsyncProviderWithParams<T>? asyncProviderWithParams;
 
-  ProviderWithParams<T>? _providerWithParams;
   late bool _isSingleton = false;
   late bool _isNamed = false;
 
@@ -91,11 +95,22 @@ class Binding<T> {
     return this;
   }
 
+  /// RU: Инициализация экземляпяра [value].
+  /// ENG: Initialization instance [value].
+  ///
+  /// return [Binding]
+  Binding<T> toInstanceAsync(Future<T> value) {
+    _mode = Mode.instance;
+    _instanceAsync = value;
+    _isSingleton = true;
+    return this;
+  }
+
   /// RU: Инициализация экземляпяра  через провайдер [value].
   /// ENG: Initialization instance via provider [value].
   ///
   /// return [Binding]
-  Binding<T> toProvide(T Function() value) {
+  Binding<T> toProvide(Provider<T> value) {
     _mode = Mode.providerInstance;
     _provider = value;
     return this;
@@ -145,6 +160,12 @@ class Binding<T> {
   ///
   /// return [T]
   T? get instance => _instance;
+
+  /// RU: Поиск экземпляра.
+  /// ENG: Resolve instance.
+  ///
+  /// return [T]
+  Future<T>? get instanceAsync => _instanceAsync;
 
   /// RU: Поиск экземпляра.
   /// ENG: Resolve instance.
