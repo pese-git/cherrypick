@@ -26,3 +26,5 @@ doc/api/
 melos_cherrypick_generator.iml
 
 **/*.mocks.dart
+
+coverage

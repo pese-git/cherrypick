@@ -14,13 +14,14 @@ environment:
 dependencies:
   cherrypick_annotations: ^1.1.0-dev.1
   analyzer: ^7.0.0
-  dart_style: ^3.0.1
+  dart_style: ^3.0.0
   build: ^2.4.1
-  build_runner: ^2.4.15
   source_gen: ^2.0.0
   collection: ^1.18.0
 
 dev_dependencies:
-  lints: ^5.0.0
+  lints: ^4.0.0
   mockito: ^5.4.4
   test: ^1.25.8
+  build_test: ^2.1.7
+  build_runner: ^2.4.13
