@@ -17,7 +17,7 @@ void main() {
 
   setUp(() {
     scope = CherryPick.openRootScope();
-    scope.installModules([AppModule()]);
+    scope.installModules([$AppModule()]);
   });
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     expect(1, 1);
