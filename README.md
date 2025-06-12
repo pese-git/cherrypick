@@ -1,100 +1,145 @@
 # CherryPick Workspace
 
-Welcome to the CherryPick Workspace, a comprehensive suite for dependency management in Flutter applications. It consists of the `cherrypick` and `cherrypick_flutter` packages, designed to enhance modularity and testability by providing robust dependency and state management tools.
+CherryPick Workspace is a modular, open-source dependency injection ecosystem for Dart and Flutter, designed to offer lightweight, flexible, and scalable DI suitable for both backend and frontend (Flutter) development. This monorepo contains the main DI runtime library, annotation helpers, code generation for modular bindings, and seamless Flutter integration.
 
-## Overview
+---
 
-- **`cherrypick`**: A Dart library offering core tools for dependency injection and management through modules and scopes.
-- **`cherrypick_flutter`**: A Flutter-specific library facilitating access to the root scope via the context using `CherryPickProvider`, simplifying state management within the widget tree.
+## Packages Overview
 
-## Repository Structure
+- **[`cherrypick`](./cherrypick)**  
+  The core dependency injection library. Supports modular bindings, hierarchical scopes, named and singleton bindings, provider functions (sync/async), runtime parameters, and test-friendly composition.  
+  _Intended for use in pure Dart and Flutter projects._
 
-- **Packages**:
-  - `cherrypick`: Core DI functionalities.
-  - `cherrypick_flutter`: Flutter integration for context-based root scope access.
+- **[`cherrypick_annotations`](./cherrypick_annotations)**  
+  A set of Dart annotations (`@module`, `@singleton`, `@instance`, `@provide`, `@named`, `@params`) enabling concise, declarative DI modules and providers, primarily for use with code generation tools.
 
-## Quick Start Guide
+- **[`cherrypick_generator`](./cherrypick_generator)**  
+  A [source_gen](https://pub.dev/packages/source_gen)-based code generator that automatically converts your annotated modules and providers into ready-to-use boilerplate for registration and resolution within your app.  
+  _Reduces manual wiring and errors; compatible with build_runner._
 
-### Installation
+- **[`cherrypick_flutter`](./cherrypick_flutter)**  
+  Adds Flutter-native integration, exposing DI scopes and modules to the widget tree through `CherryPickProvider` and enabling dependency management throughout your Flutter app.
 
-To add the packages to your project, include the dependencies in your `pubspec.yaml`:
+---
+
+## Why CherryPick?
+
+- **Zero-overhead and intuitive API:**  
+  Clean, minimal syntax, strong typing, powerful binding lifecycle control.
+- **High testability:**  
+  Supports overriding and hierarchical scope trees.
+- **Both Sync & Async support:**  
+  Register and resolve async providers, factories, and dependencies.
+- **Seamless code generation:**  
+  Effortless setup with annotations + generator—skip boilerplate!
+- **Works with or without Flutter.**
+- **Production ready:**  
+  Robust enough for apps, packages, and server-side Dart.
+- **Extensible & Modular:**  
+  Add bindings at runtime, use sub-modules, or integrate via codegen.
+
+---
+
+## Get Started
+
+### 1. Add dependencies
+
+In your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  cherrypick: any
-  cherrypick_flutter: any
+  cherrypick: ^<latest-version>
+  cherrypick_annotations: ^<latest-version>
+
+dev_dependencies:
+  build_runner: ^<latest>
+  cherrypick_generator: ^<latest-version>
 ```
 
-Run `flutter pub get` to install the dependencies.
+For Flutter projects, add:
 
-### Usage
+```yaml
+dependencies:
+  cherrypick_flutter: ^<latest-version>
+```
 
-#### cherrypick
+### 2. Write a DI Module (with annotations)
 
-- **Binding Dependencies**: Use `Binding` to set up dependencies.
+```dart
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+import 'package:cherrypick/cherrypick.dart';
 
-  ```dart
-  Binding<String>().toInstance("hello world");
-  Binding<String>().toProvide(() => "hello world").singleton();
-  ```
+@module()
+abstract class MyModule extends Module {
+  @singleton()
+  ApiClient apiClient() => ApiClient();
 
-- **Creating Modules**: Define dependencies within a module.
+  @provide()
+  DataRepository dataRepo(ApiClient client) => DataRepository(client);
 
-  ```dart
-  class AppModule extends Module {
-    @override
-    void builder(Scope currentScope) {
-      bind<ApiClient>().toInstance(ApiClientMock());
-    }
-  }
-  ```
+  @provide()
+  String greeting(@params() String name) => 'Hello, $name!';
+}
+```
 
-- **Managing Scopes**: Control dependency lifecycles with scopes.
+### 3. Generate the bindings
 
-  ```dart
-  final rootScope = Cherrypick.openRootScope();
-  rootScope.installModules([AppModule()]);
-  final apiClient = rootScope.resolve<ApiClient>();
-  ```
+```sh
+dart run build_runner build
+# or for Flutter:
+flutter pub run build_runner build
+```
 
-#### cherrypick_flutter
+The generator will create a `$MyModule` class with binding code.
 
-- **CherryPickProvider**: Wrap your widget tree to access the root scope via context.
+### 4. Install and Resolve
 
-  ```dart
-  void main() {
-    runApp(CherryPickProvider(
-      rootScope: yourRootScopeInstance,
-      child: MyApp(),
-    ));
-  }
-  ```
+```dart
+final scope = CherryPick.openRootScope()
+  ..installModules([$MyModule()]);
 
-- **Accessing Root Scope**: Use `CherryPickProvider.of(context).rootScope` to interact with the root scope in your widgets.
+final repo = scope.resolve<DataRepository>();
+final greeting = scope.resolveWithParams<String>('John'); // 'Hello, John!'
+```
 
-  ```dart
-  final rootScope = CherryPickProvider.of(context).rootScope;
-  ```
+_For Flutter, wrap your app with `CherryPickProvider` for DI scopes in the widget tree:_
 
-### Example Project
+```dart
+void main() {
+  runApp(
+    CherryPickProvider(child: MyApp()),
+  );
+}
+```
 
-Check the `example` directory for a complete demonstration of implementing CherryPick Workspace in a Flutter app.
+---
 
-## Features
+## Features at a Glance
 
-- [x] Dependency Binding and Resolution
-- [x] Custom Module Creation
-- [x] Root and Sub-Scopes
-- [x] Convenient Root Scope Access in Flutter
+- ⚡ **Fast, lightweight DI** for any Dart/Flutter project
+- 🧩 **Modular & hierarchical scopes** (root, subscopes)
+- 🔖 **Named/bound/singleton instances** out of the box
+- 🔄 **Sync and async provider support**
+- ✏️ **Runtime parameters for dynamic factory methods**
+- 🏷️ **Code generator** for annotation-based DI setup (`cherrypick_generator`)
+- 🕹️ **Deep Flutter integration** via `CherryPickProvider`
 
-## Contributing
+---
 
-We welcome contributions from the community. Feel free to open issues or submit pull requests with suggestions and enhancements.
+## Example Usage
 
-## License
+Please see:
+- [`cherrypick/README.md`](./cherrypick/README.md) for core DI features and examples
+- [`cherrypick_flutter/README.md`](./cherrypick_flutter/README.md) for Flutter-specific usage
+- [`cherrypick_annotations/README.md`](./cherrypick_annotations/README.md) and [`cherrypick_generator/README.md`](./cherrypick_generator/README.md) for codegen and annotations
 
-This project is licensed under the Apache License 2.0. You may obtain a copy of the License at [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+---
 
-## Links
+## Contribution & License
 
-- [GitHub Repository](https://github.com/pese-git/cherrypick)
+- **Contributions:** PRs, issues, and feedback are welcome on [GitHub](https://github.com/pese-git/cherrypick).
+- **License:** Apache 2.0 for all packages in this workspace.
+
+---
+
+**Happy Cherry Picking! 🍒**

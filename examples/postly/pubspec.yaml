@@ -12,14 +12,17 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cherrypick: any
+  cherrypick:
+    path: ../../cherrypick
+  cherrypick_annotations:
+    path: ../../cherrypick_annotations
   
   dio: ^5.4.0
   retrofit: ^4.0.3
-  freezed_annotation: ^2.0.0
+  freezed_annotation: ^2.4.4
   dartz: ^0.10.1
-  flutter_bloc: ^8.1.2
-  auto_route: ^7.8.4
+  flutter_bloc: ^9.1.1
+  auto_route: ^9.3.0+1
 
   cupertino_icons: ^1.0.8
 
@@ -27,13 +30,16 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
-  build_runner: ^2.4.6
-  retrofit_generator: ^8.0.4
-  freezed: ^2.3.2
-  json_serializable: any
-  auto_route_generator: ^7.3.2
+  cherrypick_generator:
+    path: ../../cherrypick_generator
+  build_runner: 2.4.15
+  
+  retrofit_generator: ^9.1.5
+  freezed: ^2.5.8
+  json_serializable: ^6.9.0
+  auto_route_generator: ^9.0.0
 
 flutter:
 

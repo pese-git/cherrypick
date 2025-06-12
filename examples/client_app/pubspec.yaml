@@ -5,14 +5,19 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.2
+  sdk: ">=3.5.2 <4.0.0"
 
 
 dependencies:
   flutter:
     sdk: flutter
-  cherrypick: any
-  cherrypick_flutter: any
+  cherrypick:
+    path: ../../cherrypick
+  cherrypick_flutter:
+    path: ../../cherrypick_flutter
+
+  cherrypick_annotations:
+    path: ../../cherrypick_annotations
 
   cupertino_icons: ^1.0.8
 
@@ -20,7 +25,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
+
+  cherrypick_generator:
+    path: ../../cherrypick_generator
+  build_runner: ^2.4.15
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
