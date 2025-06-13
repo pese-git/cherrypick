@@ -237,6 +237,12 @@ class ApiClientImpl implements ApiClient {
 - [x] Singleton Lifecycle Management
 - [x] Modular and Hierarchical Composition
 - [x] Null-safe Resolution (tryResolve/tryResolveAsync)
+- [x] Circular Dependency Detection (Local and Global)
+
+## Documentation
+
+- [Circular Dependency Detection (English)](doc/cycle_detection.en.md)
+- [Обнаружение циклических зависимостей (Русский)](doc/cycle_detection.ru.md)
 
 ## Contributing
 
