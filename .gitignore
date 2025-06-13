@@ -18,3 +18,5 @@ pubspec_overrides.yaml
 melos_cherrypick.iml
 melos_cherrypick_workspace.iml
 melos_cherrypick_flutter.iml
+
+coverage
