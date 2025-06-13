@@ -14,6 +14,8 @@ library;
 //
 
 export 'package:cherrypick/src/binding.dart';
+export 'package:cherrypick/src/cycle_detector.dart';
+export 'package:cherrypick/src/global_cycle_detector.dart';
 export 'package:cherrypick/src/helper.dart';
 export 'package:cherrypick/src/module.dart';
 export 'package:cherrypick/src/scope.dart';

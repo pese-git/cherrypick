@@ -11,13 +11,16 @@
 // limitations under the License.
 //
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:cherrypick/src/binding.dart';
+import 'package:cherrypick/src/cycle_detector.dart';
+import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/module.dart';
 
 Scope openRootScope() => Scope(null);
 
-class Scope {
+class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   final Scope? _parentScope;
 
   /// RU: Метод возвращает родительский [Scope].
@@ -29,9 +32,21 @@ class Scope {
 
   final Map<String, Scope> _scopeMap = HashMap();
 
-  Scope(this._parentScope);
+  Scope(this._parentScope) {
+    // Генерируем уникальный ID для скоупа
+    setScopeId(_generateScopeId());
+  }
 
   final Set<Module> _modulesList = HashSet();
+
+  /// RU: Генерирует уникальный идентификатор для скоупа.
+  /// ENG: Generates unique identifier for scope.
+  String _generateScopeId() {
+    final random = Random();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final randomPart = random.nextInt(10000);
+    return 'scope_${timestamp}_$randomPart';
+  }
 
   /// RU: Метод открывает дочерний (дополнительный) [Scope].
   ///
@@ -40,7 +55,17 @@ class Scope {
   /// return [Scope]
   Scope openSubScope(String name) {
     if (!_scopeMap.containsKey(name)) {
-      _scopeMap[name] = Scope(this);
+      final childScope = Scope(this);
+      
+      // Наследуем настройки обнаружения циклических зависимостей
+      if (isCycleDetectionEnabled) {
+        childScope.enableCycleDetection();
+      }
+      if (isGlobalCycleDetectionEnabled) {
+        childScope.enableGlobalCycleDetection();
+      }
+      
+      _scopeMap[name] = childScope;
     }
     return _scopeMap[name]!;
   }
@@ -51,6 +76,13 @@ class Scope {
   ///
   /// return [Scope]
   void closeSubScope(String name) {
+    final childScope = _scopeMap[name];
+    if (childScope != null) {
+      // Очищаем детектор для дочернего скоупа
+      if (childScope.scopeId != null) {
+        GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
+      }
+    }
     _scopeMap.remove(name);
   }
 
@@ -91,19 +123,59 @@ class Scope {
   /// return - returns an object of type [T] or [StateError]
   ///
   T resolve<T>({String? named, dynamic params}) {
-    var resolved = tryResolve<T>(named: named, params: params);
-    if (resolved != null) {
-      return resolved;
+    // Используем глобальное отслеживание, если включено
+    if (isGlobalCycleDetectionEnabled) {
+      return withGlobalCycleDetection<T>(T, named, () {
+        return _resolveWithLocalDetection<T>(named: named, params: params);
+      });
     } else {
-      throw StateError(
-          'Can\'t resolve dependency `$T`. Maybe you forget register it?');
+      return _resolveWithLocalDetection<T>(named: named, params: params);
     }
+  }
+
+  /// RU: Разрешение с локальным детектором циклических зависимостей.
+  /// ENG: Resolution with local circular dependency detector.
+  T _resolveWithLocalDetection<T>({String? named, dynamic params}) {
+    return withCycleDetection<T>(T, named, () {
+      var resolved = _tryResolveInternal<T>(named: named, params: params);
+      if (resolved != null) {
+        return resolved;
+      } else {
+        throw StateError(
+            'Can\'t resolve dependency `$T`. Maybe you forget register it?');
+      }
+    });
   }
 
   /// RU: Возвращает найденную зависимость типа [T] или null, если она не может быть найдена.
   /// ENG: Returns found dependency of type [T] or null if it cannot be found.
   ///
   T? tryResolve<T>({String? named, dynamic params}) {
+    // Используем глобальное отслеживание, если включено
+    if (isGlobalCycleDetectionEnabled) {
+      return withGlobalCycleDetection<T?>(T, named, () {
+        return _tryResolveWithLocalDetection<T>(named: named, params: params);
+      });
+    } else {
+      return _tryResolveWithLocalDetection<T>(named: named, params: params);
+    }
+  }
+
+  /// RU: Попытка разрешения с локальным детектором циклических зависимостей.
+  /// ENG: Try resolution with local circular dependency detector.
+  T? _tryResolveWithLocalDetection<T>({String? named, dynamic params}) {
+    if (isCycleDetectionEnabled) {
+      return withCycleDetection<T?>(T, named, () {
+        return _tryResolveInternal<T>(named: named, params: params);
+      });
+    } else {
+      return _tryResolveInternal<T>(named: named, params: params);
+    }
+  }
+
+  /// RU: Внутренний метод для разрешения зависимостей без проверки циклических зависимостей.
+  /// ENG: Internal method for dependency resolution without circular dependency checking.
+  T? _tryResolveInternal<T>({String? named, dynamic params}) {
     // 1 Поиск зависимости по всем модулям текущего скоупа
     if (_modulesList.isNotEmpty) {
       for (var module in _modulesList) {
@@ -130,7 +202,7 @@ class Scope {
     }
 
     // 2 Поиск зависимостей в родительском скоупе
-    return _parentScope?.tryResolve(named: named, params: params);
+    return _parentScope?._tryResolveInternal(named: named, params: params);
   }
 
   /// RU: Асинхронно возвращает найденную зависимость, определенную параметром типа [T].
@@ -144,16 +216,56 @@ class Scope {
   /// return - returns an object of type [T] or [StateError]
   ///
   Future<T> resolveAsync<T>({String? named, dynamic params}) async {
-    var resolved = await tryResolveAsync<T>(named: named, params: params);
-    if (resolved != null) {
-      return resolved;
+    // Используем глобальное отслеживание, если включено
+    if (isGlobalCycleDetectionEnabled) {
+      return withGlobalCycleDetection<Future<T>>(T, named, () async {
+        return await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
+      });
     } else {
-      throw StateError(
-          'Can\'t resolve async dependency `$T`. Maybe you forget register it?');
+      return await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
     }
   }
 
+  /// RU: Асинхронное разрешение с локальным детектором циклических зависимостей.
+  /// ENG: Async resolution with local circular dependency detector.
+  Future<T> _resolveAsyncWithLocalDetection<T>({String? named, dynamic params}) async {
+    return withCycleDetection<Future<T>>(T, named, () async {
+      var resolved = await _tryResolveAsyncInternal<T>(named: named, params: params);
+      if (resolved != null) {
+        return resolved;
+      } else {
+        throw StateError(
+            'Can\'t resolve async dependency `$T`. Maybe you forget register it?');
+      }
+    });
+  }
+
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
+    // Используем глобальное отслеживание, если включено
+    if (isGlobalCycleDetectionEnabled) {
+      return withGlobalCycleDetection<Future<T?>>(T, named, () async {
+        return await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
+      });
+    } else {
+      return await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
+    }
+  }
+
+  /// RU: Асинхронная попытка разрешения с локальным детектором циклических зависимостей.
+  /// ENG: Async try resolution with local circular dependency detector.
+  Future<T?> _tryResolveAsyncWithLocalDetection<T>({String? named, dynamic params}) async {
+    if (isCycleDetectionEnabled) {
+      return withCycleDetection<Future<T?>>(T, named, () async {
+        return await _tryResolveAsyncInternal<T>(named: named, params: params);
+      });
+    } else {
+      return await _tryResolveAsyncInternal<T>(named: named, params: params);
+    }
+  }
+
+  /// RU: Внутренний метод для асинхронного разрешения зависимостей без проверки циклических зависимостей.
+  /// ENG: Internal method for async dependency resolution without circular dependency checking.
+  Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) async {
     if (_modulesList.isNotEmpty) {
       for (var module in _modulesList) {
         for (var binding in module.bindingSet) {
@@ -178,6 +290,6 @@ class Scope {
         }
       }
     }
-    return _parentScope?.tryResolveAsync(named: named, params: params);
+    return _parentScope?._tryResolveAsyncInternal(named: named, params: params);
   }
 }

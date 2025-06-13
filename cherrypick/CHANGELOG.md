@@ -1,3 +1,10 @@
+## 2.2.0-dev.2
+
+ - **FEAT**: Add circular dependency detection to prevent StackOverflowError.
+ - **FEAT**: Add CycleDetectionMixin for enabling/disabling cycle detection.
+ - **FEAT**: Add CircularDependencyException with detailed dependency chain information.
+ - **DOCS**: Add comprehensive documentation and examples for cycle detection.
+
 ## 2.2.0-dev.1
 
  - **FIX**: fix warnings.
