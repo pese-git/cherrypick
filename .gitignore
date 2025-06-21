@@ -11,6 +11,7 @@
 **/*.g.dart
 **/*.gr.dart
 **/*.freezed.dart
+**/*.cherrypick_injectable.g.dart
 
 pubspec_overrides.yaml
 

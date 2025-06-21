@@ -5,6 +5,8 @@ sdkPath: .fvm/flutter_sdk
 packages:
   - cherrypick
   - cherrypick_flutter
+  - cherrypick_annotations
+  - cherrypick_generator
   - examples/client_app
   - examples/postly
 
@@ -13,12 +15,36 @@ scripts:
     exec: dart analyze
 
   format:
-    exec: dart format
+    exec: dart format lib
 
   test:
-    exec: flutter test
+    run: |
+      echo "Running Dart tests..."
+      melos exec --scope="cherrypick,cherrypick_annotations,cherrypick_generator" -- dart test --reporter=compact
+      echo "Running Flutter tests..."
+      melos exec --scope="cherrypick_flutter" -- flutter test --reporter=compact
+
+  test:dart:
+    description: "Run tests for Dart packages only"
+    exec: dart test --reporter=compact
+    packageFilters:
+      scope: ["cherrypick", "cherrypick_annotations", "cherrypick_generator"]
+
+  test:flutter:
+    description: "Run tests for Flutter packages only"  
+    exec: flutter test --reporter=compact
+    packageFilters:
+      scope: ["cherrypick_flutter"]
 
   codegen:
     run: |
       melos exec --scope="postly" -- dart run build_runner build --delete-conflicting-outputs
 
+  outdated:
+    exec: dart pub outdated 
+
+  upgrade:
+    exec: dart pub upgrade --major-versions
+
+  drop:
+    exec: flutter clean

@@ -1,0 +1,27 @@
+builders:
+  module_generator:
+    import: "package:cherrypick_generator/module_generator.dart"
+    builder_factories: ["moduleBuilder"]
+    build_extensions: {".dart": [".module.cherrypick.g.dart"]}
+    auto_apply: dependents
+    required_inputs: ["lib/**"]
+    runs_before: []
+    build_to: source
+  inject_generator:
+    import: "package:cherrypick_generator/inject_generator.dart"
+    builder_factories: ["injectBuilder"]
+    build_extensions: {".dart": [".inject.cherrypick.g.dart"]}
+    auto_apply: dependents
+    required_inputs: ["lib/**"]
+    runs_before: []
+    build_to: source
+
+targets:
+  $default:
+    builders:
+      cherrypick_generator|module_generator:
+        generate_for:
+          - lib/**.dart
+      cherrypick_generator|inject_generator:
+        generate_for:
+          - lib/**.dart

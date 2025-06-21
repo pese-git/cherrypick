@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:cherrypick_flutter/cherrypick_flutter.dart';
 import 'use_case.dart';
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+  late final UseCase useCase;
+
+  // ignore: prefer_const_constructors_in_immutables
+  MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Разрешение зависимости UseCase из рутового скоупа
-    final UseCase useCase =
-        CherryPickProvider.of(context).openRootScope().resolve<UseCase>();
-
+    //_inject(context); // Make sure this function is called in context
     return Scaffold(
       appBar: AppBar(
         title: const Text('Example App'),
