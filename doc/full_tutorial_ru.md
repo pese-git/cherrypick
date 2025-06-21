@@ -408,8 +408,4 @@ class MyApp extends StatelessWidget {
 - [cherrypick](https://pub.dev/packages/cherrypick)
 - [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator)
-- [Исходники на GitHub](https://github.com/xddev/cherrypick)
-
----
-
-🎉 Готовы внедрять зависимости по-взрослому? CherryPick — для вас!
+- [Исходники на GitHub](https://github.com/pese-git/cherrypick)
