@@ -19,7 +19,29 @@ There are two main methods for initializing a custom instance `toInstance ()` an
 
 Example:
 
-```dart
+```
+
+---
+
+## Advanced: Customizing Code Generation Output
+
+You can configure where generated files will be placed by updating your `build.yaml` (supports `output_dir` and `build_extensions`):
+
+```yaml
+targets:
+  $default:
+    builders:
+      cherrypick_generator|inject_generator:
+        options:
+          output_dir: lib/generated
+      cherrypick_generator|module_generator:
+        options:
+          output_dir: lib/generated
+```
+
+For full control and more examples, see the "Full Tutorial" or documentation on `build_extensions`.
+
+---
  // initializing a text string instance through a method toInstance()
  Binding<String>().toInstance("hello world");
 

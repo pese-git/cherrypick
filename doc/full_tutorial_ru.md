@@ -382,6 +382,45 @@ class MyApp extends StatelessWidget {
 
 ---
 
+### Продвинутая настройка путей генерации кода
+
+В последних версиях генератора CherryPick добавлена поддержка гибкой настройки директорий и шаблонов имён файлов через `build.yaml`.
+
+Вы можете управлять и папкой назначения (через `output_dir`), и шаблоном имён (через `build_extensions`):
+
+```yaml
+targets:
+  $default:
+    builders:
+      cherrypick_generator|inject_generator:
+        options:
+          build_extensions:
+            '^lib/app.dart': ['lib/generated/app.inject.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+      cherrypick_generator|module_generator:
+        options:
+          build_extensions:
+            '^lib/di/{{}}.dart': ['lib/generated/di/{{}}.module.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+```
+
+- **output_dir**: Папка, куда будут складываться все сгенерированные файлы.
+- **build_extensions**: Полный контроль над именами итоговых файлов и подпапками.
+
+Если вы это используете, обязательно обновляйте импорты, например:
+```dart
+import 'package:your_project/generated/app.inject.cherrypick.g.dart';
+```
+Если не задать параметры, файлы будут сгенерированы рядом с исходными — как и раньше.
+
+---
+
+---
+
 ## Заключение
 
 **CherryPick** — это современное DI-решение для Dart и Flutter, сочетающее лаконичный API и расширенные возможности аннотирования и генерации кода. Гибкость Scopes, параметрические провайдеры, именованные биндинги и field-injection делают его особенно мощным как для небольших, так и для масштабных проектов.

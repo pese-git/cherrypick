@@ -4,6 +4,50 @@
 
 ---
 
+### Advanced: Customizing Generated File Paths (`build_extensions`)
+
+You can further control the filenames and subdirectory structure of generated files using the `build_extensions` option in `build.yaml`. This is especially useful in large apps for keeping DI artifacts organized under `lib/generated/` or any custom location.
+
+**Example advanced build.yaml:**
+
+```yaml
+targets:
+  $default:
+    builders:
+      cherrypick_generator|inject_generator:
+        options:
+          build_extensions:
+            '^lib/app.dart': ['lib/generated/app.inject.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+      cherrypick_generator|module_generator:
+        options:
+          build_extensions:
+            '^lib/di/{{}}.dart': ['lib/generated/di/{{}}.module.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+```
+
+- **output_dir**: Path where all generated files are placed (e.g., `lib/generated`)
+- **build_extensions**: Allows templating of generated filenames and locations. You can use wildcards like `{{}}` to keep directory structure or group related files.
+
+**If you use these options, be sure to update your imports accordingly, for example:**
+
+```dart
+import 'package:your_package/generated/app.inject.cherrypick.g.dart';
+import 'package:your_package/generated/di/app_module.module.cherrypick.g.dart';
+```
+
+### FAQ / Troubleshooting
+
+- If files are missing or located in unexpected directories, double-check your `output_dir` and `build_extensions` configuration.
+- If you change generation paths, always update your imports in the codebase.
+- These options are backward compatible: omitting them preserves pre-existing (side-by-source) output behavior.
+
+---
+
 ## Features
 
 - **Automatic Field Injection:**  
@@ -169,6 +213,26 @@ final class $MyModule extends MyModule {
 ---
 
 ## Advanced Usage
+
+### Custom output directory for generated code (output_dir)
+
+You can control the directory where the generated files (`*.inject.cherrypick.g.dart`, `*.module.cherrypick.g.dart`) are placed using the `output_dir` option in your `build.yaml`:
+
+```yaml
+targets:
+  $default:
+    builders:
+      cherrypick_generator|injectBuilder:
+        options:
+          output_dir: lib/generated
+      cherrypick_generator|moduleBuilder:
+        options:
+          output_dir: lib/generated
+```
+
+**If `output_dir` is omitted, generated files are placed next to the original sources (default behavior).**
+
+After running code generation, you will find files like `lib/generated/app.inject.cherrypick.g.dart` and `lib/generated/your_module.module.cherrypick.g.dart`. You can import them as needed from that directory.
 
 - **Combining Modules and Field Injection:**  
   It's possible to mix both style of DI — modules for binding, and field injection for consuming services.

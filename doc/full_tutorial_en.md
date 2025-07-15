@@ -379,6 +379,45 @@ You can use CherryPick in Dart CLI, server apps, and microservices. All major fe
 
 ---
 
+### Advanced: Customizing Generated Code Location
+
+CherryPick's code generator now supports flexible output configuration via `build.yaml`.
+
+You can control both the output directory (using `output_dir`) and filename templates (using `build_extensions`):
+
+```yaml
+targets:
+  $default:
+    builders:
+      cherrypick_generator|inject_generator:
+        options:
+          build_extensions:
+            '^lib/app.dart': ['lib/generated/app.inject.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+      cherrypick_generator|module_generator:
+        options:
+          build_extensions:
+            '^lib/di/{{}}.dart': ['lib/generated/di/{{}}.module.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+```
+
+- **output_dir**: Folder where all generated files will be placed.
+- **build_extensions**: Allows full customization of generated file names and subfolders.
+
+If you use these, be sure to update your imports accordingly, e.g.:
+```dart
+import 'package:your_project/generated/app.inject.cherrypick.g.dart';
+```
+If not specified, generated files will appear next to your source files, as before.
+
+---
+
+---
+
 ## Conclusion
 
 **CherryPick** is a modern DI solution for Dart and Flutter, combining a concise API and advanced annotation/codegen features. Scopes, parameterized providers, named bindings, and field-injection make it great for both small and large-scale projects.

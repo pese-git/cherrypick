@@ -18,6 +18,7 @@ dependencies:
   build: ^2.4.1
   source_gen: ^2.0.0
   collection: ^1.18.0
+  path: ^1.9.1
 
 dev_dependencies:
   lints: ^4.0.0

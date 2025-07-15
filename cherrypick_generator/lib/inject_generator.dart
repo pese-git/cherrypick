@@ -19,6 +19,7 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
+import 'cherrypick_custom_builders.dart' as custom;
 
 /// InjectGenerator generates a mixin for a class marked with @injectable()
 /// and injects all fields annotated with @inject(), using CherryPick DI.
@@ -204,4 +205,4 @@ class _ParsedInjectField {
 ///
 /// Фабрика билдера. Используется build_runner.
 Builder injectBuilder(BuilderOptions options) =>
-    PartBuilder([InjectGenerator()], '.inject.cherrypick.g.dart');
+    custom.injectCustomBuilder(options);

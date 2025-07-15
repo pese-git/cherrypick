@@ -7,7 +7,7 @@
 .idea/
 .vscode/
 
-
+**/generated
 **/*.g.dart
 **/*.gr.dart
 **/*.freezed.dart

@@ -15,9 +15,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
-
 import 'src/generated_class.dart';
-
+import 'cherrypick_custom_builders.dart' as custom;
 /// ---------------------------------------------------------------------------
 /// ModuleGenerator for code generation of dependency-injected modules.
 ///
@@ -89,5 +88,8 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
 /// Возвращает Builder, используемый build_runner для генерации кода для всех
 /// файлов, где встречается @module().
 /// ---------------------------------------------------------------------------
+
+
+
 Builder moduleBuilder(BuilderOptions options) =>
-    PartBuilder([ModuleGenerator()], '.module.cherrypick.g.dart');
+    custom.moduleCustomBuilder(options);

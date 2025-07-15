@@ -1,0 +1,27 @@
+targets:
+  $default:
+    builders:
+      cherrypick_generator|inject_generator:
+        options:
+          build_extensions:
+            '^lib/app.dart': ['lib/generated/app.inject.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+      cherrypick_generator|module_generator:
+        options:
+          build_extensions:
+            '^lib/di/{{}}.dart': ['lib/generated/di/{{}}.module.cherrypick.g.dart']
+          output_dir: lib/generated
+        generate_for:
+          - lib/**.dart
+
+#targets:
+#  $default:
+#    builders:
+#      cherrypick_generator|module_generator:
+#        generate_for:
+#          - lib/**.dart
+#      cherrypick_generator|inject_generator:
+#        generate_for:
+#          - lib/**.dart

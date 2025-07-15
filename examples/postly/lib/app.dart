@@ -7,7 +7,7 @@ import 'domain/repository/post_repository.dart';
 import 'presentation/bloc/post_bloc.dart';
 import 'router/app_router.dart';
 
-part 'app.inject.cherrypick.g.dart';
+part 'generated/app.inject.cherrypick.g.dart';
 
 @injectable()
 class MyApp extends StatelessWidget with _$MyApp {
