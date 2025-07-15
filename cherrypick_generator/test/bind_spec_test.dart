@@ -245,7 +245,10 @@ void main() {
         expect(
             result,
             equals(
-                "    bind<ApiClient>().toProvideAsync(() => createApiClient()).withName('mainApi').singleton();"));
+                "    bind<ApiClient>()\n"
+                "        .toProvideAsync(() => createApiClient())\n"
+                "        .withName('mainApi')\n"
+                "        .singleton();"));
       });
 
       test('should handle different indentation', () {

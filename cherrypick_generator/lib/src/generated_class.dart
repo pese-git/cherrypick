@@ -49,10 +49,15 @@ class GeneratedClass {
   /// Список всех обнаруженных биндингов
   final List<BindSpec> binds;
 
+  /// Source file name for the part directive
+  /// Имя исходного файла для part директивы
+  final String sourceFile;
+
   GeneratedClass(
     this.className,
     this.generatedClassName,
     this.binds,
+    this.sourceFile,
   );
 
   /// -------------------------------------------------------------------------
@@ -72,13 +77,15 @@ class GeneratedClass {
     final className = element.displayName;
     // Generated class name with '$' prefix (standard for generated Dart code).
     final generatedClassName = r'$' + className;
+    // Get source file name
+    final sourceFile = element.source.shortName;
     // Collect bindings for all non-abstract methods.
     final binds = element.methods
         .where((m) => !m.isAbstract)
         .map(BindSpec.fromMethod)
         .toList();
 
-    return GeneratedClass(className, generatedClassName, binds);
+    return GeneratedClass(className, generatedClassName, binds, sourceFile);
   }
 
   /// -------------------------------------------------------------------------
@@ -95,11 +102,17 @@ class GeneratedClass {
   /// и регистрирует все зависимости через методы bind<Type>()...
   /// -------------------------------------------------------------------------
   String generate() {
-    final buffer = StringBuffer();
-
-    buffer.writeln('final class $generatedClassName extends $className {');
-    buffer.writeln(' @override');
-    buffer.writeln(' void builder(Scope currentScope) {');
+    final buffer = StringBuffer()
+      ..writeln('// dart format width=80')
+      ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND')
+      ..writeln()
+      ..writeln('// **************************************************************************')
+      ..writeln('// ModuleGenerator')
+      ..writeln('// **************************************************************************')
+      ..writeln()
+      ..writeln('final class $generatedClassName extends $className {')
+      ..writeln('  @override')
+      ..writeln('  void builder(Scope currentScope) {');
 
     // For each binding, generate bind<Type>() code string.
     // Для каждого биндинга — генерируем строку bind<Type>()...
@@ -107,8 +120,9 @@ class GeneratedClass {
       buffer.writeln(bind.generateBind(4));
     }
 
-    buffer.writeln(' }');
-    buffer.writeln('}');
+    buffer
+      ..writeln('  }')
+      ..writeln('}');
 
     return buffer.toString();
   }

@@ -20,6 +20,9 @@ import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 import 'cherrypick_custom_builders.dart' as custom;
+import 'src/exceptions.dart';
+import 'src/type_parser.dart';
+import 'src/annotation_validator.dart';
 
 /// InjectGenerator generates a mixin for a class marked with @injectable()
 /// and injects all fields annotated with @inject(), using CherryPick DI.
@@ -50,34 +53,71 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     BuildStep buildStep,
   ) {
     if (element is! ClassElement) {
-      throw InvalidGenerationSourceError(
-        '@injectable() can only be applied to classes.',
+      throw CherryPickGeneratorException(
+        '@injectable() can only be applied to classes',
         element: element,
+        category: 'INVALID_TARGET',
+        suggestion: 'Apply @injectable() to a class instead of ${element.runtimeType}',
       );
     }
 
     final classElement = element;
+    
+    try {
+      // Validate class annotations
+      AnnotationValidator.validateClassAnnotations(classElement);
+      
+      return _generateInjectionCode(classElement);
+    } catch (e) {
+      if (e is CherryPickGeneratorException) {
+        rethrow;
+      }
+      throw CodeGenerationException(
+        'Failed to generate injection code: $e',
+        element: classElement,
+        suggestion: 'Check that all @inject fields have valid types and annotations',
+      );
+    }
+  }
+  
+  /// Generates the injection code for a class
+  String _generateInjectionCode(ClassElement classElement) {
     final className = classElement.name;
     final mixinName = '_\$$className';
-
-    final buffer = StringBuffer()
-      ..writeln('mixin $mixinName {')
-      ..writeln('  void _inject($className instance) {');
+    
+    // Get the source file name for the part directive
+    final sourceFile = classElement.source.shortName;
 
     // Collect and process all @inject fields.
-    // Собираем и обрабатываем все поля с @inject.
-    final injectFields =
-        classElement.fields.where(_isInjectField).map(_parseInjectField);
+    final injectFields = classElement.fields
+        .where(_isInjectField)
+        .map((field) => _parseInjectField(field, classElement))
+        .toList();
 
-    for (final parsedField in injectFields) {
-      buffer.writeln(_generateInjectionLine(parsedField));
+    final buffer = StringBuffer()
+      ..writeln('// dart format width=80')
+      ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND')
+      ..writeln()
+      ..writeln('// **************************************************************************')
+      ..writeln('// InjectGenerator')
+      ..writeln('// **************************************************************************')
+      ..writeln()
+      ..writeln('mixin $mixinName {');
+
+    if (injectFields.isEmpty) {
+      // For empty classes, generate a method with empty body
+      buffer.writeln('  void _inject($className instance) {}');
+    } else {
+      buffer.writeln('  void _inject($className instance) {');
+      for (final parsedField in injectFields) {
+        buffer.writeln(_generateInjectionLine(parsedField));
+      }
+      buffer.writeln('  }');
     }
+    
+    buffer.writeln('}');
 
-    buffer
-      ..writeln('  }')
-      ..writeln('}');
-
-    return buffer.toString();
+    return '${buffer.toString()}\n';
   }
 
   /// Checks if a field has the @inject annotation.
@@ -94,50 +134,51 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   ///
   /// Разбирает поле на наличие модификаторов scope/named и выясняет его тип.
   /// Возвращает [_ParsedInjectField] с информацией о внедрении.
-  static _ParsedInjectField _parseInjectField(FieldElement field) {
-    String? scopeName;
-    String? namedValue;
+  static _ParsedInjectField _parseInjectField(FieldElement field, ClassElement classElement) {
+    try {
+      // Validate field annotations
+      AnnotationValidator.validateFieldAnnotations(field);
+      
+      // Parse type using improved type parser
+      final parsedType = TypeParser.parseType(field.type, field);
+      TypeParser.validateInjectableType(parsedType, field);
+      
+      // Extract metadata
+      String? scopeName;
+      String? namedValue;
 
-    for (final meta in field.metadata) {
-      final DartObject? obj = meta.computeConstantValue();
-      final type = obj?.type?.getDisplayString();
-      if (type == 'scope') {
-        scopeName = obj?.getField('name')?.toStringValue();
-      } else if (type == 'named') {
-        namedValue = obj?.getField('value')?.toStringValue();
+      for (final meta in field.metadata) {
+        final DartObject? obj = meta.computeConstantValue();
+        final type = obj?.type?.getDisplayString();
+        if (type == 'scope') {
+          scopeName = obj?.getField('name')?.toStringValue();
+        } else if (type == 'named') {
+          namedValue = obj?.getField('value')?.toStringValue();
+        }
       }
+
+      return _ParsedInjectField(
+        fieldName: field.name,
+        parsedType: parsedType,
+        scopeName: scopeName,
+        namedValue: namedValue,
+      );
+    } catch (e) {
+      if (e is CherryPickGeneratorException) {
+        rethrow;
+      }
+      throw DependencyResolutionException(
+        'Failed to parse inject field "${field.name}"',
+        element: field,
+        suggestion: 'Check that the field type is valid and properly imported',
+        context: {
+          'field_name': field.name,
+          'field_type': field.type.getDisplayString(),
+          'class_name': classElement.name,
+          'error': e.toString(),
+        },
+      );
     }
-
-    final DartType dartType = field.type;
-    String coreTypeName;
-    bool isFuture;
-
-    if (dartType.isDartAsyncFuture) {
-      final ParameterizedType paramType = dartType as ParameterizedType;
-      coreTypeName = paramType.typeArguments.first.getDisplayString();
-      isFuture = true;
-    } else {
-      coreTypeName = dartType.getDisplayString();
-      isFuture = false;
-    }
-
-    // ***
-    // Добавим определение nullable для типа (например PostRepository? или Future<PostRepository?>)
-    bool isNullable = dartType.nullabilitySuffix ==
-            NullabilitySuffix.question ||
-        (dartType is ParameterizedType &&
-            (dartType)
-                .typeArguments
-                .any((t) => t.nullabilitySuffix == NullabilitySuffix.question));
-
-    return _ParsedInjectField(
-      fieldName: field.name,
-      coreType: coreTypeName.replaceAll('?', ''), // удаляем "?" на всякий
-      isFuture: isFuture,
-      isNullable: isNullable,
-      scopeName: scopeName,
-      namedValue: namedValue,
-    );
   }
 
   /// Generates a line of code that performs the dependency injection for a field.
@@ -146,24 +187,47 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// Генерирует строку кода, которая внедряет зависимость для поля.
   /// Учитывает resolve/resolveAsync, scoping и named qualifier.
   String _generateInjectionLine(_ParsedInjectField field) {
-    // Используем tryResolve для nullable, иначе resolve
-    final resolveMethod = field.isFuture
-        ? (field.isNullable
-            ? 'tryResolveAsync<${field.coreType}>'
-            : 'resolveAsync<${field.coreType}>')
-        : (field.isNullable
-            ? 'tryResolve<${field.coreType}>'
-            : 'resolve<${field.coreType}>');
-
+    final resolveMethod = '${field.parsedType.resolveMethodName}<${field.parsedType.codeGenType}>';
+    final fieldName = field.fieldName;
+    
+    // Build the scope call
     final openCall = (field.scopeName != null && field.scopeName!.isNotEmpty)
         ? "CherryPick.openScope(scopeName: '${field.scopeName}')"
         : "CherryPick.openRootScope()";
-
-    final params = (field.namedValue != null && field.namedValue!.isNotEmpty)
-        ? "(named: '${field.namedValue}')"
-        : '()';
-
-    return "    instance.${field.fieldName} = $openCall.$resolveMethod$params;";
+    
+    // Build the parameters
+    final hasNamedParam = field.namedValue != null && field.namedValue!.isNotEmpty;
+    final params = hasNamedParam ? "(named: '${field.namedValue}')" : '()';
+    
+    // Create the full line
+    final fullLine = "    instance.$fieldName = $openCall.$resolveMethod$params;";
+    
+    // Check if line is too long (dart format width=80, accounting for indentation)
+    if (fullLine.length <= 80) {
+      return fullLine;
+    }
+    
+    // Format long lines with proper line breaks
+    if (hasNamedParam && field.scopeName != null && field.scopeName!.isNotEmpty) {
+      // For scoped calls with named parameters, break after openScope
+      return "    instance.$fieldName = CherryPick.openScope(\n"
+             "      scopeName: '${field.scopeName}',\n"
+             "    ).$resolveMethod(named: '${field.namedValue}');";
+    } else if (hasNamedParam) {
+      // For named parameters without scope, break after the method call
+      return "    instance.$fieldName = $openCall.$resolveMethod(\n"
+             "      named: '${field.namedValue}',\n"
+             "    );";
+    } else if (field.scopeName != null && field.scopeName!.isNotEmpty) {
+      // For scoped calls without named params, break after openScope with proper parameter formatting
+      return "    instance.$fieldName = CherryPick.openScope(\n"
+             "      scopeName: '${field.scopeName}',\n"
+             "    ).$resolveMethod();";
+    } else {
+      // For simple long calls, break after openRootScope
+      return "    instance.$fieldName = $openCall\n"
+             "        .$resolveMethod();";
+    }
   }
 }
 
@@ -176,12 +240,8 @@ class _ParsedInjectField {
   /// The name of the field / Имя поля.
   final String fieldName;
 
-  /// The base type name (T or Future<T>) / Базовый тип (T или тип из Future<T>).
-  final String coreType;
-
-  /// True if the field type is Future<T>; false otherwise
-  /// Истина, если поле — Future<T>, иначе — ложь.
-  final bool isFuture;
+  /// Parsed type information / Информация о типе поля.
+  final ParsedType parsedType;
 
   /// Optional scope annotation argument / Опциональное имя scope.
   final String? scopeName;
@@ -189,16 +249,18 @@ class _ParsedInjectField {
   /// Optional named annotation argument / Опциональное имя named.
   final String? namedValue;
 
-  final bool isNullable;
-
   _ParsedInjectField({
     required this.fieldName,
-    required this.coreType,
-    required this.isFuture,
-    required this.isNullable,
+    required this.parsedType,
     this.scopeName,
     this.namedValue,
   });
+  
+  @override
+  String toString() {
+    return '_ParsedInjectField(fieldName: $fieldName, parsedType: $parsedType, '
+           'scopeName: $scopeName, namedValue: $namedValue)';
+  }
 }
 
 /// Builder factory. Used by build_runner.

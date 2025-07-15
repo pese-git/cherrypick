@@ -16,6 +16,8 @@ import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 import 'src/generated_class.dart';
+import 'src/exceptions.dart';
+import 'src/annotation_validator.dart';
 import 'cherrypick_custom_builders.dart' as custom;
 /// ---------------------------------------------------------------------------
 /// ModuleGenerator for code generation of dependency-injected modules.
@@ -61,20 +63,40 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
     // Only classes are supported for @module() annotation
     // Обрабатываются только классы (другие элементы — ошибка)
     if (element is! ClassElement) {
-      throw InvalidGenerationSourceError(
-        '@module() can only be applied to classes. / @module() может быть применён только к классам.',
+      throw CherryPickGeneratorException(
+        '@module() can only be applied to classes',
         element: element,
+        category: 'INVALID_TARGET',
+        suggestion: 'Apply @module() to a class instead of ${element.runtimeType}',
       );
     }
 
     final classElement = element;
 
-    // Build a representation of the generated bindings based on class methods /
-    // Создаёт объект, описывающий, какие биндинги нужно сгенерировать на основании методов класса
-    final generatedClass = GeneratedClass.fromClassElement(classElement);
+    try {
+      // Validate class annotations
+      AnnotationValidator.validateClassAnnotations(classElement);
+      
+      // Build a representation of the generated bindings based on class methods
+      final generatedClass = GeneratedClass.fromClassElement(classElement);
 
-    // Generate the resulting Dart code / Генерирует итоговый Dart-код
-    return generatedClass.generate();
+      // Generate the resulting Dart code
+      return generatedClass.generate();
+    } catch (e) {
+      if (e is CherryPickGeneratorException) {
+        rethrow;
+      }
+      throw CodeGenerationException(
+        'Failed to generate module code for class "${classElement.name}"',
+        element: classElement,
+        suggestion: 'Check that all methods have valid @instance or @provide annotations',
+        context: {
+          'class_name': classElement.name,
+          'method_count': classElement.methods.length,
+          'error': e.toString(),
+        },
+      );
+    }
   }
 }
 

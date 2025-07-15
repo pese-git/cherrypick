@@ -56,9 +56,43 @@ class CustomOutputBuilder extends Builder {
     final outputId = AssetId(inputId.package, outputPath);
     // part of - всегда авто!
     final partOfPath = p.relative(inputId.path, from: p.dirname(outputPath));
-    final codeWithPartOf = "part of '$partOfPath';\n\n$generated";
+    
+    // Check if generated code starts with formatting header
+    String finalCode;
+    if (generated.startsWith('// dart format width=80')) {
+      // Find the end of the header (after "// GENERATED CODE - DO NOT MODIFY BY HAND")
+      final lines = generated.split('\n');
+      int headerEndIndex = -1;
+      
+      for (int i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('// GENERATED CODE - DO NOT MODIFY BY HAND')) {
+          headerEndIndex = i;
+          break;
+        }
+      }
+      
+      if (headerEndIndex != -1) {
+        // Insert part of directive after the header
+        final headerLines = lines.sublist(0, headerEndIndex + 1);
+        final remainingLines = lines.sublist(headerEndIndex + 1);
+        
+        final headerPart = headerLines.join('\n');
+        final remainingPart = remainingLines.join('\n');
+        
+        // Preserve trailing newline if original had one
+        final hasTrailingNewline = generated.endsWith('\n');
+        finalCode = '$headerPart\n\npart of \'$partOfPath\';\n$remainingPart${hasTrailingNewline ? '' : '\n'}';
+      } else {
+        // Fallback: add part of at the beginning
+        finalCode = "part of '$partOfPath';\n\n$generated";
+      }
+    } else {
+      // No header, add part of at the beginning
+      finalCode = "part of '$partOfPath';\n\n$generated";
+    }
+    
     print('[CustomOutputBuilder] writing to output: \\${outputId.path}');
-    await buildStep.writeAsString(outputId, codeWithPartOf);
+    await buildStep.writeAsString(outputId, finalCode);
     print('[CustomOutputBuilder] successfully written for input: \\${inputId.path}');
   }
 }
