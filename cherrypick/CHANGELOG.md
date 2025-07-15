@@ -1,3 +1,7 @@
+## 2.2.0-dev.2
+
+ - **DOCS**: move and update quick start guides to ./doc directory.
+
 ## 2.2.0-dev.1
 
  - **FIX**: fix warnings.

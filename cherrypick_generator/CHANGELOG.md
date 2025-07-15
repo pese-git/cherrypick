@@ -1,3 +1,11 @@
+## 1.1.0-dev.6
+
+> Note: This release has breaking changes.
+
+ - **FIX**: format test code.
+ - **FEAT**(generator): support output_dir and build_extensions config for generated files.
+ - **BREAKING** **FEAT**(generator): complete code generation testing framework with 100% test coverage.
+
 ## 1.1.0-dev.5
 
  - **FEAT**: implement tryResolve via generate code.

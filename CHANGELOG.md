@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-07-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick_generator` - `v1.1.0-dev.6`](#cherrypick_generator---v110-dev6)
+
+Packages with other changes:
+
+ - [`cherrypick` - `v2.2.0-dev.2`](#cherrypick---v220-dev2)
+ - [`cherrypick_flutter` - `v1.1.2-dev.2`](#cherrypick_flutter---v112-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.2-dev.2`
+
+---
+
+#### `cherrypick_generator` - `v1.1.0-dev.6`
+
+ - **FIX**: format test code.
+ - **FEAT**(generator): support output_dir and build_extensions config for generated files.
+ - **BREAKING** **FEAT**(generator): complete code generation testing framework with 100% test coverage.
+
+#### `cherrypick` - `v2.2.0-dev.2`
+
+ - **DOCS**: move and update quick start guides to ./doc directory.
+
+
 ## 2025-06-04
 
 ### Changes
