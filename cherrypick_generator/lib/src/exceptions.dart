@@ -82,60 +82,36 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
 /// Specific exception types for different error categories
 class AnnotationValidationException extends CherryPickGeneratorException {
   AnnotationValidationException(
-    String message, {
-    required Element element,
-    String? suggestion,
-    Map<String, dynamic>? context,
-  }) : super(
-          message,
-          element: element,
-          category: 'ANNOTATION_VALIDATION',
-          suggestion: suggestion,
-          context: context,
-        );
+    super.message, {
+    required super.element,
+    super.suggestion,
+    super.context,
+  }) : super(category: 'ANNOTATION_VALIDATION');
 }
 
 class TypeParsingException extends CherryPickGeneratorException {
   TypeParsingException(
-    String message, {
-    required Element element,
-    String? suggestion,
-    Map<String, dynamic>? context,
-  }) : super(
-          message,
-          element: element,
-          category: 'TYPE_PARSING',
-          suggestion: suggestion,
-          context: context,
-        );
+    super.message, {
+    required super.element,
+    super.suggestion,
+    super.context,
+  }) : super(category: 'TYPE_PARSING');
 }
 
 class CodeGenerationException extends CherryPickGeneratorException {
   CodeGenerationException(
-    String message, {
-    required Element element,
-    String? suggestion,
-    Map<String, dynamic>? context,
-  }) : super(
-          message,
-          element: element,
-          category: 'CODE_GENERATION',
-          suggestion: suggestion,
-          context: context,
-        );
+    super.message, {
+    required super.element,
+    super.suggestion,
+    super.context,
+  }) : super(category: 'CODE_GENERATION');
 }
 
 class DependencyResolutionException extends CherryPickGeneratorException {
   DependencyResolutionException(
-    String message, {
-    required Element element,
-    String? suggestion,
-    Map<String, dynamic>? context,
-  }) : super(
-          message,
-          element: element,
-          category: 'DEPENDENCY_RESOLUTION',
-          suggestion: suggestion,
-          context: context,
-        );
+    super.message, {
+    required super.element,
+    super.suggestion,
+    super.context,
+  }) : super(category: 'DEPENDENCY_RESOLUTION');
 }

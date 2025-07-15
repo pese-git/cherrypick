@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:analyzer/dart/element/type.dart';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/source/source.dart';
 import 'package:cherrypick_generator/src/type_parser.dart';

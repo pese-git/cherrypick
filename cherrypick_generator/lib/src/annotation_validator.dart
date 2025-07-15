@@ -217,7 +217,6 @@ class AnnotationValidator {
       final obj = meta.computeConstantValue();
       final type = obj?.type?.getDisplayString();
       if (type == 'scope') {
-        final scopeName = obj?.getField('name')?.toStringValue();
         // Empty scope name is treated as no scope (uses root scope)
         // This is allowed for backward compatibility and convenience
       }

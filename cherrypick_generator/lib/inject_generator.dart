@@ -13,8 +13,8 @@
 
 import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
+
+
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -85,9 +85,6 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     final className = classElement.name;
     final mixinName = '_\$$className';
     
-    // Get the source file name for the part directive
-    final sourceFile = classElement.source.shortName;
-
     // Collect and process all @inject fields.
     final injectFields = classElement.fields
         .where(_isInjectField)

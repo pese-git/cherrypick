@@ -12,7 +12,7 @@
 //
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:source_gen/source_gen.dart';
+
 
 import 'bind_parameters_spec.dart';
 import 'metadata_utils.dart';
