@@ -18,10 +18,18 @@ import 'exceptions.dart';
 
 /// Enhanced type parser that uses AST analysis instead of regular expressions
 class TypeParser {
+  /// Кэш для ParsedType по паре (dartType, context)
+  static final Map<int, ParsedType> _typeCache = {};
+
   /// Parses a DartType and extracts detailed type information
   static ParsedType parseType(DartType dartType, Element context) {
+    final key = dartType.hashCode ^ context.hashCode;
+    final cached = _typeCache[key];
+    if (cached != null) return cached;
     try {
-      return _parseTypeInternal(dartType, context);
+      final parsed = _parseTypeInternal(dartType, context);
+      _typeCache[key] = parsed;
+      return parsed;
     } catch (e) {
       throw TypeParsingException(
         'Failed to parse type: ${dartType.getDisplayString()}',
