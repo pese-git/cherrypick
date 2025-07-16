@@ -1,0 +1,13 @@
+name: cherrypick_cli
+version: 0.1.0
+publish_to: none
+description: CLI tool for CherryPick DI ecosystem
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+dependencies:
+  args: ^2.4.2
+  yaml: ^3.1.2
+  yaml_edit: ^2.1.1
+  json2yaml: ^3.0.0
+executables:
+  cherrypick_cli:
