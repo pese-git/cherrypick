@@ -202,9 +202,8 @@ part of 'test_widget.dart';
 
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
-    instance.service = CherryPick.openScope(
-      scopeName: 'userScope',
-    ).resolve<MyService>();
+    instance.service =
+        CherryPick.openScope(scopeName: 'userScope').resolve<MyService>();
   }
 }
 ''';
@@ -407,9 +406,10 @@ mixin _\$TestWidget {
     instance.cacheService = CherryPick.openRootScope().tryResolve<CacheService>(
       named: 'cache',
     );
-    instance.dbService = CherryPick.openScope(
-      scopeName: 'dbScope',
-    ).resolveAsync<DatabaseService>();
+    instance.dbService =
+        CherryPick.openScope(
+          scopeName: 'dbScope',
+        ).resolveAsync<DatabaseService>();
   }
 }
 ''';
@@ -451,10 +451,10 @@ part of 'test_widget.dart';
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
     instance.stringList = CherryPick.openRootScope().resolve<List<String>>();
-    instance.stringIntMap = CherryPick.openRootScope()
-        .resolve<Map<String, int>>();
-    instance.futureStringList = CherryPick.openRootScope()
-        .resolveAsync<List<String>>();
+    instance.stringIntMap =
+        CherryPick.openRootScope().resolve<Map<String, int>>();
+    instance.futureStringList =
+        CherryPick.openRootScope().resolveAsync<List<String>>();
   }
 }
 ''';
