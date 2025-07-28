@@ -28,3 +28,5 @@ melos_cherrypick_generator.iml
 **/*.mocks.dart
 
 coverage
+
+pubspec_overrides.yaml

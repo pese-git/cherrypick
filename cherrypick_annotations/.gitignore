@@ -24,3 +24,5 @@ doc/api/
 .fvm/
 
 melos_cherrypick_annotations.iml
+
+pubspec_overrides.yaml
