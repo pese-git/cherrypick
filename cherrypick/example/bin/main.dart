@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:cherrypick/cherrypick.dart';
-import 'package:meta/meta.dart';
 
 class AppModule extends Module {
   @override
