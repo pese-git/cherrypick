@@ -39,7 +39,7 @@ class InstanceResolver<T> implements BindingResolver<T> {
 
   @override
   T resolveSync([_]) {
-    if (_instance is T) return _instance as T;
+    if (_instance is T) return _instance;
     throw StateError(
       'Instance $_instance is Future; '
       'use resolveAsync() instead',
@@ -48,9 +48,9 @@ class InstanceResolver<T> implements BindingResolver<T> {
 
   @override
   Future<T> resolveAsync([_]) {
-    if (_instance is Future<T>) return _instance as Future<T>;
-    if (_instance is T) return Future.value(_instance as T);
-    throw StateError('Unexpected instance type: $_instance');
+    if (_instance is Future<T>) return _instance;
+
+    return Future.value(_instance);
   }
 
   @override
