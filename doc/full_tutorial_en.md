@@ -75,7 +75,7 @@ Allows you to create dependencies with runtime parameters, e.g., a service for a
 bind<UserService>().toProvideWithParams((userId) => UserService(userId));
 
 // Resolve:
-final userService = scope.resolveWithParams<UserService>(params: '123');
+final userService = scope.resolve<UserService>(params: '123');
 ```
 
 ---

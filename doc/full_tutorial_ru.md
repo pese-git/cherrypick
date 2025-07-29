@@ -76,7 +76,7 @@ final api = scope.resolve<ApiClient>(named: 'mock');
 bind<UserService>().toProvideWithParams((userId) => UserService(userId));
 
 // Получение
-final userService = scope.resolveWithParams<UserService>(params: '123');
+final userService = scope.resolve<UserService>(params: '123');
 ```
 
 ---

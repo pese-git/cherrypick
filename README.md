@@ -99,7 +99,7 @@ final scope = CherryPick.openRootScope()
   ..installModules([$MyModule()]);
 
 final repo = scope.resolve<DataRepository>();
-final greeting = scope.resolveWithParams<String>('John'); // 'Hello, John!'
+final greeting = scope.resolve<String>(params: 'John'); // 'Hello, John!'
 ```
 
 _For Flutter, wrap your app with `CherryPickProvider` for DI scopes in the widget tree:_
