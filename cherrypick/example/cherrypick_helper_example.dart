@@ -151,6 +151,7 @@ void main() {
   CherryPick.closeRootScope();
   
   // Создаем скоуп без обнаружения
+  // ignore: unused_local_variable
   final specificScope = CherryPick.openRootScope();
   print('   Detection in root scope: ${CherryPick.isCycleDetectionEnabledForScope()}');
   
@@ -159,6 +160,7 @@ void main() {
   print('✅ Detection enabled for root scope: ${CherryPick.isCycleDetectionEnabledForScope()}');
   
   // Создаем дочерний скоуп
+  // ignore: unused_local_variable
   final featureScope = CherryPick.openScope(scopeName: 'feature.auth');
   print('   Detection in feature.auth scope: ${CherryPick.isCycleDetectionEnabledForScope(scopeName: 'feature.auth')}');
   
@@ -191,6 +193,7 @@ void main() {
   print('   Chain before resolve: ${CherryPick.getCurrentResolutionChain()}');
   
   // The chain is populated during resolution, but cleared after completion
+  // ignore: unused_local_variable
   final trackedUserService = trackingScope.resolve<UserService>();
   print('   Chain after resolve: ${CherryPick.getCurrentResolutionChain()}');
   print('');

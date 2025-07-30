@@ -142,6 +142,7 @@ void main() {
 
       test('should clear global cycle detector state', () {
         CherryPick.enableGlobalCrossScopeCycleDetection();
+        // ignore: unused_local_variable
         final scope = CherryPick.openGlobalSafeRootScope();
         
         expect(CherryPick.getGlobalResolutionChain(), isEmpty);

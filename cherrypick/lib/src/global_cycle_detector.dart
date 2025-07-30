@@ -142,15 +142,17 @@ class GlobalCycleDetector {
   void clear() {
     _globalResolutionStack.clear();
     _globalResolutionHistory.clear();
-    _scopeDetectors.values.forEach((detector) => detector.clear());
+    _scopeDetectors.values.forEach(_detectorClear);
     _scopeDetectors.clear();
   }
 
+  void _detectorClear(detector) => detector.clear();
+
   /// RU: Создать уникальный ключ для зависимости с учетом скоупа.
   /// ENG: Create unique key for dependency including scope.
-  String _createDependencyKey<T>(String? named, String? scopeId) {
-    return _createDependencyKeyFromType(T, named, scopeId);
-  }
+  //String _createDependencyKey<T>(String? named, String? scopeId) {
+  //  return _createDependencyKeyFromType(T, named, scopeId);
+  //}
 
   /// RU: Создать уникальный ключ для зависимости по типу с учетом скоупа.
   /// ENG: Create unique key for dependency by type including scope.
