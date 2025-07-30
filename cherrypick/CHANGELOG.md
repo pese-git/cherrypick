@@ -1,3 +1,7 @@
+## 3.0.0-dev.1
+
+ - **DOCS**: add quick guide for circular dependency detection to README.
+
 ## 3.0.0-dev.0
 
 > Note: This release has breaking changes.
