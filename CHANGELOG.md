@@ -11,6 +11,34 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.1`](#cherrypick---v300-dev1)
+ - [`cherrypick_flutter` - `v1.1.3-dev.1`](#cherrypick_flutter---v113-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.1`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.1`
+
+ - **DOCS**: add quick guide for circular dependency detection to README.
+
+
+## 2025-07-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`cherrypick` - `v3.0.0-dev.0`](#cherrypick---v300-dev0)
 
 Packages with other changes:
