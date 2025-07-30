@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-07-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.0`](#cherrypick---v300-dev0)
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.3-dev.0`](#cherrypick_flutter---v113-dev0)
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.0`
+
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.0`
+
+ - **FIX**: update deps.
+
+
 ## 2025-07-28
 
 ### Changes

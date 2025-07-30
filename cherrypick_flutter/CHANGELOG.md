@@ -1,3 +1,7 @@
+## 1.1.3-dev.0
+
+ - **FIX**: update deps.
+
 ## 1.1.2
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
