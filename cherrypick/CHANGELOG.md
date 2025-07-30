@@ -1,3 +1,9 @@
+## 3.0.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+
 ## 2.2.0
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
