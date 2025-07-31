@@ -91,6 +91,21 @@ class Binding<T> {
     return this;
   }
 
+  @Deprecated('Use toInstance instead of toInstanceAsync')
+  Binding<T> toInstanceAsync(Instance<T> value) {
+    return this.toInstance(value);
+  }
+
+  @Deprecated('Use toProvide instead of toProvideAsync')
+  Binding<T> toProvideAsync(Provider<T> value) {
+    return this.toProvide(value);
+  }
+
+  @Deprecated('Use toProvideWithParams instead of toProvideAsyncWithParams')
+  Binding<T> toProvideAsyncWithParams(ProviderWithParams<T> value) {
+    return this.toProvideWithParams(value);
+  }
+
   /// RU: Инициализация экземляпяра  как сингелтон [value].
   /// ENG: Initialization instance as a singelton [value].
   ///
