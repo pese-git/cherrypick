@@ -17,12 +17,12 @@ All scenarios use the public API capabilities of cherrypick (scope, module, bind
 
 | Scenario                                           | RunTime (μs)  |
 |----------------------------------------------------|---------------|
-| RegisterAndResolve                                 | 0.3407        |
-| ChainSingleton (A->B->C, singleton)                | 0.3777        |
-| ChainFactory (A->B->C, factory)                    | 0.9688        |
-| NamedResolve (by name)                             | 0.3878        |
-| AsyncChain (A->B->C, async)                        | 1.8006        |
-| ScopeOverride (child overrides parent)             | 0.3477        |
+| RegisterAndResolve                                 | 0.4574        |
+| ChainSingleton (A->B->C, singleton)                | 0.3759        |
+| ChainFactory (A->B->C, factory)                    | 1.3783        |
+| NamedResolve (by name)                             | 0.5193        |
+| AsyncChain (A->B->C, async)                        | 0.5985        |
+| ScopeOverride (child overrides parent)             | 0.3611        |
 
 ## How to run
 
