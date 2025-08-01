@@ -75,8 +75,54 @@ Scope - это контейнер, который хранит все дерев
     // или
     final str = rootScope.tryResolve<String>();
 
-    // закрыть главный scope
+    // Рекомендуется: закрывайте главный scope для автоматического освобождения всех ресурсов
     Cherrypick.closeRootScope();
+    // Или, для продвинутых/ручных сценариев:
+    // rootScope.dispose();
+```
+
+### Автоматическое управление ресурсами (`Disposable`, `dispose`)
+
+Если ваш сервис реализует интерфейс `Disposable`, CherryPick автоматически вызовет у него метод `dispose()` при закрытии scope.
+
+**Рекомендация:**  
+Завершайте работу через `Cherrypick.closeRootScope()` (для root scope) или `scope.closeSubScope('feature')` (для подскоупов).  
+Эти методы автоматически вызовут `dispose()` для всех разрешённых через DI объектов, реализующих `Disposable`, обеспечив корректную очистку и высвобождение ресурсов.
+
+Вызов `scope.dispose()` логичен, если вы явно управляете жизненным циклом scope (например, в сложных сценариях).
+
+#### Пример
+
+```dart
+class MyService implements Disposable {
+  @override
+  void dispose() {
+    // закрытие ресурса, соединений, таймеров и т.п.
+    print('MyService disposed!');
+  }
+}
+
+final scope = openRootScope();
+scope.installModules([
+  ModuleImpl(),
+]);
+
+final service = scope.resolve<MyService>();
+
+// ... используем сервис ...
+
+// Рекомендуемый финал:
+Cherrypick.closeRootScope(); // выведет в консоль 'MyService disposed!'
+
+// Или для подскоупа:
+// scope.closeSubScope('feature');
+
+class ModuleImpl extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<MyService>().toProvide(() => MyService()).singleton();
+  }
+}
 ```
 
 ## Пример приложения

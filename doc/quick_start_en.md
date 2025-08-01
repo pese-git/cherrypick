@@ -75,8 +75,54 @@ Example:
     // or
     final str = rootScope.tryResolve<String>();
 
-    // close main scope
+    // Recommended: Close the root scope & automatically release all Disposable resources
     Cherrypick.closeRootScope();
+    // Or, for advanced/manual scenarios:
+    // rootScope.dispose();
+```
+
+### Automatic resource management (`Disposable`, `dispose`)
+
+If your service implements the `Disposable` interface, CherryPick can automatically call `dispose()` when you close a scope.
+
+**Best practice:**  
+Always finish your work with `Cherrypick.closeRootScope()` (for the root scope) or `scope.closeSubScope('feature')` (for subscopes).  
+These methods will automatically dispose all objects implementing `Disposable` that have been resolved from DI, ensuring safe and complete cleanup.
+
+Call `scope.dispose()` only if you need to manage scopes manually in advanced scenarios.
+
+#### Example
+
+```dart
+class MyService implements Disposable {
+  @override
+  void dispose() {
+    // release resources, close connections, etc.
+    print('MyService disposed!');
+  }
+}
+
+final scope = openRootScope();
+scope.installModules([
+  ModuleImpl(),
+]);
+
+final service = scope.resolve<MyService>();
+
+// ... use service
+
+// Recommended:
+Cherrypick.closeRootScope(); // will print: MyService disposed!
+
+// Or, to close a subscope:
+// scope.closeSubScope('feature');
+
+class ModuleImpl extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<MyService>().toProvide(() => MyService()).singleton();
+  }
+}
 ```
 
 ## Example app

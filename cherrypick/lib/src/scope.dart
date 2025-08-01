@@ -14,6 +14,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:cherrypick/src/cycle_detector.dart';
+import 'package:cherrypick/src/disposable.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
@@ -22,6 +23,9 @@ Scope openRootScope() => Scope(null);
 
 class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   final Scope? _parentScope;
+
+  /// COLLECTS all resolved instances that implement [Disposable].
+  final Set<Disposable> _disposables = HashSet();
 
   /// RU: Метод возвращает родительский [Scope].
   ///
@@ -78,6 +82,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   void closeSubScope(String name) {
     final childScope = _scopeMap[name];
     if (childScope != null) {
+      childScope.dispose(); // <---- Автоматический вызов dispose
       // Очищаем детектор для дочернего скоупа
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
@@ -124,13 +129,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   T resolve<T>({String? named, dynamic params}) {
     // Используем глобальное отслеживание, если включено
+    T result;
     if (isGlobalCycleDetectionEnabled) {
-      return withGlobalCycleDetection<T>(T, named, () {
+      result = withGlobalCycleDetection<T>(T, named, () {
         return _resolveWithLocalDetection<T>(named: named, params: params);
       });
     } else {
-      return _resolveWithLocalDetection<T>(named: named, params: params);
+      result = _resolveWithLocalDetection<T>(named: named, params: params);
     }
+    _trackDisposable(result);
+    return result;
   }
 
   /// RU: Разрешение с локальным детектором циклических зависимостей.
@@ -152,13 +160,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   T? tryResolve<T>({String? named, dynamic params}) {
     // Используем глобальное отслеживание, если включено
+    T? result;
     if (isGlobalCycleDetectionEnabled) {
-      return withGlobalCycleDetection<T?>(T, named, () {
+      result = withGlobalCycleDetection<T?>(T, named, () {
         return _tryResolveWithLocalDetection<T>(named: named, params: params);
       });
     } else {
-      return _tryResolveWithLocalDetection<T>(named: named, params: params);
+      result = _tryResolveWithLocalDetection<T>(named: named, params: params);
     }
+    if (result != null) _trackDisposable(result);
+    return result;
   }
 
   /// RU: Попытка разрешения с локальным детектором циклических зависимостей.
@@ -196,13 +207,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   Future<T> resolveAsync<T>({String? named, dynamic params}) async {
     // Используем глобальное отслеживание, если включено
+    T result;
     if (isGlobalCycleDetectionEnabled) {
-      return withGlobalCycleDetection<Future<T>>(T, named, () async {
+      result = await withGlobalCycleDetection<Future<T>>(T, named, () async {
         return await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
       });
     } else {
-      return await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
+      result = await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
     }
+    _trackDisposable(result);
+    return result;
   }
 
   /// RU: Асинхронное разрешение с локальным детектором циклических зависимостей.
@@ -221,13 +235,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
     // Используем глобальное отслеживание, если включено
+    T? result;
     if (isGlobalCycleDetectionEnabled) {
-      return withGlobalCycleDetection<Future<T?>>(T, named, () async {
+      result = await withGlobalCycleDetection<Future<T?>>(T, named, () async {
         return await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
       });
     } else {
-      return await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
+      result = await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
     }
+    if (result != null) _trackDisposable(result);
+    return result;
   }
 
   /// RU: Асинхронная попытка разрешения с локальным детектором циклических зависимостей.
@@ -263,7 +280,29 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         }
       }
     }
-
     return null;
+  }
+
+  /// INTERNAL: Tracks Disposable objects
+  void _trackDisposable(Object? obj) {
+    if (obj is Disposable && !_disposables.contains(obj)) {
+      _disposables.add(obj);
+    }
+  }
+
+  /// Calls dispose on all tracked disposables and child scopes recursively
+  void dispose() {
+    // Сначала освобождаем все дочерние subScope
+    for (final subScope in _scopeMap.values) {
+      subScope.dispose();
+    }
+    _scopeMap.clear();
+    // Затем освобождаем свои disposable
+    for (final d in _disposables) {
+      try {
+        d.dispose();
+      } catch (_) {}
+    }
+    _disposables.clear();
   }
 }

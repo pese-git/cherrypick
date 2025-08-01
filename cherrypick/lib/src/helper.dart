@@ -45,6 +45,7 @@ class CherryPick {
   ///
   static void closeRootScope() {
     if (_rootScope != null) {
+      _rootScope!.dispose(); // Автоматический вызов dispose для rootScope!
       _rootScope = null;
     }
   }
