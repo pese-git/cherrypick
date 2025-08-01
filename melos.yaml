@@ -3,6 +3,7 @@ name: cherrypick_workspace
 sdkPath: .fvm/flutter_sdk
 
 packages:
+  - benchmark_cherrypick
   - cherrypick
   - cherrypick_flutter
   - cherrypick_annotations
