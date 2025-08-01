@@ -25,6 +25,8 @@ class ScopeOverrideBenchmark extends BenchmarkBase {
   late Scope child;
   @override
   void setup() {
+    CherryPick.disableGlobalCycleDetection();
+    CherryPick.disableGlobalCrossScopeCycleDetection();
     parent = CherryPick.openRootScope();
     parent.installModules([ParentModule()]);
     child = parent.openSubScope('child');

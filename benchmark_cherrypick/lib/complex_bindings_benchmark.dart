@@ -52,6 +52,8 @@ class ChainFactoryBenchmark extends BenchmarkBase {
   late Scope scope;
   @override
   void setup() {
+    CherryPick.disableGlobalCycleDetection();
+    CherryPick.disableGlobalCrossScopeCycleDetection();
     scope = CherryPick.openRootScope();
     scope.installModules([ChainFactoryModule()]);
   }

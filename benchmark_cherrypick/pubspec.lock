@@ -31,7 +31,7 @@ packages:
       path: "../cherrypick"
       relative: true
     source: path
-    version: "2.2.0"
+    version: "3.0.0-dev.1"
   exception_templates:
     dependency: transitive
     description:
@@ -57,4 +57,4 @@ packages:
     source: hosted
     version: "1.17.0"
 sdks:
-  dart: ">=3.5.2 <4.0.0"
+  dart: ">=3.5.0 <4.0.0"

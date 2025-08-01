@@ -26,6 +26,8 @@ class AsyncChainBenchmark extends AsyncBenchmarkBase {
 
   @override
   Future<void> setup() async {
+    CherryPick.disableGlobalCycleDetection();
+    CherryPick.disableGlobalCrossScopeCycleDetection();
     scope = CherryPick.openRootScope();
     scope.installModules([AsyncChainModule()]);
   }

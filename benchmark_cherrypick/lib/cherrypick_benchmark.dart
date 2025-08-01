@@ -18,6 +18,8 @@ class RegisterAndResolveBenchmark extends BenchmarkBase {
 
   @override
   void setup() {
+    CherryPick.disableGlobalCycleDetection();
+    CherryPick.disableGlobalCrossScopeCycleDetection();
     scope = CherryPick.openRootScope();
     scope.installModules([AppModule()]);
 

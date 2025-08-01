@@ -17,12 +17,12 @@
 
 | Сценарий                                           | RunTime (мкс) |
 |----------------------------------------------------|--------------|
-| RegisterAndResolve                                 | 0.1976       |
-| ChainSingleton (A->B->C, singleton)                | 0.2721       |
-| ChainFactory (A->B->C, factory)                    | 0.6690       |
-| NamedResolve (by name)                             | 0.2018       |
-| AsyncChain (A->B->C, async)                        | 1.2732       |
-| ScopeOverride (child overrides parent)             | 0.1962       |
+| RegisterAndResolve                                 | 0.3407        |
+| ChainSingleton (A->B->C, singleton)                | 0.3777        |
+| ChainFactory (A->B->C, factory)                    | 0.9688        |
+| NamedResolve (by name)                             | 0.3878        |
+| AsyncChain (A->B->C, async)                        | 1.8006        |
+| ScopeOverride (child overrides parent)             | 0.3477        |
 
 ## Как запускать
 
