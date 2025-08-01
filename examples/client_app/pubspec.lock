@@ -127,7 +127,7 @@ packages:
       path: "../../cherrypick"
       relative: true
     source: path
-    version: "3.0.0-dev.3"
+    version: "3.0.0-dev.5"
   cherrypick_annotations:
     dependency: "direct main"
     description:
@@ -141,7 +141,7 @@ packages:
       path: "../../cherrypick_flutter"
       relative: true
     source: path
-    version: "1.1.3-dev.3"
+    version: "1.1.3-dev.5"
   cherrypick_generator:
     dependency: "direct dev"
     description:

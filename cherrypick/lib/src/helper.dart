@@ -95,7 +95,10 @@ class CherryPick {
   /// CherryPick.closeRootScope();
   /// ```
   static void closeRootScope() {
-    _rootScope = null;
+    if (_rootScope != null) {
+      _rootScope!.dispose(); // Автоматический вызов dispose для rootScope!
+      _rootScope = null;
+    }
   }
 
   /// Globally enables cycle detection for all new [Scope]s created by CherryPick.

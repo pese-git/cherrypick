@@ -79,8 +79,55 @@ final str = rootScope.resolve<String>();
 // Resolve a dependency asynchronously
 final result = await rootScope.resolveAsync<String>();
 
-// Close the root scope once done
-CherryPick.closeRootScope();
+// Recommended: Close the root scope and release all resources
+await CherryPick.closeRootScope();
+
+// Alternatively, you may manually call dispose on any scope you manage individually
+// await rootScope.dispose();
+```
+
+### Automatic resource management (`Disposable`, `dispose`)
+
+CherryPick automatically manages the lifecycle of any object registered via DI that implements the `Disposable` interface.
+
+**Best practice:**  
+Always finish your work with `await CherryPick.closeRootScope()` (for the root scope) or `await scope.closeSubScope('key')` (for subscopes).  
+These methods will automatically await `dispose()` on all resolved objects (e.g., singletons) that implement `Disposable`, ensuring proper and complete resource cleanup—sync or async.
+
+Manual `await scope.dispose()` may be useful if you manually manage custom scopes.
+
+#### Example
+
+```dart
+class MyService implements Disposable {
+  @override
+  FutureOr<void> dispose() async {
+    // release resources, close streams, perform async shutdown, etc.
+    print('MyService disposed!');
+  }
+}
+
+final scope = openRootScope();
+scope.installModules([
+  ModuleImpl(),
+]);
+
+final service = scope.resolve<MyService>();
+
+// ... use service
+
+// Recommended completion:
+await CherryPick.closeRootScope(); // will print: MyService disposed!
+
+// Or, to close and clean up a subscope and its resources:
+await scope.closeSubScope('feature');
+
+class ModuleImpl extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<MyService>().toProvide(() => MyService()).singleton();
+  }
+}
 ```
 
 #### Working with Subscopes

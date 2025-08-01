@@ -185,6 +185,41 @@ final service = scope.tryResolve<OptionalService>(); // returns null if not exis
 ---
 
 
+## Automatic resource management: Disposable and dispose
+
+CherryPick makes it easy to clean up resources for your singleton services and other objects registered in DI.  
+If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was resolved via DI.  
+This ensures safe and graceful resource management (including any async resource cleanup: streams, DB connections, sockets, etc.).
+
+### Example
+
+```dart
+class LoggingService implements Disposable {
+  @override
+  FutureOr<void> dispose() async {
+    // Close files, streams, and perform async cleanup here.
+    print('LoggingService disposed!');
+  }
+}
+
+Future<void> main() async {
+  final scope = openRootScope();
+  scope.installModules([
+    _LoggingModule(),
+  ]);
+  final logger = scope.resolve<LoggingService>();
+  // Use logger...
+  await scope.dispose(); // prints: LoggingService disposed!
+}
+
+class _LoggingModule extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<LoggingService>().toProvide(() => LoggingService()).singleton();
+  }
+}
+```
+
 ## Dependency injection with annotations & code generation
 
 CherryPick supports DI with annotations, letting you eliminate manual DI setup.
