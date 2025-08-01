@@ -11,44 +11,20 @@
 // limitations under the License.
 //
 
-enum Mode { simple, instance, providerInstance, providerInstanceWithParams }
-
-typedef Provider<T> = T? Function();
-
-typedef ProviderWithParams<T> = T Function(dynamic params);
-
-typedef AsyncProvider<T> = Future<T> Function();
-
-typedef AsyncProviderWithParams<T> = Future<T> Function(dynamic params);
+import 'package:cherrypick/src/binding_resolver.dart';
 
 /// RU: Класс Binding<T> настраивает параметры экземпляра.
 /// ENG: The Binding<T> class configures the settings for the instance.
 ///
 class Binding<T> {
-  late Mode _mode;
   late Type _key;
-  late String _name;
-  T? _instance;
-  Future<T>? _instanceAsync;
-  Provider<T>? _provider;
-  ProviderWithParams<T>? _providerWithParams;
+  String? _name;
 
-  AsyncProvider<T>? asyncProvider;
-  AsyncProviderWithParams<T>? asyncProviderWithParams;
-
-  late bool _isSingleton = false;
-  late bool _isNamed = false;
+  BindingResolver<T>? _resolver;
 
   Binding() {
-    _mode = Mode.simple;
     _key = T;
   }
-
-  /// RU: Метод возвращает [Mode] экземпляра.
-  /// ENG: The method returns the [Mode] of the instance.
-  ///
-  /// return [Mode]
-  Mode get mode => _mode;
 
   /// RU: Метод возвращает тип экземпляра.
   /// ENG: The method returns the type of the instance.
@@ -60,19 +36,21 @@ class Binding<T> {
   /// ENG: The method returns the name of the instance.
   ///
   /// return [String]
-  String get name => _name;
-
-  /// RU: Метод проверяет сингелтон экземпляр или нет.
-  /// ENG: The method checks the singleton instance or not.
-  ///
-  /// return [bool]
-  bool get isSingleton => _isSingleton;
+  String? get name => _name;
 
   /// RU: Метод проверяет именован экземпляр или нет.
   /// ENG: The method checks whether the instance is named or not.
   ///
   /// return [bool]
-  bool get isNamed => _isNamed;
+  bool get isNamed => _name != null;
+
+  /// RU: Метод проверяет сингелтон экземпляр или нет.
+  /// ENG: The method checks the singleton instance or not.
+  ///
+  /// return [bool]
+  bool get isSingleton => _resolver?.isSingleton ?? false;
+
+  BindingResolver<T>? get resolver => _resolver;
 
   /// RU: Добавляет имя для экземляпя [value].
   /// ENG: Added name for instance [value].
@@ -80,7 +58,6 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> withName(String name) {
     _name = name;
-    _isNamed = true;
     return this;
   }
 
@@ -88,21 +65,9 @@ class Binding<T> {
   /// ENG: Initialization instance [value].
   ///
   /// return [Binding]
-  Binding<T> toInstance(T value) {
-    _mode = Mode.instance;
-    _instance = value;
-    _isSingleton = true;
-    return this;
-  }
+  Binding<T> toInstance(Instance<T> value) {
+    _resolver = InstanceResolver<T>(value);
 
-  /// RU: Инициализация экземляпяра [value].
-  /// ENG: Initialization instance [value].
-  ///
-  /// return [Binding]
-  Binding<T> toInstanceAsync(Future<T> value) {
-    _mode = Mode.instance;
-    _instanceAsync = value;
-    _isSingleton = true;
     return this;
   }
 
@@ -111,18 +76,8 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> toProvide(Provider<T> value) {
-    _mode = Mode.providerInstance;
-    _provider = value;
-    return this;
-  }
+    _resolver = ProviderResolver<T>((_) => value.call(), withParams: false);
 
-  /// RU: Инициализация экземляпяра  через провайдер [value].
-  /// ENG: Initialization instance via provider [value].
-  ///
-  /// return [Binding]
-  Binding<T> toProvideAsync(AsyncProvider<T> provider) {
-    _mode = Mode.providerInstance;
-    asyncProvider = provider;
     return this;
   }
 
@@ -131,19 +86,24 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
-    _mode = Mode.providerInstanceWithParams;
-    _providerWithParams = value;
+    _resolver = ProviderResolver<T>(value, withParams: true);
+
     return this;
   }
 
-  /// RU: Инициализация экземляра через асинхронный провайдер [value] с динамическим параметром.
-  /// ENG: Initializes the instance via async provider [value] with a dynamic param.
-  ///
-  /// return [Binding]
-  Binding<T> toProvideAsyncWithParams(AsyncProviderWithParams<T> provider) {
-    _mode = Mode.providerInstanceWithParams;
-    asyncProviderWithParams = provider;
-    return this;
+  @Deprecated('Use toInstance instead of toInstanceAsync')
+  Binding<T> toInstanceAsync(Instance<T> value) {
+    return this.toInstance(value);
+  }
+
+  @Deprecated('Use toProvide instead of toProvideAsync')
+  Binding<T> toProvideAsync(Provider<T> value) {
+    return this.toProvide(value);
+  }
+
+  @Deprecated('Use toProvideWithParams instead of toProvideAsyncWithParams')
+  Binding<T> toProvideAsyncWithParams(ProviderWithParams<T> value) {
+    return this.toProvideWithParams(value);
   }
 
   /// RU: Инициализация экземляпяра  как сингелтон [value].
@@ -151,40 +111,16 @@ class Binding<T> {
   ///
   /// return [Binding]
   Binding<T> singleton() {
-    _isSingleton = true;
+    _resolver?.toSingleton();
+
     return this;
   }
 
-  /// RU: Поиск экземпляра.
-  /// ENG: Resolve instance.
-  ///
-  /// return [T]
-  T? get instance => _instance;
-
-  /// RU: Поиск экземпляра.
-  /// ENG: Resolve instance.
-  ///
-  /// return [T]
-  Future<T>? get instanceAsync => _instanceAsync;
-
-  /// RU: Поиск экземпляра.
-  /// ENG: Resolve instance.
-  ///
-  /// return [T]
-  T? get provider {
-    if (_isSingleton) {
-      _instance ??= _provider?.call();
-      return _instance;
-    }
-    return _provider?.call();
+  T? resolveSync([dynamic params]) {
+    return resolver?.resolveSync(params);
   }
 
-  /// RU: Поиск экземпляра с параметром.
-  ///
-  /// ENG: Resolve instance with [params].
-  ///
-  /// return [T]
-  T? providerWithParams(dynamic params) {
-    return _providerWithParams?.call(params);
+  Future<T>? resolveAsync([dynamic params]) {
+    return resolver?.resolveAsync(params);
   }
 }
