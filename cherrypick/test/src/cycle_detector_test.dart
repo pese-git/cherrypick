@@ -200,11 +200,13 @@ class AsyncServiceB {
 class AsyncCircularModule extends Module {
   @override
   void builder(Scope currentScope) {
+    // ignore: deprecated_member_use_from_same_package
     bind<AsyncServiceA>().toProvideAsync(() async {
       final serviceB = await currentScope.resolveAsync<AsyncServiceB>();
       return AsyncServiceA(serviceB);
     });
     
+    // ignore: deprecated_member_use_from_same_package
     bind<AsyncServiceB>().toProvideAsync(() async {
       final serviceA = await currentScope.resolveAsync<AsyncServiceA>();
       return AsyncServiceB(serviceA);

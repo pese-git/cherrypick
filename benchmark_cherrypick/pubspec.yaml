@@ -11,5 +11,6 @@ dependencies:
     path: ../cherrypick
 
 dev_dependencies:
+  lints: ^5.0.0
   benchmark_harness: ^2.2.2
   benchmark_runner: ^0.0.2
