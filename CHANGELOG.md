@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.2`](#cherrypick---v300-dev2)
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.3-dev.2`](#cherrypick_flutter---v113-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.2`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.2`
+
+ - **FEAT**(binding): add deprecated proxy async methods for backward compatibility and highlight transition to modern API.
+ - **DOCS**: add quick guide for circular dependency detection to README.
+ - **DOCS**: add quick guide for circular dependency detection to README.
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+
+
 ## 2025-07-30
 
 ### Changes

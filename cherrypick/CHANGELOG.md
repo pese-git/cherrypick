@@ -1,3 +1,13 @@
+## 3.0.0-dev.2
+
+> Note: This release has breaking changes.
+
+ - **FEAT**(binding): add deprecated proxy async methods for backward compatibility and highlight transition to modern API.
+ - **DOCS**: add quick guide for circular dependency detection to README.
+ - **DOCS**: add quick guide for circular dependency detection to README.
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+
 ## 3.0.0-dev.1
 
  - **DOCS**: add quick guide for circular dependency detection to README.
