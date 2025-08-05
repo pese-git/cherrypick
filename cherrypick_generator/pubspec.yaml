@@ -6,6 +6,14 @@ version: 1.1.0
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick/cherrypick_generator
 issue_tracker: https://github.com/pese-git/cherrypick/issues
+topics:
+  - di
+  - ioc
+  - scope
+  - dependency-injection
+  - dependency-management
+  - inversion-of-control
+  - container
 
 environment:
   sdk: ">=3.5.2 <4.0.0"

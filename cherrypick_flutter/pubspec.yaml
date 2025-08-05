@@ -5,6 +5,14 @@ homepage: https://pese-git.github.io/cherrypick-site/
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
 issue_tracker: https://github.com/pese-git/cherrypick/issues
+topics:
+  - di
+  - ioc
+  - scope
+  - dependency-injection
+  - dependency-management
+  - inversion-of-control
+  - container
 
 environment:
   sdk: ">=3.5.2 <4.0.0"
