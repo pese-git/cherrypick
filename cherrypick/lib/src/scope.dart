@@ -39,6 +39,10 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   final Set<Module> _modulesList = HashSet();
 
+  // индекс для мгновенного поиска binding’ов
+  final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
+
+
   /// RU: Генерирует уникальный идентификатор для скоупа.
   /// ENG: Generates unique identifier for scope.
   String _generateScopeId() {
@@ -96,6 +100,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     for (var module in modules) {
       module.builder(this);
     }
+    _rebuildResolversIndex();
     return this;
   }
 
@@ -107,7 +112,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   Scope dropModules() {
     // [AlexeyYuPopkov](https://github.com/AlexeyYuPopkov) Thank you for the [Removed exception "ConcurrentModificationError"](https://github.com/pese-git/cherrypick/pull/2)
     _modulesList.clear();
-
+    _rebuildResolversIndex();
     return this;
   }
 
@@ -254,16 +259,20 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   BindingResolver<T>? _findBindingResolver<T>(String? named) {
+    final byType = _bindingResolvers[T];
+    if (byType == null) return null;
+    return byType[named] as BindingResolver<T>?;
+  }
+
+  // Индексируем все binding’и после каждого installModules/dropModules
+  void _rebuildResolversIndex() {
+    _bindingResolvers.clear();
     for (var module in _modulesList) {
       for (var binding in module.bindingSet) {
-        if (binding.key == T &&
-            ((!binding.isNamed && named == null) ||
-                (binding.isNamed && named == binding.name))) {
-          return binding.resolver as BindingResolver<T>?;
-        }
+        _bindingResolvers.putIfAbsent(binding.key, () => {});
+        final nameKey = binding.isNamed ? binding.name : null;
+        _bindingResolvers[binding.key]![nameKey] = binding.resolver!;
       }
     }
-
-    return null;
   }
 }
