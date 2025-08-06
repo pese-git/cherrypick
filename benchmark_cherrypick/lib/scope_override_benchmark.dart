@@ -1,9 +1,12 @@
 // ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
+import 'benchmark_utils.dart';
 
 class Shared {}
+
 class ParentImpl extends Shared {}
+
 class ChildImpl extends Shared {}
 
 class ParentModule extends Module {
@@ -20,23 +23,22 @@ class ChildOverrideModule extends Module {
   }
 }
 
-class ScopeOverrideBenchmark extends BenchmarkBase {
+class ScopeOverrideBenchmark extends BenchmarkBase with BenchmarkWithScope {
   ScopeOverrideBenchmark() : super('ScopeOverride (child overrides parent)');
-  late Scope parent;
   late Scope child;
+
   @override
   void setup() {
-    CherryPick.disableGlobalCycleDetection();
-    CherryPick.disableGlobalCrossScopeCycleDetection();
-    parent = CherryPick.openRootScope();
-    parent.installModules([ParentModule()]);
-    child = parent.openSubScope('child');
+    setupScope([ParentModule()]);
+    child = scope.openSubScope('child');
     child.installModules([ChildOverrideModule()]);
   }
+
   @override
   void teardown() {
-    CherryPick.closeRootScope();
+    teardownScope();
   }
+
   @override
   void run() {
     // Должен возвращать ChildImpl, а не ParentImpl

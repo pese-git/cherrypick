@@ -1,6 +1,7 @@
 // ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
+import 'benchmark_utils.dart';
 
 // === DI graph: A -> B -> C (singleton) ===
 abstract class Service {
@@ -45,12 +46,12 @@ class ChainSingletonModule extends Module {
         bind<Service>()
             .toProvide(
               () => ServiceImpl(
-            value: depName,
-            dependency: currentScope.tryResolve<Service>(
-              named: prevDepName,
-            ),
-          ),
-        )
+                value: depName,
+                dependency: currentScope.tryResolve<Service>(
+                  named: prevDepName,
+                ),
+              ),
+            )
             .withName(depName)
             .singleton();
       }
@@ -58,7 +59,7 @@ class ChainSingletonModule extends Module {
   }
 }
 
-class ChainSingletonBenchmark extends BenchmarkBase {
+class ChainSingletonBenchmark extends BenchmarkBase with BenchmarkWithScope {
   final int chainCount;
   final int nestingDepth;
 
@@ -66,15 +67,13 @@ class ChainSingletonBenchmark extends BenchmarkBase {
     this.chainCount = 1,
     this.nestingDepth = 3,
   }) : super(
-    'ChainSingleton (A->B->C, singleton). '
-        'C/D = $chainCount/$nestingDepth. ',
-  );
-  late Scope scope;
+          'ChainSingleton (A->B->C, singleton). '
+          'C/D = $chainCount/$nestingDepth. ',
+        );
 
   @override
   void setup() {
-    scope = CherryPick.openRootScope();
-    scope.installModules([
+    setupScope([
       ChainSingletonModule(
         chainCount: chainCount,
         nestingDepth: nestingDepth,
@@ -83,7 +82,7 @@ class ChainSingletonBenchmark extends BenchmarkBase {
   }
 
   @override
-  void teardown() => CherryPick.closeRootScope();
+  void teardown() => teardownScope();
 
   @override
   void run() {
@@ -118,42 +117,33 @@ class ChainFactoryModule extends Module {
         bind<Service>()
             .toProvide(
               () => ServiceImpl(
-            value: depName,
-            dependency: currentScope.tryResolve<Service>(
-              named: prevDepName,
-            ),
-          ),
-        )
+                value: depName,
+                dependency: currentScope.tryResolve<Service>(
+                  named: prevDepName,
+                ),
+              ),
+            )
             .withName(depName);
       }
     }
   }
 }
 
-class ChainFactoryBenchmark extends BenchmarkBase {
-  // количество независимых цепочек
+class ChainFactoryBenchmark extends BenchmarkBase with BenchmarkWithScope {
   final int chainCount;
-
-  // глубина вложенности
   final int nestingDepth;
 
   ChainFactoryBenchmark({
     this.chainCount = 1,
     this.nestingDepth = 3,
   }) : super(
-    'ChainFactory (A->B->C, factory). '
-        'C/D = $chainCount/$nestingDepth. ',
-  );
-
-  late Scope scope;
+          'ChainFactory (A->B->C, factory). '
+          'C/D = $chainCount/$nestingDepth. ',
+        );
 
   @override
   void setup() {
-    CherryPick.disableGlobalCycleDetection();
-    CherryPick.disableGlobalCrossScopeCycleDetection();
-
-    scope = CherryPick.openRootScope();
-    scope.installModules([
+    setupScope([
       ChainFactoryModule(
         chainCount: chainCount,
         nestingDepth: nestingDepth,
@@ -162,7 +152,7 @@ class ChainFactoryBenchmark extends BenchmarkBase {
   }
 
   @override
-  void teardown() => CherryPick.closeRootScope();
+  void teardown() => teardownScope();
 
   @override
   void run() {
@@ -184,18 +174,16 @@ class NamedModule extends Module {
   }
 }
 
-class NamedResolveBenchmark extends BenchmarkBase {
+class NamedResolveBenchmark extends BenchmarkBase with BenchmarkWithScope {
   NamedResolveBenchmark() : super('NamedResolve (by name)');
-  late Scope scope;
 
   @override
   void setup() {
-    scope = CherryPick.openRootScope();
-    scope.installModules([NamedModule()]);
+    setupScope([NamedModule()]);
   }
 
   @override
-  void teardown() => CherryPick.closeRootScope();
+  void teardown() => teardownScope();
 
   @override
   void run() {
@@ -203,4 +191,3 @@ class NamedResolveBenchmark extends BenchmarkBase {
     scope.resolve<Object>(named: 'impl2');
   }
 }
-

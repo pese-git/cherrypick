@@ -5,9 +5,8 @@ import 'package:cherrypick/cherrypick.dart';
 class AppModule extends Module {
   @override
   void builder(Scope currentScope) {
-      bind<FooService>().toProvide(() => FooService());
+    bind<FooService>().toProvide(() => FooService());
   }
-
 }
 
 // Dummy service for DI
@@ -23,7 +22,6 @@ class RegisterAndResolveBenchmark extends BenchmarkBase {
     CherryPick.disableGlobalCrossScopeCycleDetection();
     scope = CherryPick.openRootScope();
     scope.installModules([AppModule()]);
-
   }
 
   @override

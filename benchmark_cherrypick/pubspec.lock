@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.4"
+  args:
+    dependency: "direct main"
+    description:
+      name: args
+      sha256: d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.0"
   benchmark_harness:
     dependency: "direct dev"
     description:
@@ -31,7 +39,7 @@ packages:
       path: "../cherrypick"
       relative: true
     source: path
-    version: "3.0.0-dev.1"
+    version: "3.0.0-dev.2"
   exception_templates:
     dependency: transitive
     description:
