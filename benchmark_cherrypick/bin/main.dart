@@ -31,7 +31,6 @@ UniversalScenario _toScenario(UniversalBenchmark b) {
       return UniversalScenario.override;
   }
 }
-
 UniversalBindingMode _toMode(UniversalBenchmark b) {
   switch (b) {
     case UniversalBenchmark.registerSingleton:
@@ -49,18 +48,114 @@ UniversalBindingMode _toMode(UniversalBenchmark b) {
   }
 }
 
+typedef SyncBench = UniversalChainBenchmark;
+typedef AsyncBench = UniversalChainAsyncBenchmark;
+
+class BenchmarkResult {
+  final List<num> timings;
+  final int memoryDiffKb;
+  final int deltaPeakKb;
+  final int peakRssKb;
+  BenchmarkResult({
+    required this.timings,
+    required this.memoryDiffKb,
+    required this.deltaPeakKb,
+    required this.peakRssKb,
+  });
+  factory BenchmarkResult.collect({
+    required List<num> timings,
+    required List<int> rssValues,
+    required int memBefore,
+  }) {
+    final memAfter = ProcessInfo.currentRss;
+    final memDiffKB = ((memAfter - memBefore) / 1024).round();
+    final peakRss = [...rssValues, memBefore].reduce(max);
+    final deltaPeakKb = ((peakRss - memBefore) / 1024).round();
+    return BenchmarkResult(
+      timings: timings,
+      memoryDiffKb: memDiffKB,
+      deltaPeakKb: deltaPeakKb,
+      peakRssKb: (peakRss / 1024).round(),
+    );
+  }
+}
+
+class BenchmarkRunner {
+  static Future<BenchmarkResult> runSync({
+    required SyncBench benchmark,
+    required int warmups,
+    required int repeats,
+  }) async {
+    final timings = <num>[];
+    final rssValues = <int>[];
+    for (int i = 0; i < warmups; i++) {
+      benchmark.setup();
+      benchmark.run();
+      benchmark.teardown();
+    }
+    final memBefore = ProcessInfo.currentRss;
+    for (int i = 0; i < repeats; i++) {
+      benchmark.setup();
+      final sw = Stopwatch()..start();
+      benchmark.run();
+      sw.stop();
+      timings.add(sw.elapsedMicroseconds);
+      rssValues.add(ProcessInfo.currentRss);
+      benchmark.teardown();
+    }
+    return BenchmarkResult.collect(
+      timings: timings,
+      rssValues: rssValues,
+      memBefore: memBefore,
+    );
+  }
+  static Future<BenchmarkResult> runAsync({
+    required AsyncBench benchmark,
+    required int warmups,
+    required int repeats,
+  }) async {
+    final timings = <num>[];
+    final rssValues = <int>[];
+    for (int i = 0; i < warmups; i++) {
+      await benchmark.setup();
+      await benchmark.run();
+      await benchmark.teardown();
+    }
+    final memBefore = ProcessInfo.currentRss;
+    for (int i = 0; i < repeats; i++) {
+      await benchmark.setup();
+      final sw = Stopwatch()..start();
+      await benchmark.run();
+      sw.stop();
+      timings.add(sw.elapsedMicroseconds);
+      rssValues.add(ProcessInfo.currentRss);
+      await benchmark.teardown();
+    }
+    return BenchmarkResult.collect(
+      timings: timings,
+      rssValues: rssValues,
+      memBefore: memBefore,
+    );
+  }
+}
+
+T parseEnum<T>(String value, List<T> values, T defaultValue) {
+  return values.firstWhere(
+    (v) => v.toString().split('.').last.toLowerCase() == value.toLowerCase(),
+    orElse: () => defaultValue,
+  );
+}
+
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('benchmark', abbr: 'b', help: 'One of: registerSingleton, chainSingleton, chainFactory, chainAsync, named, override, all', defaultsTo: 'chainSingleton')
-    ..addOption('chainCount', abbr: 'c', help: 'Comma-separated chainCounts', defaultsTo: '10')
-    ..addOption('nestingDepth', abbr: 'd', help: 'Comma-separated depths', defaultsTo: '5')
-    ..addOption('repeat', abbr: 'r', help: 'Repeats for each run (>=2)', defaultsTo: '2')
-    ..addOption('warmup', abbr: 'w', help: 'Warmup runs', defaultsTo: '1')
-    ..addOption('format', abbr: 'f', help: 'Output format (pretty, csv, json)', defaultsTo: 'pretty')
+    ..addOption('benchmark', abbr: 'b', defaultsTo: 'chainSingleton')
+    ..addOption('chainCount', abbr: 'c', defaultsTo: '10')
+    ..addOption('nestingDepth', abbr: 'd', defaultsTo: '5')
+    ..addOption('repeat', abbr: 'r', defaultsTo: '2')
+    ..addOption('warmup', abbr: 'w', defaultsTo: '1')
+    ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
-
   final result = parser.parse(args);
-
   if (result['help'] == true) {
     print('UniversalChainBenchmark');
     print(parser.usage);
@@ -68,41 +163,25 @@ Future<void> main(List<String> args) async {
     print('  dart run bin/main.dart --benchmark=chainFactory --chainCount=10 --nestingDepth=5 --format=csv');
     return;
   }
-
-  final benchName   = result['benchmark'] as String;
+  final benchName = result['benchmark'] as String;
   final isAll = benchName == 'all';
-  final List<UniversalBenchmark> allBenches = [
-    UniversalBenchmark.registerSingleton,
-    UniversalBenchmark.chainSingleton,
-    UniversalBenchmark.chainFactory,
-    UniversalBenchmark.chainAsync,
-    UniversalBenchmark.named,
-    UniversalBenchmark.override,
-  ];
-
+  final List<UniversalBenchmark> allBenches = UniversalBenchmark.values;
   final List<UniversalBenchmark> benchesToRun = isAll
     ? allBenches
-    : [
-        UniversalBenchmark.values.firstWhere(
-          (b) => b.toString().split('.').last == benchName,
-          orElse: () => UniversalBenchmark.chainSingleton,
-        ),
-      ];
-
+    : [parseEnum(benchName, UniversalBenchmark.values, UniversalBenchmark.chainSingleton)];
   final chainCounts = _parseIntList(result['chainCount'] as String);
-  final nestDepths  = _parseIntList(result['nestingDepth'] as String);
-  final repeats     = int.tryParse(result['repeat'] as String? ?? "") ?? 2;
-  final warmups     = int.tryParse(result['warmup'] as String? ?? "") ?? 1;
-  final format      = result['format'] as String;
+  final nestDepths = _parseIntList(result['nestingDepth'] as String);
+  final repeats = int.tryParse(result['repeat'] as String? ?? "") ?? 2;
+  final warmups = int.tryParse(result['warmup'] as String? ?? "") ?? 1;
+  final format = result['format'] as String;
 
   final results = <Map<String, dynamic>>[];
-
   for (final bench in benchesToRun) {
     final scenario = _toScenario(bench);
-    final mode     = _toMode(bench);
+    final mode = _toMode(bench);
     for (final c in chainCounts) {
       for (final d in nestDepths) {
-        // --- asyncChain special case ---
+        BenchmarkResult benchResult;
         if (scenario == UniversalScenario.asyncChain) {
           final di = CherrypickDIAdapter();
           final benchAsync = UniversalChainAsyncBenchmark(
@@ -111,82 +190,27 @@ Future<void> main(List<String> args) async {
             nestingDepth: d,
             mode: mode,
           );
-          final timings = <num>[];
-          final rssValues = <int>[];
-          // Warmup
-          for (int i = 0; i < warmups; i++) {
-            await benchAsync.setup();
-            await benchAsync.run();
-            await benchAsync.teardown();
-          }
-          final memBefore = ProcessInfo.currentRss;
-          for (int i = 0; i < repeats; i++) {
-            await benchAsync.setup();
-            final sw = Stopwatch()..start();
-            await benchAsync.run();
-            sw.stop();
-            timings.add(sw.elapsedMicroseconds);
-            rssValues.add(ProcessInfo.currentRss);
-            await benchAsync.teardown();
-          }
-          final memAfter = ProcessInfo.currentRss;
-          final memDiffKB = ((memAfter - memBefore) / 1024).round();
-          final peakRss = [...rssValues, memBefore].reduce(max);
-          final deltaPeakKb = ((peakRss - memBefore) / 1024).round();
-          timings.sort();
-          var mean = timings.reduce((a, b) => a + b) / timings.length;
-          var median = timings[timings.length ~/ 2];
-          var minVal = timings.first;
-          var maxVal = timings.last;
-          var stddev = sqrt(timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) / timings.length);
-          results.add({
-            'benchmark': 'Universal_$bench',
-            'chainCount': c,
-            'nestingDepth': d,
-            'mean_us': mean.round(),
-            'median_us': median.round(),
-            'stddev_us': stddev.round(),
-            'min_us': minVal.round(),
-            'max_us': maxVal.round(),
-            'trials': timings.length,
-            'timings_us': timings.map((t) => t.round()).toList(),
-            'memory_diff_kb': memDiffKB,
-            'delta_peak_kb': deltaPeakKb,
-            'peak_rss_kb': (peakRss / 1024).round(),
-          });
-          continue;
+          benchResult = await BenchmarkRunner.runAsync(
+            benchmark: benchAsync,
+            warmups: warmups,
+            repeats: repeats,
+          );
+        } else {
+          final di = CherrypickDIAdapter();
+          final benchSync = UniversalChainBenchmark(
+            di,
+            chainCount: c,
+            nestingDepth: d,
+            mode: mode,
+            scenario: scenario,
+          );
+          benchResult = await BenchmarkRunner.runSync(
+            benchmark: benchSync,
+            warmups: warmups,
+            repeats: repeats,
+          );
         }
-        // --- Sync-case ---
-        final di = CherrypickDIAdapter();
-        final benchSync = UniversalChainBenchmark(
-          di,
-          chainCount: c,
-          nestingDepth: d,
-          mode: mode,
-          scenario: scenario,
-        );
-        final timings = <num>[];
-        final rssValues = <int>[];
-        // Warmup
-        for (int i = 0; i < warmups; i++) {
-          benchSync.setup();
-          benchSync.run();
-          benchSync.teardown();
-        }
-        final memBefore = ProcessInfo.currentRss;
-        for (int i = 0; i < repeats; i++) {
-          benchSync.setup();
-          final sw = Stopwatch()..start();
-          benchSync.run();
-          sw.stop();
-          timings.add(sw.elapsedMicroseconds);
-          rssValues.add(ProcessInfo.currentRss);
-          benchSync.teardown();
-        }
-        final memAfter = ProcessInfo.currentRss;
-        final memDiffKB = ((memAfter - memBefore) / 1024).round();
-        final peakRss = [...rssValues, memBefore].reduce(max);
-        final deltaPeakKb = ((peakRss - memBefore) / 1024).round();
+        final timings = benchResult.timings;
         timings.sort();
         var mean = timings.reduce((a, b) => a + b) / timings.length;
         var median = timings[timings.length ~/ 2];
@@ -204,14 +228,13 @@ Future<void> main(List<String> args) async {
           'max_us': maxVal.round(),
           'trials': timings.length,
           'timings_us': timings.map((t) => t.round()).toList(),
-          'memory_diff_kb': memDiffKB,
-          'delta_peak_kb': deltaPeakKb,
-          'peak_rss_kb': (peakRss / 1024).round(),
+          'memory_diff_kb': benchResult.memoryDiffKb,
+          'delta_peak_kb': benchResult.deltaPeakKb,
+          'peak_rss_kb': benchResult.peakRssKb,
         });
       }
     }
   }
-
   if (format == 'json') {
     print(_toJson(results));
   } else if (format == 'csv') {
@@ -223,7 +246,6 @@ Future<void> main(List<String> args) async {
 
 // --- helpers ---
 List<int> _parseIntList(String s) => s.split(',').map((e) => int.tryParse(e.trim()) ?? 0).where((x) => x > 0).toList();
-
 String _toPretty(List<Map<String, dynamic>> rows) {
   final keys = [
     'benchmark','chainCount','nestingDepth','mean_us','median_us','stddev_us',
