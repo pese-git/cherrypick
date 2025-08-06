@@ -14,13 +14,12 @@ class MarkdownReport extends ReportGenerator {
     'Universal_UniversalBenchmark.named':'Named',
     'Universal_UniversalBenchmark.override':'Override',
   };
+
   @override
   String render(List<Map<String, dynamic>> rows) {
     final headers = [
       'Benchmark', 'Chain Count', 'Depth', 'Mean (us)', 'Median', 'Stddev', 'Min', 'Max', 'N', 'ΔRSS(KB)', 'ΔPeak(KB)', 'PeakRSS(KB)'
     ];
-    final header = '| ' + headers.join(' | ') + ' |';
-    final divider = '|' + List.filled(headers.length, '---').join('|') + '|';
     final dataRows = rows.map((r) {
       final readableName = nameMap[r['benchmark']] ?? r['benchmark'];
       return [
@@ -36,8 +35,22 @@ class MarkdownReport extends ReportGenerator {
         r['memory_diff_kb'],
         r['delta_peak_kb'],
         r['peak_rss_kb'],
-      ].map((cell) => cell.toString().padRight(10)).join(' | ');
-    }).map((row) => '| $row |').toList();
-    return ([header, divider] + dataRows).join('\n');
+      ].map((cell) => cell.toString()).toList();
+    }).toList();
+
+    // Вычислить ширину каждой колонки
+    final all = [headers] + dataRows;
+    final widths = List.generate(headers.length, (i) {
+      return all.map((row) => row[i].length).reduce((a, b) => a > b ? a : b);
+    });
+
+    String rowToLine(List<String> row, {String sep = ' | '}) =>
+        '| ' + List.generate(row.length, (i) => row[i].padRight(widths[i])).join(sep) + ' |';
+
+    final headerLine = rowToLine(headers);
+    final divider = '| ' + widths.map((w) => '-' * w).join(' | ') + ' |';
+    final lines = dataRows.map(rowToLine).toList();
+
+    return ([headerLine, divider] + lines).join('\n');
   }
 }
