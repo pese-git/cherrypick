@@ -180,7 +180,7 @@ final service = scope.tryResolve<OptionalService>(); // returns null if not exis
 ### Fast Dependency Lookup (Performance Improvement)
 
 > **Performance Note:**  
-> As of the latest version, CherryPick uses a Map-based resolver index for dependency lookup. This means calls to `resolve<T>()`, `tryResolve<T>()` and similar methods are now O(1) operations, regardless of the number of modules or bindings within your scope. Previously it would iterate over all modules and bindings, which could reduce performance as your project grew. This optimization is internal and does not affect the public API or usage patterns, but significantly improves resolution speed for larger applications.
+> **Starting from version 3.0.0**, CherryPick uses a Map-based resolver index for dependency lookup. This means calls to `resolve<T>()`, `tryResolve<T>()` and similar methods are now O(1) operations, regardless of the number of modules or bindings within your scope. Previously it would iterate over all modules and bindings, which could reduce performance as your project grew. This optimization is internal and does not affect the public API or usage patterns, but significantly improves resolution speed for larger applications.
 
 ---
 
