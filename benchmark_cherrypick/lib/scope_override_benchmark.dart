@@ -1,7 +1,8 @@
 // ignore: depend_on_referenced_packages
+import 'package:benchmark_cherrypick/di_adapter.dart';
+// ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
-import 'benchmark_utils.dart';
 
 class Shared {}
 
@@ -23,26 +24,26 @@ class ChildOverrideModule extends Module {
   }
 }
 
-class ScopeOverrideBenchmark extends BenchmarkBase with BenchmarkWithScope {
-  ScopeOverrideBenchmark() : super('ScopeOverride (child overrides parent)');
-  late Scope child;
+class ScopeOverrideBenchmark extends BenchmarkBase {
+  final DIAdapter di;
+  late DIAdapter childDi;
+
+  ScopeOverrideBenchmark(this.di) : super('ScopeOverride (child overrides parent)');
 
   @override
   void setup() {
-    setupScope([ParentModule()]);
-    child = scope.openSubScope('child');
-    child.installModules([ChildOverrideModule()]);
+    di.setupModules([ParentModule()]);
+    childDi = di.openSubScope('child');
+    childDi.setupModules([ChildOverrideModule()]);
   }
 
   @override
-  void teardown() {
-    teardownScope();
-  }
+  void teardown() => di.teardown();
 
   @override
   void run() {
-    // Должен возвращать ChildImpl, а не ParentImpl
-    final resolved = child.resolve<Shared>();
+    // Should return ChildImpl, not ParentImpl
+    final resolved = childDi.resolve<Shared>();
     assert(resolved is ChildImpl);
   }
 }

@@ -1,4 +1,6 @@
 // ignore: depend_on_referenced_packages
+import 'package:benchmark_cherrypick/di_adapter.dart';
+// ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
 
@@ -13,26 +15,20 @@ class AppModule extends Module {
 class FooService {}
 
 class RegisterAndResolveBenchmark extends BenchmarkBase {
-  RegisterAndResolveBenchmark() : super('RegisterAndResolve');
-  late final Scope scope;
+  final DIAdapter di;
+
+  RegisterAndResolveBenchmark(this.di) : super('RegisterAndResolve');
 
   @override
   void setup() {
-    CherryPick.disableGlobalCycleDetection();
-    CherryPick.disableGlobalCrossScopeCycleDetection();
-    scope = CherryPick.openRootScope();
-    scope.installModules([AppModule()]);
+    di.setupModules([AppModule()]);
   }
 
   @override
   void run() {
-    scope.resolve<FooService>();
+    di.resolve<FooService>();
   }
 
   @override
-  void teardown() => CherryPick.closeRootScope();
-}
-
-void main() {
-  RegisterAndResolveBenchmark().report();
+  void teardown() => di.teardown();
 }

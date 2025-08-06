@@ -1,7 +1,8 @@
 // ignore: depend_on_referenced_packages
+import 'package:benchmark_cherrypick/di_adapter.dart';
+// ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
-import 'benchmark_utils.dart';
 
 class AsyncA {}
 
@@ -30,21 +31,22 @@ class AsyncChainModule extends Module {
   }
 }
 
-class AsyncChainBenchmark extends AsyncBenchmarkBase with BenchmarkWithScope {
-  AsyncChainBenchmark() : super('AsyncChain (A->B->C, async)');
+class AsyncChainBenchmark extends AsyncBenchmarkBase {
+  final DIAdapter di;
+  AsyncChainBenchmark(this.di) : super('AsyncChain (A->B->C, async)');
 
   @override
   Future<void> setup() async {
-    setupScope([AsyncChainModule()]);
+    di.setupModules([AsyncChainModule()]);
   }
 
   @override
   Future<void> teardown() async {
-    teardownScope();
+    di.teardown();
   }
 
   @override
   Future<void> run() async {
-    await scope.resolveAsync<AsyncC>();
+    await di.resolveAsync<AsyncC>();
   }
 }

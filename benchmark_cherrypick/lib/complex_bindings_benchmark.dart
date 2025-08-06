@@ -1,7 +1,8 @@
 // ignore: depend_on_referenced_packages
+import 'package:benchmark_cherrypick/di_adapter.dart';
+// ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
-import 'benchmark_utils.dart';
 
 // === DI graph: A -> B -> C (singleton) ===
 abstract class Service {
@@ -59,11 +60,13 @@ class ChainSingletonModule extends Module {
   }
 }
 
-class ChainSingletonBenchmark extends BenchmarkBase with BenchmarkWithScope {
+class ChainSingletonBenchmark extends BenchmarkBase {
+  final DIAdapter di;
   final int chainCount;
   final int nestingDepth;
 
-  ChainSingletonBenchmark({
+  ChainSingletonBenchmark(
+    this.di, {
     this.chainCount = 1,
     this.nestingDepth = 3,
   }) : super(
@@ -73,7 +76,7 @@ class ChainSingletonBenchmark extends BenchmarkBase with BenchmarkWithScope {
 
   @override
   void setup() {
-    setupScope([
+    di.setupModules([
       ChainSingletonModule(
         chainCount: chainCount,
         nestingDepth: nestingDepth,
@@ -82,12 +85,12 @@ class ChainSingletonBenchmark extends BenchmarkBase with BenchmarkWithScope {
   }
 
   @override
-  void teardown() => teardownScope();
+  void teardown() => di.teardown();
 
   @override
   void run() {
     final serviceName = '${chainCount.toString()}_${nestingDepth.toString()}';
-    scope.resolve<Service>(named: serviceName);
+    di.resolve<Service>(named: serviceName);
   }
 }
 
@@ -129,11 +132,13 @@ class ChainFactoryModule extends Module {
   }
 }
 
-class ChainFactoryBenchmark extends BenchmarkBase with BenchmarkWithScope {
+class ChainFactoryBenchmark extends BenchmarkBase {
+  final DIAdapter di;
   final int chainCount;
   final int nestingDepth;
 
-  ChainFactoryBenchmark({
+  ChainFactoryBenchmark(
+    this.di, {
     this.chainCount = 1,
     this.nestingDepth = 3,
   }) : super(
@@ -143,7 +148,7 @@ class ChainFactoryBenchmark extends BenchmarkBase with BenchmarkWithScope {
 
   @override
   void setup() {
-    setupScope([
+    di.setupModules([
       ChainFactoryModule(
         chainCount: chainCount,
         nestingDepth: nestingDepth,
@@ -152,12 +157,12 @@ class ChainFactoryBenchmark extends BenchmarkBase with BenchmarkWithScope {
   }
 
   @override
-  void teardown() => teardownScope();
+  void teardown() => di.teardown();
 
   @override
   void run() {
     final serviceName = '${chainCount.toString()}_${nestingDepth.toString()}';
-    scope.resolve<Service>(named: serviceName);
+    di.resolve<Service>(named: serviceName);
   }
 }
 
@@ -174,20 +179,21 @@ class NamedModule extends Module {
   }
 }
 
-class NamedResolveBenchmark extends BenchmarkBase with BenchmarkWithScope {
-  NamedResolveBenchmark() : super('NamedResolve (by name)');
+class NamedResolveBenchmark extends BenchmarkBase {
+  final DIAdapter di;
+
+  NamedResolveBenchmark(this.di) : super('NamedResolve (by name)');
 
   @override
   void setup() {
-    setupScope([NamedModule()]);
+    di.setupModules([NamedModule()]);
   }
 
   @override
-  void teardown() => teardownScope();
+  void teardown() => di.teardown();
 
   @override
   void run() {
-    // Switch name for comparison
-    scope.resolve<Object>(named: 'impl2');
+    di.resolve<Object>(named: 'impl2');
   }
 }
