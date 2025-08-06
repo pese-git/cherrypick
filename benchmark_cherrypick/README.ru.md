@@ -17,6 +17,7 @@
 - **Гибкая параметризация CLI (chainCount, nestingDepth, repeats, warmup, сценарий, формат)**
 - **Автоматический матричный запуск для наборов параметров**
 - **Статистика: среднее, медиана, stddev, min, max для каждого сценария**
+- **Память: memory_diff_kb (итоговая разница), delta_peak_kb (максимальный рост), peak_rss_kb (абсолютный пик)**
 - **Вывод в таблицу, CSV или JSON**
 - **Прогревочные запуски до замера времени для стабильности**
 
@@ -61,8 +62,8 @@
 
 #### Пример вывода (`--format=csv`)
 ```
-benchmark,chainCount,nestingDepth,mean_us,median_us,stddev_us,min_us,max_us,trials,timings_us
-ChainSingleton,10,5,2450000,2440000,78000,2290000,2580000,5,"2440000;2460000;2450000;2580000;2290000"
+benchmark,chainCount,nestingDepth,mean_us,median_us,stddev_us,min_us,max_us,trials,timings_us,memory_diff_kb,delta_peak_kb,peak_rss_kb
+ChainSingleton,10,5,2450000,2440000,78000,2290000,2580000,5,"2440000;2460000;2450000;2580000;2290000",-64,0,200064
 ```
 
 ---

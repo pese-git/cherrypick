@@ -17,6 +17,7 @@ Benchmarks for the performance and features of the cherrypick (core) DI containe
 - **Flexible CLI parameterization (chain length, depth, repeats, warmup, scenario selection, format)**
 - **Automatic matrix/mass run for sets of parameters**
 - **Statistics: mean, median, stddev, min, max for each scenario**
+- **Memory metrics: memory_diff_kb (total diff), delta_peak_kb (max growth), peak_rss_kb (absolute peak)**
 - **Pretty-table, CSV, and JSON output**
 - **Warmup runs before timing for better result stability**
 
@@ -61,8 +62,8 @@ Benchmarks for the performance and features of the cherrypick (core) DI containe
 
 #### Example output (`--format=csv`)
 ```
-benchmark,chainCount,nestingDepth,mean_us,median_us,stddev_us,min_us,max_us,trials,timings_us
-ChainSingleton,10,5,2450000,2440000,78000,2290000,2580000,5,"2440000;2460000;2450000;2580000;2290000"
+benchmark,chainCount,nestingDepth,mean_us,median_us,stddev_us,min_us,max_us,trials,timings_us,memory_diff_kb,delta_peak_kb,peak_rss_kb
+ChainSingleton,10,5,2450000,2440000,78000,2290000,2580000,5,"2440000;2460000;2450000;2580000;2290000",-64,0,200064
 ```
 
 ---
