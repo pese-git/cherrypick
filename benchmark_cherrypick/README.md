@@ -1,102 +1,119 @@
 # benchmark_cherrypick
 
-Benchmarks for the performance and features of the cherrypick (core) DI container.
+_Benchmark suite for cherrypick DI container and its features._
 
-## Scenarios
+## Overview
 
-- **RegisterAndResolve**: Basic registration and resolution of a dependency.
-- **ChainSingleton** (A->B->C, singleton): Deep dependency chain, all as singletons.
-- **ChainFactory** (A->B->C, factory): Dependency chain with factory bindings (new instance per request).
-- **NamedResolve** (by name): Resolving a named dependency among several implementations.
-- **AsyncChain** (A->B->C, async): Asynchronous dependency chain.
-- **ScopeOverride** (child overrides parent): Overriding a dependency in a child scope over a parent.
+This package provides comprehensive benchmarks for the [cherrypick](https://github.com/) dependency injection core and comparable DI scenarios. It includes a CLI tool for running a matrix of synthetic scenarios—covering depth and breadth, named resolutions, scope overrides, async chains, memory usage and more.
 
-## Features
+**Key Features:**
+- Declarative matrix runs (chain count, nesting depth, scenario, repeats)
+- CLI tool with flexible configuration
+- Multiple report formats: pretty table, CSV, JSON, Markdown
+- Memory and runtime statistics (mean, median, stddev, min, max, memory diffs)
+- Built-in and extensible scenarios (singletons, factories, named, async, overrides)
+- Easy to extend with your own modules/adapters
 
-- **Unified benchmark structure**
-- **Flexible CLI parameterization (chain length, depth, repeats, warmup, scenario selection, format)**
-- **Automatic matrix/mass run for sets of parameters**
-- **Statistics: mean, median, stddev, min, max for each scenario**
-- **Memory metrics: memory_diff_kb (total diff), delta_peak_kb (max growth), peak_rss_kb (absolute peak)**
-- **Pretty-table, CSV, and JSON output**
-- **Warmup runs before timing for better result stability**
+---
 
-## How to run
+## Benchmark Scenarios
 
-1. Get dependencies:
+- **RegisterSingleton**: Registers and resolves a singleton dependency
+- **ChainSingleton**: Resolves a deep chain of singleton dependencies (A→B→C...)
+- **ChainFactory**: Resolves a deep chain using factory bindings (new instance each time)
+- **AsyncChain**: Resolves an async dependency chain (async providers)
+- **Named**: Resolves a named dependency from several implementations
+- **Override**: Resolves a dependency overridden in a child scope
+
+---
+
+## How to Run
+
+1. **Get dependencies:**
    ```shell
    dart pub get
    ```
-2. Run all benchmarks (defaults: single parameter set, repeat=5, warmup=2):
+2. **Run all benchmarks (default single configuration, 2 warmups, 2 repeats):**
    ```shell
    dart run bin/main.dart
    ```
 
-### Custom parameters
+3. **Show available CLI options:**
+   ```shell
+   dart run bin/main.dart --help
+   ```
 
-- Matrix run (CSV, 7 repeats, 3 warmups):
+### CLI Parameters
+
+- `--benchmark, -b` — Benchmark scenario:  
+  `registerSingleton`, `chainSingleton`, `chainFactory`, `asyncChain`, `named`, `override`, `all` (default: all)
+- `--chainCount, -c` — Comma-separated chain counts, e.g. `10,100`
+- `--nestingDepth, -d` — Comma-separated chain depths, e.g. `5,10`
+- `--repeat, -r` — Number of measurement runs per scenario (default: 2)
+- `--warmup, -w` — Warmup runs before measuring (default: 1)
+- `--format, -f` — Output format: `pretty`, `csv`, `json`, `markdown` (default: pretty)
+- `--help, -h` — Show usage
+
+### Examples
+
+- **Matrix run:**
   ```shell
-  dart run bin/main.dart --benchmark=chain_singleton --chainCount=10,100 --nestingDepth=5,10 --repeat=7 --warmup=3 --format=csv
+  dart run bin/main.dart --benchmark=chainSingleton --chainCount=10,100 --nestingDepth=5,10 --repeat=5 --warmup=2 --format=markdown
   ```
 
-- Run only the named resolve scenario:
+- **Run just the named scenario:**
   ```shell
-  dart run bin/main.dart --benchmark=named --repeat=3 --warmup=1
+  dart run bin/main.dart --benchmark=named --repeat=3
   ```
 
-- See available CLI flags:
-  ```shell
-  dart run bin/main.dart --help
-  ```
+### Example Output (Markdown)
 
-#### CLI options
-
-- `--benchmark` (`-b`) — Scenario:  
-  `register`, `chain_singleton`, `chain_factory`, `named`, `override`, `async_chain`, `all` (default: all)
-- `--chainCount` (`-c`) — Comma-separated chain lengths. E.g. `10,100`
-- `--nestingDepth` (`-d`) — Comma-separated chain depths. E.g. `5,10`
-- `--repeat` (`-r`) — How many times to measure each scenario (`default: 5`)
-- `--warmup` (`-w`) — How many warmup runs before actual timing (`default: 2`)
-- `--format` (`-f`) — Output: `pretty`, `csv`, `json` (default: pretty)
-- `--help` (`-h`) — Print help
-
-#### Example output (`--format=csv`)
 ```
-benchmark,chainCount,nestingDepth,mean_us,median_us,stddev_us,min_us,max_us,trials,timings_us,memory_diff_kb,delta_peak_kb,peak_rss_kb
-ChainSingleton,10,5,2450000,2440000,78000,2290000,2580000,5,"2440000;2460000;2450000;2580000;2290000",-64,0,200064
+| Benchmark         | Chain Count | Depth | Mean (us) | ... | PeakRSS(KB) |
+|------------------|-------------|-------|-----------| ... |-------------|
+| ChainSingleton   | 10          | 5     | 2450000   | ... | 200064      |
 ```
 
 ---
 
-## Add your own benchmark
+## Report Formats
 
-1. Create a Dart file with a class inheriting from `BenchmarkBase` or `AsyncBenchmarkBase`.
-2. Use the `BenchmarkWithScope` mixin for automatic Scope management if needed.
-3. Add your benchmark to bin/main.dart for selection via CLI.
+- **pretty** — Tab-delimited table (human-friendly)
+- **csv** — Machine-friendly, for spreadsheets/scripts
+- **json** — For automation, data pipelines
+- **markdown** — Markdown table for docs/wikis/issues
 
 ---
 
-## Contributor example
+## How to Add Your Own Benchmark
 
+1. Implement a class extending `BenchmarkBase` (sync case) or `AsyncBenchmarkBase`.
+2. Configure scenario modules/services using the DI adapter interface.
+3. Add scenario selection logic if needed (see bin/main.dart).
+4. Optionally extend reporters or adapters for new DI libraries.
+
+Example minimal benchmark:
 ```dart
-class MyBenchmark extends BenchmarkBase with BenchmarkWithScope {
+class MyBenchmark extends BenchmarkBase {
   MyBenchmark() : super('My custom');
-  @override void setup() => setupScope([MyModule()]);
-  @override void run() { scope.resolve<MyType>(); }
-  @override void teardown() => teardownScope();
+  @override void setup() { /* setup test DI modules */ }
+  @override void run()   { /* resolve or invoke dependency chain */ }
+  @override void teardown() { /* cleanup if needed */ }
 }
 ```
 
+To plug in a new DI library, implement DIAdapter and register it in CLI.
+
 ---
 
-| Benchmark         | Chain Count | Depth | Mean (us) | Median | Stddev | Min   | Max   | N | ΔRSS(KB) | ΔPeak(KB) | PeakRSS(KB) |
-| ----------------- | ----------- | ----- | --------- | ------ | ------ | ----- | ----- | - | -------- | --------- | ----------- |
-| RegisterSingleton | 10          | 5     | 23.00     | 44.00  | 21.00  | 2.00  | 44.00 | 2 | 16       | 16        | 200400      |
-| ChainSingleton    | 10          | 5     | 42.50     | 51.00  | 8.50   | 34.00 | 51.00 | 2 | 64       | 64        | 200592      |
-| ChainFactory      | 10          | 5     | 42.00     | 48.00  | 6.00   | 36.00 | 48.00 | 2 | 64       | 64        | 200688      |
-| AsyncChain        | 10          | 5     | 49.00     | 52.00  | 3.00   | 46.00 | 52.00 | 2 | 0        | 0         | 200784      |
-| Named             | 10          | 5     | 1.00      | 1.00   | 0.00   | 1.00  | 1.00  | 2 | 0        | 0         | 200784      |
-| Override          | 10          | 5     | 1.50      | 2.00   | 0.50   | 1.00  | 2.00  | 2 | 0        | 0         | 200800      |
+## Metrics Collected
+
+All benchmarks record:
+- **Time** (microseconds): mean, median, stddev, min, max, timings
+- **Memory**:
+  - memory_diff_kb — change in RSS (KB)
+  - delta_peak_kb  — change in peak RSS (KB)
+  - peak_rss_kb    — absolute peak RSS (KB)
 
 ---
 
