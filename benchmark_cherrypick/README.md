@@ -2,28 +2,23 @@
 
 Benchmarks for the performance and features of the cherrypick (core) DI container.
 
-All scenarios use only the public API (scope, module, binding, scoping, and async).
-
 ## Scenarios
 
 - **RegisterAndResolve**: Basic registration and resolution of a dependency.
-- **ChainSingleton (A->B->C, singleton)**: Deep dependency chain, all as singletons.
-- **ChainFactory (A->B->C, factory)**: Dependency chain with factory bindings (new instance per request).
-- **NamedResolve (by name)**: Resolving a named dependency among several implementations.
-- **AsyncChain (A->B->C, async)**: Asynchronous dependency chain.
-- **ScopeOverride (child overrides parent)**: Overriding a dependency in a child scope over a parent.
+- **ChainSingleton** (A->B->C, singleton): Deep dependency chain, all as singletons.
+- **ChainFactory** (A->B->C, factory): Dependency chain with factory bindings (new instance per request).
+- **NamedResolve** (by name): Resolving a named dependency among several implementations.
+- **AsyncChain** (A->B->C, async): Asynchronous dependency chain.
+- **ScopeOverride** (child overrides parent): Overriding a dependency in a child scope over a parent.
 
 ## Features
 
-- **Unified benchmark structure**: All test scenarios use a unified base mixin for setup/teardown.
-- **Flexible CLI parameterization**:  
-  Run benchmarks with custom parameters for chain length, depth, scenarios and formats.
-- **Matrix/mass run support**:  
-  Easily run benchmarks for all combinations of chainLength and depth in one run.
-- **Machine and human readable output**:  
-  Supports pretty-table, CSV, and JSON for downstream analytics or data storage.
-- **Scenario selection**:  
-  Run all or only specific benchmarks via CLI.
+- **Unified benchmark structure**
+- **Flexible CLI parameterization (chain length, depth, repeats, warmup, scenario selection, format)**
+- **Automatic matrix/mass run for sets of parameters**
+- **Statistics: mean, median, stddev, min, max for each scenario**
+- **Pretty-table, CSV, and JSON output**
+- **Warmup runs before timing for better result stability**
 
 ## How to run
 
@@ -31,21 +26,21 @@ All scenarios use only the public API (scope, module, binding, scoping, and asyn
    ```shell
    dart pub get
    ```
-2. Run all benchmarks (with default parameters):
+2. Run all benchmarks (defaults: single parameter set, repeat=5, warmup=2):
    ```shell
    dart run bin/main.dart
    ```
 
-### Run with custom parameters
+### Custom parameters
 
-- Mass run in matrix mode (CSV output):
+- Matrix run (CSV, 7 repeats, 3 warmups):
   ```shell
-  dart run bin/main.dart --benchmark=chain_singleton --chainCount=10,100 --nestingDepth=5,10 --format=csv
+  dart run bin/main.dart --benchmark=chain_singleton --chainCount=10,100 --nestingDepth=5,10 --repeat=7 --warmup=3 --format=csv
   ```
 
 - Run only the named resolve scenario:
   ```shell
-  dart run bin/main.dart --benchmark=named
+  dart run bin/main.dart --benchmark=named --repeat=3 --warmup=1
   ```
 
 - See available CLI flags:
@@ -53,22 +48,21 @@ All scenarios use only the public API (scope, module, binding, scoping, and asyn
   dart run bin/main.dart --help
   ```
 
-#### Available CLI options
+#### CLI options
 
-- `--benchmark` (or `-b`) — Scenario to run:  
-  `register`, `chain_singleton`, `chain_factory`, `named`, `override`, `async_chain`, `all` (default)
-- `--chainCount` (or `-c`) — Comma-separated chain lengths. E.g. `10,100`
-- `--nestingDepth` (or `-d`) — Comma-separated chain depths. E.g. `5,10`
-- `--format` (or `-f`) — Result output format: `pretty` (table), `csv`, `json`
-- `--help` (or `-h`) — Print help
+- `--benchmark` (`-b`) — Scenario:  
+  `register`, `chain_singleton`, `chain_factory`, `named`, `override`, `async_chain`, `all` (default: all)
+- `--chainCount` (`-c`) — Comma-separated chain lengths. E.g. `10,100`
+- `--nestingDepth` (`-d`) — Comma-separated chain depths. E.g. `5,10`
+- `--repeat` (`-r`) — How many times to measure each scenario (`default: 5`)
+- `--warmup` (`-w`) — How many warmup runs before actual timing (`default: 2`)
+- `--format` (`-f`) — Output: `pretty`, `csv`, `json` (default: pretty)
+- `--help` (`-h`) — Print help
 
 #### Example output (`--format=csv`)
 ```
-benchmark,chainCount,nestingDepth,elapsed_us
-ChainSingleton,10,5,2450000
-ChainSingleton,10,10,2624000
-ChainSingleton,100,5,2506300
-ChainSingleton,100,10,2856900
+benchmark,chainCount,nestingDepth,mean_us,median_us,stddev_us,min_us,max_us,trials,timings_us
+ChainSingleton,10,5,2450000,2440000,78000,2290000,2580000,5,"2440000;2460000;2450000;2580000;2290000"
 ```
 
 ---
@@ -81,7 +75,7 @@ ChainSingleton,100,10,2856900
 
 ---
 
-## Example for contributors
+## Contributor example
 
 ```dart
 class MyBenchmark extends BenchmarkBase with BenchmarkWithScope {
