@@ -3,15 +3,23 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:benchmark_cherrypick/scenarios/universal_chain_module.dart';
 
+/// Enum describing all supported Universal DI benchmark types.
 enum UniversalBenchmark {
+  /// Simple singleton registration benchmark
   registerSingleton,
+  /// Chain of singleton dependencies
   chainSingleton,
+  /// Chain using factories
   chainFactory,
+  /// Async chain resolution
   chainAsync,
+  /// Named registration benchmark
   named,
+  /// Override/child-scope benchmark
   override,
 }
 
+/// Maps [UniversalBenchmark] to the scenario enum for DI chains.
 UniversalScenario toScenario(UniversalBenchmark b) {
   switch (b) {
     case UniversalBenchmark.registerSingleton:
@@ -29,6 +37,7 @@ UniversalScenario toScenario(UniversalBenchmark b) {
   }
 }
 
+/// Maps benchmark to registration mode (singleton/factory/async).
 UniversalBindingMode toMode(UniversalBenchmark b) {
   switch (b) {
     case UniversalBenchmark.registerSingleton:
@@ -46,6 +55,7 @@ UniversalBindingMode toMode(UniversalBenchmark b) {
   }
 }
 
+/// Utility to parse a string into its corresponding enum value [T].
 T parseEnum<T>(String value, List<T> values, T defaultValue) {
   return values.firstWhere(
     (v) => v.toString().split('.').last.toLowerCase() == value.toLowerCase(),
@@ -53,15 +63,23 @@ T parseEnum<T>(String value, List<T> values, T defaultValue) {
   );
 }
 
+/// Parses comma-separated integer list from [s].
 List<int> parseIntList(String s) =>
     s.split(',').map((e) => int.tryParse(e.trim()) ?? 0).where((x) => x > 0).toList();
 
+/// CLI config describing what and how to benchmark.
 class BenchmarkCliConfig {
+  /// Benchmarks enabled to run (scenarios).
   final List<UniversalBenchmark> benchesToRun;
+  /// List of chain counts (parallel, per test).
   final List<int> chainCounts;
+  /// List of nesting depths (max chain length, per test).
   final List<int> nestDepths;
+  /// How many times to repeat each trial.
   final int repeats;
+  /// How many times to warm-up before measuring.
   final int warmups;
+  /// Output report format.
   final String format;
   BenchmarkCliConfig({
     required this.benchesToRun,
@@ -73,6 +91,8 @@ class BenchmarkCliConfig {
   });
 }
 
+/// Parses CLI arguments [args] into a [BenchmarkCliConfig].
+/// Supports --benchmark, --chainCount, --nestingDepth, etc.
 BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
   final parser = ArgParser()
     ..addOption('benchmark', abbr: 'b', defaultsTo: 'chainSingleton')

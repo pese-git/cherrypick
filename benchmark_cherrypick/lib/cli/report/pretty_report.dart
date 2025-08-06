@@ -1,12 +1,17 @@
 import 'report_generator.dart';
 
+/// Generates a human-readable, tab-delimited report for benchmark results.
+///
+/// Used for terminal and log output; shows each result as a single line with labeled headers.
 class PrettyReport extends ReportGenerator {
+  /// List of columns to output in the pretty report.
   @override
   final List<String> keys = [
     'benchmark','chainCount','nestingDepth','mean_us','median_us','stddev_us',
     'min_us','max_us','trials','memory_diff_kb','delta_peak_kb','peak_rss_kb'
   ];
 
+  /// Mappings from internal benchmark IDs to display names.
   static const nameMap = {
     'Universal_UniversalBenchmark.registerSingleton':    'RegisterSingleton',
     'Universal_UniversalBenchmark.chainSingleton':       'ChainSingleton',
@@ -16,6 +21,7 @@ class PrettyReport extends ReportGenerator {
     'Universal_UniversalBenchmark.override':             'Override',
   };
 
+  /// Renders the results as a header + tab-separated value table.
   @override
   String render(List<Map<String, dynamic>> rows) {
     final headers = [

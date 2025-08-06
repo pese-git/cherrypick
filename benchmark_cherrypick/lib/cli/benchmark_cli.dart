@@ -12,7 +12,13 @@ import 'package:benchmark_cherrypick/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_cherrypick/benchmarks/universal_chain_async_benchmark.dart';
 import 'package:benchmark_cherrypick/di_adapters/cherrypick_adapter.dart';
 
+/// Command-line interface (CLI) runner for benchmarks.
+///
+/// Parses CLI arguments, orchestrates benchmarks for different
+/// scenarios and configurations, collects results, and generates reports
+/// in the desired output format.
 class BenchmarkCliRunner {
+  /// Runs benchmarks based on CLI [args], configuring different test scenarios.
   Future<void> run(List<String> args) async {
     final config = parseBenchmarkCli(args);
     final results = <Map<String, dynamic>>[];

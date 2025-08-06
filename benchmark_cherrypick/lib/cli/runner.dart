@@ -3,10 +3,15 @@ import 'dart:math';
 import 'package:benchmark_cherrypick/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_cherrypick/benchmarks/universal_chain_async_benchmark.dart';
 
+/// Holds the results for a single benchmark execution.
 class BenchmarkResult {
+  /// List of timings for each run (in microseconds).
   final List<num> timings;
+  /// Difference in memory (RSS, in KB) after running.
   final int memoryDiffKb;
+  /// Difference between peak RSS and initial RSS (in KB).
   final int deltaPeakKb;
+  /// Peak RSS memory observed (in KB).
   final int peakRssKb;
   BenchmarkResult({
     required this.timings,
@@ -14,6 +19,7 @@ class BenchmarkResult {
     required this.deltaPeakKb,
     required this.peakRssKb,
   });
+  /// Computes a BenchmarkResult instance from run timings and memory data.
   factory BenchmarkResult.collect({
     required List<num> timings,
     required List<int> rssValues,
@@ -32,7 +38,10 @@ class BenchmarkResult {
   }
 }
 
+/// Static methods to execute and time benchmarks for DI containers.
 class BenchmarkRunner {
+  /// Runs a synchronous benchmark ([UniversalChainBenchmark]) for a given number of [warmups] and [repeats].
+  /// Collects execution time and observed memory.
   static Future<BenchmarkResult> runSync({
     required UniversalChainBenchmark benchmark,
     required int warmups,
@@ -58,6 +67,8 @@ class BenchmarkRunner {
     return BenchmarkResult.collect(timings: timings, rssValues: rssValues, memBefore: memBefore);
   }
 
+  /// Runs an asynchronous benchmark ([UniversalChainAsyncBenchmark]) for a given number of [warmups] and [repeats].
+  /// Collects execution time and observed memory.
   static Future<BenchmarkResult> runAsync({
     required UniversalChainAsyncBenchmark benchmark,
     required int warmups,

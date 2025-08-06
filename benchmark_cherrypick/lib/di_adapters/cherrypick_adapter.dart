@@ -1,6 +1,11 @@
 import 'package:cherrypick/cherrypick.dart';
 import 'di_adapter.dart';
 
+/// DIAdapter implementation for the CherryPick DI library.
+///
+/// Wraps a CherryPick [Scope] and provides methods
+/// to setup modules, resolve dependencies, teardown,
+/// and open nested sub-scopes for benchmarking.
 class CherrypickDIAdapter implements DIAdapter {
   Scope? _scope;
 
@@ -37,6 +42,8 @@ class CherrypickDIAdapter implements DIAdapter {
   }
 }
 
+/// Internal adapter for a CherryPick sub-scope.
+/// Used for simulating child/override DI scopes in benchmarks.
 class _CherrypickSubScopeAdapter extends CherrypickDIAdapter {
   final Scope _subScope;
   _CherrypickSubScopeAdapter(this._subScope);
