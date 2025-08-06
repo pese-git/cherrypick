@@ -1,18 +1,7 @@
-// ignore: depend_on_referenced_packages
-import 'package:benchmark_cherrypick/di_adapter.dart';
-// ignore: depend_on_referenced_packages
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:cherrypick/cherrypick.dart';
-
-class AppModule extends Module {
-  @override
-  void builder(Scope currentScope) {
-    bind<FooService>().toProvide(() => FooService());
-  }
-}
-
-// Dummy service for DI
-class FooService {}
+import 'package:benchmark_cherrypick/di_adapters/di_adapter.dart';
+import 'package:benchmark_cherrypick/scenarios/app_module.dart';
+import 'package:benchmark_cherrypick/scenarios/foo_service.dart';
 
 class RegisterAndResolveBenchmark extends BenchmarkBase {
   final DIAdapter di;

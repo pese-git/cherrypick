@@ -1,8 +1,10 @@
-import 'package:benchmark_cherrypick/cherrypick_benchmark.dart';
-import 'package:benchmark_cherrypick/complex_bindings_benchmark.dart';
-import 'package:benchmark_cherrypick/async_chain_benchmark.dart';
-import 'package:benchmark_cherrypick/di_adapter.dart';
-import 'package:benchmark_cherrypick/scope_override_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/register_and_resolve_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/chain_singleton_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/chain_factory_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/named_resolve_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/scope_override_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/async_chain_benchmark.dart';
+import 'package:benchmark_cherrypick/di_adapters/cherrypick_adapter.dart';
 import 'package:args/args.dart';
 import 'dart:io';
 import 'dart:math';
