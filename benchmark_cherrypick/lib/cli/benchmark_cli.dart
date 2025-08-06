@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:benchmark_cherrypick/cli/report/markdown_report.dart';
+
 import '../scenarios/universal_chain_module.dart';
 import 'report/pretty_report.dart';
 import 'report/csv_report.dart';
@@ -70,6 +72,7 @@ class BenchmarkCliRunner {
       'pretty': PrettyReport(),
       'csv': CsvReport(),
       'json': JsonReport(),
+      'markdown': MarkdownReport(),
     };
     print(reportGenerators[config.format]?.render(results) ?? PrettyReport().render(results));
   }
