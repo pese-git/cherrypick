@@ -89,6 +89,17 @@ class MyBenchmark extends BenchmarkBase with BenchmarkWithScope {
 
 ---
 
+| Benchmark         | Chain Count | Depth | Mean (us) | Median | Stddev | Min   | Max   | N | ΔRSS(KB) | ΔPeak(KB) | PeakRSS(KB) |
+| ----------------- | ----------- | ----- | --------- | ------ | ------ | ----- | ----- | - | -------- | --------- | ----------- |
+| RegisterSingleton | 10          | 5     | 23.00     | 44.00  | 21.00  | 2.00  | 44.00 | 2 | 16       | 16        | 200400      |
+| ChainSingleton    | 10          | 5     | 42.50     | 51.00  | 8.50   | 34.00 | 51.00 | 2 | 64       | 64        | 200592      |
+| ChainFactory      | 10          | 5     | 42.00     | 48.00  | 6.00   | 36.00 | 48.00 | 2 | 64       | 64        | 200688      |
+| AsyncChain        | 10          | 5     | 49.00     | 52.00  | 3.00   | 46.00 | 52.00 | 2 | 0        | 0         | 200784      |
+| Named             | 10          | 5     | 1.00      | 1.00   | 0.00   | 1.00  | 1.00  | 2 | 0        | 0         | 200784      |
+| Override          | 10          | 5     | 1.50      | 2.00   | 0.50   | 1.00  | 2.00  | 2 | 0        | 0         | 200800      |
+
+---
+
 ## License
 
 MIT

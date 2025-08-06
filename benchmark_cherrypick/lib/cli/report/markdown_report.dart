@@ -45,12 +45,27 @@ class MarkdownReport extends ReportGenerator {
     });
 
     String rowToLine(List<String> row, {String sep = ' | '}) =>
-        '| ' + List.generate(row.length, (i) => row[i].padRight(widths[i])).join(sep) + ' |';
+        '| ${List.generate(row.length, (i) => row[i].padRight(widths[i])).join(sep)} |';
 
     final headerLine = rowToLine(headers);
-    final divider = '| ' + widths.map((w) => '-' * w).join(' | ') + ' |';
+    final divider = '| ${widths.map((w) => '-' * w).join(' | ')} |';
     final lines = dataRows.map(rowToLine).toList();
 
-    return ([headerLine, divider] + lines).join('\n');
+    final legend = '''
+      > **Legend:**  
+      > `Benchmark` – Test name  
+      > `Chain Count` – Number of independent chains  
+      > `Depth` – Depth of each chain  
+      > `Mean (us)` – Average time per run (microseconds)  
+      > `Median` – Median time per run  
+      > `Stddev` – Standard deviation  
+      > `Min`, `Max` – Min/max run time  
+      > `N` – Number of measurements  
+      > `ΔRSS(KB)` – Change in process memory (KB)  
+      > `ΔPeak(KB)` – Change in peak RSS (KB)  
+      > `PeakRSS(KB)` – Max observed RSS memory (KB)  
+      ''';
+
+    return '$legend\n\n${([headerLine, divider] + lines).join('\n')}' ;
   }
 }
