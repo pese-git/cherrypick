@@ -3,72 +3,179 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:cherrypick/cherrypick.dart';
 
 // === DI graph: A -> B -> C (singleton) ===
-class ServiceA {}
-class ServiceB {
-  final ServiceA a;
-  ServiceB(this.a);
+abstract class Service {
+  final dynamic value;
+  final Service? dependency;
+
+  Service({
+    required this.value,
+    this.dependency,
+  });
 }
-class ServiceC {
-  final ServiceB b;
-  ServiceC(this.b);
+
+class ServiceImpl extends Service {
+  ServiceImpl({
+    required super.value,
+    super.dependency,
+  });
 }
 
 class ChainSingletonModule extends Module {
+  // количество независимых цепочек
+  final int chainCount;
+
+  // глубина вложенности
+  final int nestingDepth;
+
+  ChainSingletonModule({
+    required this.chainCount,
+    required this.nestingDepth,
+  });
+
   @override
   void builder(Scope currentScope) {
-    bind<ServiceA>().toProvide(() => ServiceA()).singleton();
-    bind<ServiceB>().toProvide((() => ServiceB(currentScope.resolve<ServiceA>()))).singleton();
-    bind<ServiceC>().toProvide((() => ServiceC(currentScope.resolve<ServiceB>()))).singleton();
+    for (var chainIndex = 0; chainIndex < chainCount; chainIndex++) {
+      for (var levelIndex = 0; levelIndex < nestingDepth; levelIndex++) {
+        final chain = chainIndex + 1;
+        final level = levelIndex + 1;
+
+        final prevDepName = '${chain.toString()}_${(level - 1).toString()}';
+        final depName = '${chain.toString()}_${level.toString()}';
+
+        bind<Service>()
+            .toProvide(
+              () => ServiceImpl(
+            value: depName,
+            dependency: currentScope.tryResolve<Service>(
+              named: prevDepName,
+            ),
+          ),
+        )
+            .withName(depName)
+            .singleton();
+      }
+    }
   }
 }
 
 class ChainSingletonBenchmark extends BenchmarkBase {
-  ChainSingletonBenchmark() : super('ChainSingleton (A->B->C, singleton)');
+  final int chainCount;
+  final int nestingDepth;
+
+  ChainSingletonBenchmark({
+    this.chainCount = 1,
+    this.nestingDepth = 3,
+  }) : super(
+    'ChainSingleton (A->B->C, singleton). '
+        'C/D = $chainCount/$nestingDepth. ',
+  );
   late Scope scope;
+
   @override
   void setup() {
     scope = CherryPick.openRootScope();
-    scope.installModules([ChainSingletonModule()]);
+    scope.installModules([
+      ChainSingletonModule(
+        chainCount: chainCount,
+        nestingDepth: nestingDepth,
+      ),
+    ]);
   }
+
   @override
   void teardown() => CherryPick.closeRootScope();
+
   @override
   void run() {
-    scope.resolve<ServiceC>();
+    final serviceName = '${chainCount.toString()}_${nestingDepth.toString()}';
+    scope.resolve<Service>(named: serviceName);
   }
 }
 
 // === DI graph: A -> B -> C (factory/no singleton) ===
 class ChainFactoryModule extends Module {
+  // количество независимых цепочек
+  final int chainCount;
+
+  // глубина вложенности
+  final int nestingDepth;
+
+  ChainFactoryModule({
+    required this.chainCount,
+    required this.nestingDepth,
+  });
+
   @override
   void builder(Scope currentScope) {
-    bind<ServiceA>().toProvide(() => ServiceA());
-    bind<ServiceB>().toProvide((() => ServiceB(currentScope.resolve<ServiceA>())));
-    bind<ServiceC>().toProvide((() => ServiceC(currentScope.resolve<ServiceB>())));
+    for (var chainIndex = 0; chainIndex < chainCount; chainIndex++) {
+      for (var levelIndex = 0; levelIndex < nestingDepth; levelIndex++) {
+        final chain = chainIndex + 1;
+        final level = levelIndex + 1;
+
+        final prevDepName = '${chain.toString()}_${(level - 1).toString()}';
+        final depName = '${chain.toString()}_${level.toString()}';
+
+        bind<Service>()
+            .toProvide(
+              () => ServiceImpl(
+            value: depName,
+            dependency: currentScope.tryResolve<Service>(
+              named: prevDepName,
+            ),
+          ),
+        )
+            .withName(depName);
+      }
+    }
   }
 }
 
 class ChainFactoryBenchmark extends BenchmarkBase {
-  ChainFactoryBenchmark() : super('ChainFactory (A->B->C, factory)');
+  // количество независимых цепочек
+  final int chainCount;
+
+  // глубина вложенности
+  final int nestingDepth;
+
+  ChainFactoryBenchmark({
+    this.chainCount = 1,
+    this.nestingDepth = 3,
+  }) : super(
+    'ChainFactory (A->B->C, factory). '
+        'C/D = $chainCount/$nestingDepth. ',
+  );
+
   late Scope scope;
+
   @override
   void setup() {
     CherryPick.disableGlobalCycleDetection();
     CherryPick.disableGlobalCrossScopeCycleDetection();
+
     scope = CherryPick.openRootScope();
-    scope.installModules([ChainFactoryModule()]);
+    scope.installModules([
+      ChainFactoryModule(
+        chainCount: chainCount,
+        nestingDepth: nestingDepth,
+      ),
+    ]);
   }
+
   @override
   void teardown() => CherryPick.closeRootScope();
+
   @override
   void run() {
-    scope.resolve<ServiceC>();
+    final serviceName = '${chainCount.toString()}_${nestingDepth.toString()}';
+    scope.resolve<Service>(named: serviceName);
   }
 }
 
 // === Named bindings: Multiple implementations ===
 class Impl1 {}
+
 class Impl2 {}
+
 class NamedModule extends Module {
   @override
   void builder(Scope currentScope) {
@@ -80,16 +187,20 @@ class NamedModule extends Module {
 class NamedResolveBenchmark extends BenchmarkBase {
   NamedResolveBenchmark() : super('NamedResolve (by name)');
   late Scope scope;
+
   @override
   void setup() {
     scope = CherryPick.openRootScope();
     scope.installModules([NamedModule()]);
   }
+
   @override
   void teardown() => CherryPick.closeRootScope();
+
   @override
   void run() {
     // Switch name for comparison
     scope.resolve<Object>(named: 'impl2');
   }
 }
+
