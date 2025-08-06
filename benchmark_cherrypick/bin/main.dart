@@ -1,58 +1,52 @@
-import 'package:benchmark_cherrypick/benchmarks/register_and_resolve_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/chain_singleton_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/chain_factory_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/named_resolve_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/scope_override_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/async_chain_benchmark.dart';
+import 'package:benchmark_cherrypick/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_cherrypick/di_adapters/cherrypick_adapter.dart';
+import 'package:benchmark_cherrypick/scenarios/universal_chain_module.dart';
 import 'package:args/args.dart';
 import 'dart:io';
 import 'dart:math';
 
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('benchmark', abbr: 'b', help: 'Benchmark name (register, chain_singleton, chain_factory, named, override, async_chain, all)', defaultsTo: 'all')
-    ..addOption('chainCount', abbr: 'c', help: 'Comma-separated chainCounts (используется в chain_singleton/factory)', defaultsTo: '100')
-    ..addOption('nestingDepth', abbr: 'd', help: 'Comma-separated depths (используется в chain_singleton/factory)', defaultsTo: '100')
-    ..addOption('repeat', abbr: 'r', help: 'Repeats for each run (statistical run, >=2)', defaultsTo: '5')
-    ..addOption('warmup', abbr: 'w', help: 'Warmup runs before timing', defaultsTo: '2')
+    ..addOption('chainCount', abbr: 'c', help: 'Comma-separated chainCounts', defaultsTo: '10')
+    ..addOption('nestingDepth', abbr: 'd', help: 'Comma-separated depths', defaultsTo: '5')
+    ..addOption('mode', abbr: 'm', help: 'Mode (singletonStrategy,factoryStrategy,asyncStrategy)', defaultsTo: 'singletonStrategy')
+    ..addOption('repeat', abbr: 'r', help: 'Repeats for each run (>=2)', defaultsTo: '2')
+    ..addOption('warmup', abbr: 'w', help: 'Warmup runs', defaultsTo: '1')
     ..addOption('format', abbr: 'f', help: 'Output format (pretty, csv, json)', defaultsTo: 'pretty')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
 
   final result = parser.parse(args);
 
   if (result['help'] == true) {
-    print('Dart DI benchmarks');
+    print('UniversalChainBenchmark');
     print(parser.usage);
-    print('\nExamples:\n'
-        '  dart run bin/main.dart --benchmark=chain_singleton --chainCount=10,100 --nestingDepth=5,10 --format=csv\n'
-        '  dart run bin/main.dart --benchmark=named\n'
-        'Extra: --repeat=7 --warmup=3\n');
     return;
   }
 
-  final di = CherrypickDIAdapter();
-
-  final benchmark = result['benchmark'] as String;
-  final format = result['format'] as String;
-
   final chainCounts = _parseIntList(result['chainCount'] as String);
   final nestDepths  = _parseIntList(result['nestingDepth'] as String);
-  final repeats     = int.tryParse(result['repeat'] as String? ?? "") ?? 5;
-  final warmups     = int.tryParse(result['warmup'] as String? ?? "") ?? 2;
+  final modeName    = result['mode'] as String;
+  final mode        = UniversalBindingMode.values.firstWhere(
+    (m) => m.toString().split('.').last == modeName,
+    orElse: () => UniversalBindingMode.singletonStrategy,
+  );
+  final repeats     = int.tryParse(result['repeat'] as String? ?? "") ?? 2;
+  final warmups     = int.tryParse(result['warmup'] as String? ?? "") ?? 1;
+  final format      = result['format'] as String;
 
+  final di = CherrypickDIAdapter();
   final results = <Map<String, dynamic>>[];
+
   void addResult(
     String name,
-    int? chainCount,
-    int? nestingDepth,
+    int chainCount,
+    int nestingDepth,
     List<num> timings,
     int? memoryDiffKb,
     int? deltaPeakKb,
     int? peakRssKb,
   ) {
     timings.sort();
-    
     var mean = timings.reduce((a, b) => a + b) / timings.length;
     var median = timings[timings.length ~/ 2];
     var minVal = timings.first;
@@ -78,8 +72,8 @@ Future<void> main(List<String> args) async {
   Future<void> runAndCollect(
     String name,
     Future<num> Function() fn, {
-    int? chainCount,
-    int? nestingDepth,
+    required int chainCount,
+    required int nestingDepth,
   }) async {
     for (int i = 0; i < warmups; i++) {
       await fn();
@@ -98,43 +92,17 @@ Future<void> main(List<String> args) async {
     addResult(name, chainCount, nestingDepth, timings, memDiffKB, deltaPeakKb, (peakRss/1024).round());
   }
 
-  if (benchmark == 'all' || benchmark == 'register') {
-    await runAndCollect('RegisterAndResolve', () async {
-      return _captureReport(RegisterAndResolveBenchmark(di).report);
-    });
-  }
-  if (benchmark == 'all' || benchmark == 'chain_singleton') {
-    for (final c in chainCounts) {
-      for (final d in nestDepths) {
-        await runAndCollect('ChainSingleton', () async {
-          return _captureReport(() => ChainSingletonBenchmark(di,chainCount: c, nestingDepth: d).report());
-        }, chainCount: c, nestingDepth: d);
-      }
+  for (final c in chainCounts) {
+    for (final d in nestDepths) {
+      await runAndCollect('UniversalChain_$mode', () async {
+        return _captureReport(() => UniversalChainBenchmark(
+          di,
+          chainCount: c,
+          nestingDepth: d,
+          mode: mode,
+        ).report());
+      }, chainCount: c, nestingDepth: d);
     }
-  }
-  if (benchmark == 'all' || benchmark == 'chain_factory') {
-    for (final c in chainCounts) {
-      for (final d in nestDepths) {
-        await runAndCollect('ChainFactory', () async {
-          return _captureReport(() => ChainFactoryBenchmark(di, chainCount: c, nestingDepth: d).report());
-        }, chainCount: c, nestingDepth: d);
-      }
-    }
-  }
-  if (benchmark == 'all' || benchmark == 'named') {
-    await runAndCollect('NamedResolve', () async {
-      return _captureReport(NamedResolveBenchmark(di).report);
-    });
-  }
-  if (benchmark == 'all' || benchmark == 'override') {
-    await runAndCollect('ScopeOverride', () async {
-      return _captureReport(ScopeOverrideBenchmark(di).report);
-    });
-  }
-  if (benchmark == 'all' || benchmark == 'async_chain') {
-    await runAndCollect('AsyncChain', () async {
-      return _captureReportAsync(AsyncChainBenchmark(di).report);
-    });
   }
 
   if (format == 'json') {
@@ -152,12 +120,6 @@ List<int> _parseIntList(String s) => s.split(',').map((e) => int.tryParse(e.trim
 Future<num> _captureReport(void Function() fn) async {
   final sw = Stopwatch()..start();
   fn();
-  sw.stop();
-  return sw.elapsedMicroseconds;
-}
-Future<num> _captureReportAsync(Future<void> Function() fn) async {
-  final sw = Stopwatch()..start();
-  await fn();
   sw.stop();
   return sw.elapsedMicroseconds;
 }
