@@ -23,33 +23,39 @@ class UniversalChainBenchmark extends BenchmarkBase {
   void setup() {
     switch (scenario) {
       case UniversalScenario.override:
-        _di.setupModules([
-          UniversalChainModule(
-            chainCount: chainCount,
-            nestingDepth: nestingDepth,
-            bindingMode: UniversalBindingMode.singletonStrategy,
-            scenario: UniversalScenario.register,
-          )
-        ]);
+        _di.setupDependencies((scope) {
+          scope.installModules([
+            UniversalChainModule(
+              chainCount: chainCount,
+              nestingDepth: nestingDepth,
+              bindingMode: UniversalBindingMode.singletonStrategy,
+              scenario: UniversalScenario.register,
+            ),
+          ]);
+        });
         _childDi = _di.openSubScope('child');
-        _childDi!.setupModules([
-          UniversalChainModule(
-            chainCount: chainCount,
-            nestingDepth: nestingDepth,
-            bindingMode: UniversalBindingMode.singletonStrategy,
-            scenario: UniversalScenario.register,
-          )
-        ]);
+        _childDi!.setupDependencies((scope) {
+          scope.installModules([
+            UniversalChainModule(
+              chainCount: chainCount,
+              nestingDepth: nestingDepth,
+              bindingMode: UniversalBindingMode.singletonStrategy,
+              scenario: UniversalScenario.register,
+            ),
+          ]);
+        });
         break;
       default:
-        _di.setupModules([
-          UniversalChainModule(
-            chainCount: chainCount,
-            nestingDepth: nestingDepth,
-            bindingMode: mode,
-            scenario: scenario,
-          )
-        ]);
+        _di.setupDependencies((scope) {
+          scope.installModules([
+            UniversalChainModule(
+              chainCount: chainCount,
+              nestingDepth: nestingDepth,
+              bindingMode: mode,
+              scenario: scenario,
+            ),
+          ]);
+        });
         break;
     }
   }

@@ -18,14 +18,16 @@ class UniversalChainAsyncBenchmark extends AsyncBenchmarkBase {
 
   @override
   Future<void> setup() async {
-    di.setupModules([
-      UniversalChainModule(
-        chainCount: chainCount,
-        nestingDepth: nestingDepth,
-        bindingMode: mode,
-        scenario: UniversalScenario.asyncChain,
-      )
-    ]);
+    di.setupDependencies((scope) {
+      scope.installModules([
+        UniversalChainModule(
+          chainCount: chainCount,
+          nestingDepth: nestingDepth,
+          bindingMode: mode,
+          scenario: UniversalScenario.asyncChain,
+        ),
+      ]);
+    });
   }
 
   @override

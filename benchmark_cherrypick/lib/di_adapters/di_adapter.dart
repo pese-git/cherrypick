@@ -1,22 +1,21 @@
-import 'package:cherrypick/cherrypick.dart';
-
-/// Abstraction for Dependency Injection (DI) Adapter.
+/// Абстракция для DI-адаптера с использованием функций регистрации.
 ///
-/// Provides a uniform interface to setup, resolve, and teardown DI containers/modules
-/// and open sub-scopes to benchmark them under different libraries.
+/// Позволяет использовать любые DI-контейнеры: и модульные, и безмодульные.
 abstract class DIAdapter {
-  /// Installs the provided modules into the DI container.
-  void setupModules(List<Module> modules);
+  /// Устанавливает зависимости с помощью одной функции регистрации.
+  ///
+  /// Функция принимает выбранный DI-контейнер, задаваемый реализацией.
+  void setupDependencies(void Function(dynamic container) registration);
 
-  /// Resolves an instance of type [T] by optional [named] tag.
+  /// Резолвит (возвращает) экземпляр типа [T] (по имени, если требуется).
   T resolve<T>({String? named});
 
-  /// Asynchronously resolves an instance of type [T] by optional [named] tag.
+  /// Асинхронно резолвит экземпляр типа [T].
   Future<T> resolveAsync<T>({String? named});
 
-  /// Tears down or disposes of the DI container.
+  /// Уничтожает/отчищает DI-контейнер.
   void teardown();
 
-  /// Opens a child DI sub-scope, useful for override/child-scope benchmarks.
+  /// Открывает дочерний под-scope (если применимо).
   DIAdapter openSubScope(String name);
 }
