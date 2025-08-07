@@ -1,119 +1,188 @@
 # benchmark_cherrypick
 
-_Набор бенчмарков для анализа производительности и особенностей DI-контейнера cherrypick._
+_Бенчмаркинговый набор для cherrypick, get_it и других DI-контейнеров._
 
-## Описание
+## Общее описание
 
-Этот пакет предоставляет комплексные синтетические бенчмарки для DI-контейнера [cherrypick](https://github.com/). CLI-интерфейс позволяет запускать сценарии с разной глубиной, шириной, вариантами разрешения (singletons, factories, named, override, async), снимая статистику по времени и памяти, генерируя отчёты в различных форматах.
+benchmark_cherrypick — это современный фреймворк для измерения производительности DI-контейнеров (как cherrypick, так и get_it) на синтетических, сложных и реальных сценариях: цепочки зависимостей, factory, async, именованные биндинги, override и пр.
 
-**Особенности:**
-- Матричный запуск (chain count, nesting depth, сценарий, повторы)
-- Гибкая настройка CLI
-- Много форматов отчётов: таблица, CSV, JSON, Markdown
-- Подсчет времени и памяти (mean, median, stddev, min, max, разница RSS/пик)
-- Встроенные и легко расширяемые сценарии (singletons, factories, async, named, override)
-- Механизм подключения других DI-контейнеров через адаптеры
+**Возможности:**
+- Универсальный слой регистрации сценариев (работает с любым DI)
+- Готовая поддержка [cherrypick](https://github.com/) и [get_it](https://pub.dev/packages/get_it)
+- Удобный CLI для запусков по матрице значений параметров и различных форматов вывода (Markdown, CSV, JSON, pretty)
+- Сбор и вывод метрик: время, память (RSS, peak), статистика (среднее, медиана, stddev, min/max)
+- Легко расширять — создавайте свой DIAdapter и новые сценарии
 
 ---
 
 ## Сценарии бенчмарков
 
-- **RegisterSingleton**: Регистрация и разрешение singleton-зависимости
-- **ChainSingleton**: Глубокая цепочка singleton-зависимостей (A→B→C...)
-- **ChainFactory**: Цепочка с factory (новый объект при каждом разрешении)
-- **AsyncChain**: Асинхронная цепочка зависимостей
-- **Named**: Разрешение зависимости по имени среди нескольких реализаций
-- **Override**: Разрешение зависимости, перекрытой в дочернем scope
+- **registerSingleton**: Регистрация и резолвинг singleton
+- **chainSingleton**: Разрешение длинных singleton-цепочек (A→B→C…)
+- **chainFactory**: То же, но с factory (каждый раз — новый объект)
+- **asyncChain**: Асинхронная цепочка (async factory/provider)
+- **named**: Разрешение по имени (например, из нескольких реализаций)
+- **override**: Переопределение зависимостей в subScope
+
+---
+
+## Поддерживаемые DI-контейнеры
+
+- **cherrypick** (по умолчанию)
+- **get_it**
+- Легко добавить свой DI через DIAdapter
+
+Меняется одной CLI-опцией: `--di`
 
 ---
 
 ## Как запустить
 
-1. **Установите зависимости:**
+1. **Установить зависимости:**
    ```shell
    dart pub get
    ```
-2. **Запустите все бенчмарки (по умолчанию: одна комбинация, 2 прогрева, 2 повтора):**
+
+2. **Запустить все бенчмарки (по умолчанию: все сценарии, 2 прогрева, 2 замера):**
    ```shell
-   dart run bin/main.dart
+   dart run bin/main.dart --benchmark=all --format=markdown
    ```
 
-3. **Показать все CLI-параметры:**
+3. **Для get_it:**
+   ```shell
+   dart run bin/main.dart --di=getit --benchmark=all --format=markdown
+   ```
+
+4. **Показать все опции CLI:**
    ```shell
    dart run bin/main.dart --help
    ```
 
-### CLI-параметры
+### Параметры CLI
 
-- `--benchmark, -b` — Сценарий:  
-  `registerSingleton`, `chainSingleton`, `chainFactory`, `asyncChain`, `named`, `override`, `all` (по умолчанию: all)
-- `--chainCount, -c` — Длины цепочек через запятую (`10,100`)
-- `--nestingDepth, -d` — Глубины цепочек через запятую (`5,10`)
-- `--repeat, -r` — Повторов на сценарий (по умолчанию 2)
-- `--warmup, -w` — Прогревов до замера (по умолчанию 1)
-- `--format, -f` — Формат отчёта: `pretty`, `csv`, `json`, `markdown` (по умолчанию pretty)
-- `--help, -h` — Показать справку
+- `--di` — Какой DI использовать: `cherrypick` (по умолчанию) или `getit`
+- `--benchmark, -b` — Сценарий: `registerSingleton`, `chainSingleton`, `chainFactory`, `asyncChain`, `named`, `override`, `all`
+- `--chainCount, -c` — Сколько параллельных цепочек (например, `10,100`)
+- `--nestingDepth, -d` — Глубина цепочки (например, `5,10`)
+- `--repeat, -r` — Повторов замера (по умолчанию 2)
+- `--warmup, -w` — Прогревочных запусков (по умолчанию 1)
+- `--format, -f` — Формат отчёта: `pretty`, `csv`, `json`, `markdown`
+- `--help, -h` — Справка
 
 ### Примеры запуска
 
-- **Матричный запуск:**
+- **Все бенчмарки для cherrypick:**
   ```shell
-  dart run bin/main.dart --benchmark=chainSingleton --chainCount=10,100 --nestingDepth=5,10 --repeat=5 --warmup=2 --format=markdown
+  dart run bin/main.dart --di=cherrypick --benchmark=all --format=markdown
   ```
 
-- **Только сценарий с именованным разрешением:**
+- **Для get_it (все сценарии):**
   ```shell
-  dart run bin/main.dart --benchmark=named --repeat=3
+  dart run bin/main.dart --di=getit --benchmark=all --format=markdown
   ```
 
-### Пример вывода (Markdown):
-
-```
-| Benchmark         | Chain Count | Depth | Mean (us) | ... | PeakRSS(KB) |
-|------------------|-------------|-------|-----------| ... |-------------|
-| ChainSingleton   | 10          | 5     | 2450000   | ... | 200064      |
-```
+- **Запуск по матрице параметров:**
+  ```shell
+  dart run bin/main.dart --benchmark=chainSingleton --chainCount=10,100 --nestingDepth=5,10 --repeat=3 --format=csv
+  ```
 
 ---
 
-## Форматы отчёта
+## Как добавить свой DI
 
-- **pretty** — табличный человекочитаемый вывод
-- **csv** — удобно для Excel и анализа скриптами
-- **json** — для автотестов и аналитики
-- **markdown** — Markdown-таблица (в Issues/Wiki)
+1. Реализуйте класс-адаптер, реализующий `DIAdapter` (`lib/di_adapters/ваш_adapter.dart`)
+2. Зарегистрируйте его в CLI (`cli/benchmark_cli.dart`)
+3. Дополните универсальную функцию регистрации (`di_universal_registration.dart`), чтобы строить цепочки для вашего DI
 
 ---
 
-## Как добавить свой бенчмарк
+## Архитектура
 
-1. Создайте класс на основе `BenchmarkBase` (для sync) или `AsyncBenchmarkBase` (для async)
-2. Настройте DI через адаптер, создайте нужный модуль/сценарий
-3. Добавьте новый случай в bin/main.dart для CLI
-4. Для поддержки других DI-контейнеров реализуйте свой DIAdapter
+```mermaid
+classDiagram
+    class BenchmarkCliRunner {
+        +run(args)
+    }
+    class UniversalChainBenchmark {
+        +setup()
+        +run()
+        +teardown()
+    }
+    class UniversalChainAsyncBenchmark {
+        +setup()
+        +run()
+        +teardown()
+    }
+    class DIAdapter {
+        <<interface>>
+        +setupDependencies(cb)
+        +resolve<T>(named)
+        +resolveAsync<T>(named)
+        +teardown()
+        +openSubScope(name)
+        +waitForAsyncReady()
+    }
+    class CherrypickDIAdapter
+    class GetItAdapter
+    class UniversalChainModule {
+        +builder(scope)
+        +chainCount
+        +nestingDepth
+        +bindingMode
+        +scenario
+    }
+    class UniversalService {
+        <<interface>>
+        +value
+        +dependency
+    }
+    class UniversalServiceImpl {
+        +UniversalServiceImpl(value, dependency)
+    }
+    class di_universal_registration {
+        +getUniversalRegistration(adapter, ...)
+    }
+    class Scope
+    class UniversalScenario
+    class UniversalBindingMode
 
-Пример минимального бенчмарка:
-```dart
-class MyBenchmark extends BenchmarkBase {
-  MyBenchmark() : super('My custom');
-  @override void setup() {/* настройка DI, создание цепочки */}
-  @override void run()   {/* разрешение/запуск */}
-  @override void teardown() {/* очистка, если нужно */}
-}
+    %% Relationships
+    
+    BenchmarkCliRunner --> UniversalChainBenchmark
+    BenchmarkCliRunner --> UniversalChainAsyncBenchmark
+
+    UniversalChainBenchmark *-- DIAdapter
+    UniversalChainAsyncBenchmark *-- DIAdapter
+
+    DIAdapter <|.. CherrypickDIAdapter
+    DIAdapter <|.. GetItAdapter
+
+    CherrypickDIAdapter ..> Scope
+    GetItAdapter ..> GetIt: "uses GetIt"
+
+    DIAdapter o--> UniversalChainModule : setupDependencies
+
+    UniversalChainModule ..> UniversalScenario
+    UniversalChainModule ..> UniversalBindingMode
+
+    UniversalChainModule o-- UniversalServiceImpl : creates
+    UniversalService <|.. UniversalServiceImpl
+    UniversalServiceImpl --> UniversalService : dependency
+
+    BenchmarkCliRunner ..> di_universal_registration : uses
+    di_universal_registration ..> DIAdapter
+
+    UniversalChainBenchmark ..> di_universal_registration : uses registrar
+    UniversalChainAsyncBenchmark ..> di_universal_registration : uses registrar
 ```
 
 ---
 
 ## Метрики
 
-Бенчмарки собирают:
-- **Время** (мкс): среднее, медиана, stddev, min, max, полный лист замеров
-- **Память (RSS):**
-  - memory_diff_kb — итоговая разница RSS (KB)
-  - delta_peak_kb  — разница пикового RSS (KB)
-  - peak_rss_kb    — абсолютный пик (KB)
-
----
+Всегда собираются:
+- **Время** (мкс): среднее, медиана, stddev, min, max
+- **Память**: прирост RSS, пиковое значение RSS
 
 ## Лицензия
 
