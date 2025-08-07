@@ -28,7 +28,7 @@ void Function(dynamic) getUniversalRegistration(
         ),
       ]);
     };
-  } else if (adapter is GetItAdapter) {
+  } else if (adapter is GetItAdapter || adapter.runtimeType.toString().contains('GetItScopeAdapter')) {
     return (getIt) {
       switch (scenario) {
         case UniversalScenario.asyncChain:
@@ -102,6 +102,13 @@ void Function(dynamic) getUniversalRegistration(
         case UniversalScenario.override:
           // handled at benchmark level
           break;
+      }
+      // UniversalService alias (без имени) для chain/override-сценариев
+      if (scenario == UniversalScenario.chain || scenario == UniversalScenario.override) {
+        final depName = '${chainCount}_$nestingDepth';
+        getIt.registerSingleton<UniversalService>(
+          getIt<UniversalService>(instanceName: depName),
+        );
       }
     };
   }
