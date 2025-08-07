@@ -1,6 +1,7 @@
+import 'package:benchmark_di/scenarios/universal_binding_mode.dart';
+import 'package:benchmark_di/scenarios/universal_scenario.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:benchmark_di/di_adapters/di_adapter.dart';
-import 'package:benchmark_di/scenarios/universal_chain_module.dart';
 import 'package:benchmark_di/scenarios/universal_service.dart';
 
 class UniversalChainBenchmark<TContainer> extends BenchmarkBase {

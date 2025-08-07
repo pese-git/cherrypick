@@ -1,4 +1,5 @@
-import 'package:benchmark_di/scenarios/universal_chain_module.dart';
+import 'package:benchmark_di/scenarios/universal_binding_mode.dart';
+import 'package:benchmark_di/scenarios/universal_scenario.dart';
 import 'package:benchmark_di/scenarios/universal_service.dart';
 import 'package:get_it/get_it.dart';
 import 'di_adapter.dart';

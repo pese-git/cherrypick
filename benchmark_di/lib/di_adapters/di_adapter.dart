@@ -1,5 +1,4 @@
-import 'package:benchmark_di/scenarios/universal_chain_module.dart';
-
+import 'package:benchmark_di/scenarios/universal_binding_mode.dart';
 /// Универсальная абстракция для DI-адаптера с унифицированной функцией регистрации.
 /// Теперь для каждого адаптера задаём строгий generic тип контейнера.
 typedef Registration<TContainer> = void Function(TContainer);

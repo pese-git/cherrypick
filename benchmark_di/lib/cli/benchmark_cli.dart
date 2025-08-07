@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:benchmark_di/cli/report/markdown_report.dart';
+import 'package:benchmark_di/scenarios/universal_scenario.dart';
 import 'package:cherrypick/cherrypick.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod/riverpod.dart' as rp;
 
-import '../scenarios/universal_chain_module.dart';
 import 'report/pretty_report.dart';
 import 'report/csv_report.dart';
 import 'report/json_report.dart';
