@@ -189,27 +189,29 @@ classDiagram
     class BenchmarkCliRunner {
         +run(args)
     }
-    class UniversalChainBenchmark {
+    class UniversalChainBenchmark~TContainer~ {
         +setup()
         +run()
         +teardown()
     }
-    class UniversalChainAsyncBenchmark {
+    class UniversalChainAsyncBenchmark~TContainer~ {
         +setup()
         +run()
         +teardown()
     }
-    class DIAdapter {
+    class DIAdapter~TContainer~ {
         <<interface>>
         +setupDependencies(cb)
-        +resolve<T>(named)
-        +resolveAsync<T>(named)
+        +resolve~T~(named)
+        +resolveAsync~T~(named)
         +teardown()
         +openSubScope(name)
         +waitForAsyncReady()
+        +universalRegistration<S extends Enum>(...)
     }
     class CherrypickDIAdapter
     class GetItAdapter
+    class RiverpodAdapter
     class UniversalChainModule {
         +builder(scope)
         +chainCount
@@ -225,15 +227,12 @@ classDiagram
     class UniversalServiceImpl {
         +UniversalServiceImpl(value, dependency)
     }
-    class di_universal_registration {
-        +getUniversalRegistration(adapter, ...)
-    }
     class Scope
     class UniversalScenario
     class UniversalBindingMode
 
     %% Relationships
-    
+
     BenchmarkCliRunner --> UniversalChainBenchmark
     BenchmarkCliRunner --> UniversalChainAsyncBenchmark
 
@@ -242,9 +241,11 @@ classDiagram
 
     DIAdapter <|.. CherrypickDIAdapter
     DIAdapter <|.. GetItAdapter
+    DIAdapter <|.. RiverpodAdapter
 
     CherrypickDIAdapter ..> Scope
     GetItAdapter ..> GetIt: "uses GetIt"
+    RiverpodAdapter ..> Map~String, ProviderBase~: "uses Provider registry"
 
     DIAdapter o--> UniversalChainModule : setupDependencies
 
@@ -255,11 +256,10 @@ classDiagram
     UniversalService <|.. UniversalServiceImpl
     UniversalServiceImpl --> UniversalService : dependency
 
-    BenchmarkCliRunner ..> di_universal_registration : uses
-    di_universal_registration ..> DIAdapter
-
-    UniversalChainBenchmark ..> di_universal_registration : uses registrar
-    UniversalChainAsyncBenchmark ..> di_universal_registration : uses registrar
+    %% 
+    %% Each concrete adapter implements universalRegistration<S extends Enum>
+    %% You can add new scenario enums for custom adapters
+    %% Extensibility is achieved via adapter logic, not global functions
 ```
 
 ---
