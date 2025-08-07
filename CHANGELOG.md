@@ -3,6 +3,99 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.5`](#cherrypick---v300-dev5)
+ - [`cherrypick_flutter` - `v1.1.3-dev.5`](#cherrypick_flutter---v113-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.5`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.5`
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+
+## 2025-08-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.4`](#cherrypick---v300-dev4)
+ - [`cherrypick_flutter` - `v1.1.3-dev.4`](#cherrypick_flutter---v113-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.4`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.4`
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+
+## 2025-08-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.3`](#cherrypick---v300-dev3)
+ - [`cherrypick_flutter` - `v1.1.3-dev.3`](#cherrypick_flutter---v113-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.3`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.3`
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+
 ## 2025-08-04
 
 ### Changes

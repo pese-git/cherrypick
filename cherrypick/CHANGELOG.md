@@ -1,3 +1,24 @@
+## 3.0.0-dev.5
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+## 3.0.0-dev.4
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+## 3.0.0-dev.3
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
 ## 3.0.0-dev.2
 
 > Note: This release has breaking changes.
