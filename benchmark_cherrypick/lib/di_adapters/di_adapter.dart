@@ -8,14 +8,17 @@ abstract class DIAdapter {
   void setupDependencies(void Function(dynamic container) registration);
 
   /// Резолвит (возвращает) экземпляр типа [T] (по имени, если требуется).
-  T resolve<T>({String? named});
+  T resolve<T extends Object>({String? named});
 
   /// Асинхронно резолвит экземпляр типа [T].
-  Future<T> resolveAsync<T>({String? named});
+  Future<T> resolveAsync<T extends Object>({String? named});
 
   /// Уничтожает/отчищает DI-контейнер.
   void teardown();
 
   /// Открывает дочерний под-scope (если применимо).
   DIAdapter openSubScope(String name);
+
+  /// Ожидание готовности DI контейнера (нужно для async DI, например get_it)
+  Future<void> waitForAsyncReady();
 }

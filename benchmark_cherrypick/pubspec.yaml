@@ -10,6 +10,7 @@ dependencies:
   cherrypick:
     path: ../cherrypick
   args: ^2.7.0
+  get_it: ^8.2.0
 
 dev_dependencies:
   lints: ^5.0.0

@@ -12,11 +12,11 @@ class CherrypickDIAdapter implements DIAdapter {
   }
 
   @override
-  T resolve<T>({String? named}) =>
+  T resolve<T extends Object>({String? named}) =>
       named == null ? _scope!.resolve<T>() : _scope!.resolve<T>(named: named);
 
   @override
-  Future<T> resolveAsync<T>({String? named}) async =>
+  Future<T> resolveAsync<T extends Object>({String? named}) async =>
       named == null ? await _scope!.resolveAsync<T>() : await _scope!.resolveAsync<T>(named: named);
 
   @override
@@ -30,6 +30,9 @@ class CherrypickDIAdapter implements DIAdapter {
     final sub = _scope!.openSubScope(name);
     return _CherrypickSubScopeAdapter(sub);
   }
+
+  @override
+  Future<void> waitForAsyncReady() async {}
 }
 
 /// Internal adapter for a CherryPick sub-scope (callbacks based).
@@ -43,11 +46,11 @@ class _CherrypickSubScopeAdapter extends CherrypickDIAdapter {
   }
 
   @override
-  T resolve<T>({String? named}) =>
+  T resolve<T extends Object>({String? named}) =>
       named == null ? _subScope.resolve<T>() : _subScope.resolve<T>(named: named);
 
   @override
-  Future<T> resolveAsync<T>({String? named}) async =>
+  Future<T> resolveAsync<T extends Object>({String? named}) async =>
       named == null ? await _subScope.resolveAsync<T>() : await _subScope.resolveAsync<T>(named: named);
 
   @override

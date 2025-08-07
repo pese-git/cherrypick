@@ -81,6 +81,8 @@ class BenchmarkCliConfig {
   final int warmups;
   /// Output report format.
   final String format;
+  /// Name of DI implementation ("cherrypick" or "getit")
+  final String di;
   BenchmarkCliConfig({
     required this.benchesToRun,
     required this.chainCounts,
@@ -88,6 +90,7 @@ class BenchmarkCliConfig {
     required this.repeats,
     required this.warmups,
     required this.format,
+    required this.di,
   });
 }
 
@@ -101,6 +104,7 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('repeat', abbr: 'r', defaultsTo: '2')
     ..addOption('warmup', abbr: 'w', defaultsTo: '1')
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
+    ..addOption('di', defaultsTo: 'cherrypick', help: 'DI implementation: cherrypick or getit')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
   final result = parser.parse(args);
   if (result['help'] == true) {
@@ -120,5 +124,6 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     repeats: int.tryParse(result['repeat'] as String? ?? "") ?? 2,
     warmups: int.tryParse(result['warmup'] as String? ?? "") ?? 1,
     format: result['format'] as String,
+    di: result['di'] as String? ?? 'cherrypick',
   );
 }

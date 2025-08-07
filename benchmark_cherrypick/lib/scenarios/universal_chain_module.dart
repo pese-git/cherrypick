@@ -85,8 +85,8 @@ class UniversalChainModule extends Module {
         break;
       case UniversalScenario.named:
         // Named factory registration for two distinct objects.
-        bind<Object>().toProvide(() => UniversalServiceImpl(value: 'impl1')).withName('impl1');
-        bind<Object>().toProvide(() => UniversalServiceImpl(value: 'impl2')).withName('impl2');
+        bind<UniversalService>().toProvide(() => UniversalServiceImpl(value: 'impl1')).withName('impl1');
+        bind<UniversalService>().toProvide(() => UniversalServiceImpl(value: 'impl2')).withName('impl2');
         break;
       case UniversalScenario.chain:
         // Chain of nested services, with dependency on previous level by name.
@@ -126,9 +126,18 @@ class UniversalChainModule extends Module {
             }
           }
         }
+        // Регистрация алиаса без имени (на последний элемент цепочки)
+        final depName = '${chainCount}_${nestingDepth}';
+        bind<UniversalService>()
+            .toProvide(() => currentScope.resolve<UniversalService>(named: depName))
+            .singleton();
         break;
       case UniversalScenario.override:
-        // handled at benchmark level
+        // handled at benchmark level, но алиас нужен прямо в этом scope!
+        final depName = '${chainCount}_${nestingDepth}';
+        bind<UniversalService>()
+            .toProvide(() => currentScope.resolve<UniversalService>(named: depName))
+            .singleton();
         break;
       case UniversalScenario.asyncChain:
         // already handled above

@@ -2,6 +2,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:benchmark_cherrypick/di_adapters/di_adapter.dart';
 import 'package:benchmark_cherrypick/scenarios/universal_chain_module.dart';
 import 'package:benchmark_cherrypick/scenarios/universal_service.dart';
+import 'package:benchmark_cherrypick/scenarios/di_universal_registration.dart';
 
 class UniversalChainAsyncBenchmark extends AsyncBenchmarkBase {
   final DIAdapter di;
@@ -18,16 +19,14 @@ class UniversalChainAsyncBenchmark extends AsyncBenchmarkBase {
 
   @override
   Future<void> setup() async {
-    di.setupDependencies((scope) {
-      scope.installModules([
-        UniversalChainModule(
-          chainCount: chainCount,
-          nestingDepth: nestingDepth,
-          bindingMode: mode,
-          scenario: UniversalScenario.asyncChain,
-        ),
-      ]);
-    });
+    di.setupDependencies(getUniversalRegistration(
+      di,
+      chainCount: chainCount,
+      nestingDepth: nestingDepth,
+      bindingMode: mode,
+      scenario: UniversalScenario.asyncChain,
+    ));
+    await di.waitForAsyncReady();
   }
 
   @override

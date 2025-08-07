@@ -2,6 +2,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:benchmark_cherrypick/di_adapters/di_adapter.dart';
 import 'package:benchmark_cherrypick/scenarios/universal_chain_module.dart';
 import 'package:benchmark_cherrypick/scenarios/universal_service.dart';
+import 'package:benchmark_cherrypick/scenarios/di_universal_registration.dart';
 
 class UniversalChainBenchmark extends BenchmarkBase {
   final DIAdapter _di;
@@ -23,39 +24,30 @@ class UniversalChainBenchmark extends BenchmarkBase {
   void setup() {
     switch (scenario) {
       case UniversalScenario.override:
-        _di.setupDependencies((scope) {
-          scope.installModules([
-            UniversalChainModule(
-              chainCount: chainCount,
-              nestingDepth: nestingDepth,
-              bindingMode: UniversalBindingMode.singletonStrategy,
-              scenario: UniversalScenario.register,
-            ),
-          ]);
-        });
+        _di.setupDependencies(getUniversalRegistration(
+          _di,
+          chainCount: chainCount,
+          nestingDepth: nestingDepth,
+          bindingMode: UniversalBindingMode.singletonStrategy,
+          scenario: UniversalScenario.chain,
+        ));
         _childDi = _di.openSubScope('child');
-        _childDi!.setupDependencies((scope) {
-          scope.installModules([
-            UniversalChainModule(
-              chainCount: chainCount,
-              nestingDepth: nestingDepth,
-              bindingMode: UniversalBindingMode.singletonStrategy,
-              scenario: UniversalScenario.register,
-            ),
-          ]);
-        });
+        _childDi!.setupDependencies(getUniversalRegistration(
+          _childDi!,
+          chainCount: chainCount,
+          nestingDepth: nestingDepth,
+          bindingMode: UniversalBindingMode.singletonStrategy,
+          scenario: UniversalScenario.chain, // критично: цепочку, а не просто alias!
+        ));
         break;
       default:
-        _di.setupDependencies((scope) {
-          scope.installModules([
-            UniversalChainModule(
-              chainCount: chainCount,
-              nestingDepth: nestingDepth,
-              bindingMode: mode,
-              scenario: scenario,
-            ),
-          ]);
-        });
+        _di.setupDependencies(getUniversalRegistration(
+          _di,
+          chainCount: chainCount,
+          nestingDepth: nestingDepth,
+          bindingMode: mode,
+          scenario: scenario,
+        ));
         break;
     }
   }
@@ -70,7 +62,11 @@ class UniversalChainBenchmark extends BenchmarkBase {
         _di.resolve<UniversalService>();
         break;
       case UniversalScenario.named:
-        _di.resolve<Object>(named: 'impl2');
+        if (_di.runtimeType.toString().contains('GetItAdapter')) {
+          _di.resolve<UniversalService>(named: 'impl2');
+        } else {
+          _di.resolve<UniversalService>(named: 'impl2');
+        }
         break;
       case UniversalScenario.chain:
         final serviceName = '${chainCount}_$nestingDepth';

@@ -11,6 +11,7 @@ import 'runner.dart';
 import 'package:benchmark_cherrypick/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_cherrypick/benchmarks/universal_chain_async_benchmark.dart';
 import 'package:benchmark_cherrypick/di_adapters/cherrypick_adapter.dart';
+import 'package:benchmark_cherrypick/di_adapters/get_it_adapter.dart';
 
 /// Command-line interface (CLI) runner for benchmarks.
 ///
@@ -28,8 +29,8 @@ class BenchmarkCliRunner {
       for (final c in config.chainCounts) {
         for (final d in config.nestDepths) {
           BenchmarkResult benchResult;
+          final di = config.di == 'getit' ? GetItAdapter() : CherrypickDIAdapter();
           if (scenario == UniversalScenario.asyncChain) {
-            final di = CherrypickDIAdapter();
             final benchAsync = UniversalChainAsyncBenchmark(di,
               chainCount: c, nestingDepth: d, mode: mode,
             );
@@ -39,7 +40,6 @@ class BenchmarkCliRunner {
               repeats: config.repeats,
             );
           } else {
-            final di = CherrypickDIAdapter();
             final benchSync = UniversalChainBenchmark(di,
               chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
             );
