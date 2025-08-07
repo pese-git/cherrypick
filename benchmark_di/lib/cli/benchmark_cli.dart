@@ -12,6 +12,7 @@ import 'package:benchmark_di/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
 import 'package:benchmark_di/di_adapters/cherrypick_adapter.dart';
 import 'package:benchmark_di/di_adapters/get_it_adapter.dart';
+import 'package:benchmark_di/di_adapters/riverpod_adapter.dart';
 
 /// Command-line interface (CLI) runner for benchmarks.
 ///
@@ -29,7 +30,11 @@ class BenchmarkCliRunner {
       for (final c in config.chainCounts) {
         for (final d in config.nestDepths) {
           BenchmarkResult benchResult;
-          final di = config.di == 'getit' ? GetItAdapter() : CherrypickDIAdapter();
+          final di = config.di == 'getit'
+              ? GetItAdapter()
+              : config.di == 'riverpod'
+                  ? RiverpodAdapter()
+                  : CherrypickDIAdapter();
           if (scenario == UniversalScenario.asyncChain) {
             final benchAsync = UniversalChainAsyncBenchmark(di,
               chainCount: c, nestingDepth: d, mode: mode,

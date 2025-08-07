@@ -127,14 +127,14 @@ class UniversalChainModule extends Module {
           }
         }
         // Регистрация алиаса без имени (на последний элемент цепочки)
-        final depName = '${chainCount}_${nestingDepth}';
+        final depName = '${chainCount}_$nestingDepth';
         bind<UniversalService>()
             .toProvide(() => currentScope.resolve<UniversalService>(named: depName))
             .singleton();
         break;
       case UniversalScenario.override:
         // handled at benchmark level, но алиас нужен прямо в этом scope!
-        final depName = '${chainCount}_${nestingDepth}';
+        final depName = '${chainCount}_$nestingDepth';
         bind<UniversalService>()
             .toProvide(() => currentScope.resolve<UniversalService>(named: depName))
             .singleton();

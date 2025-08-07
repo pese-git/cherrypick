@@ -104,7 +104,7 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('repeat', abbr: 'r', defaultsTo: '2')
     ..addOption('warmup', abbr: 'w', defaultsTo: '1')
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
-    ..addOption('di', defaultsTo: 'cherrypick', help: 'DI implementation: cherrypick or getit')
+    ..addOption('di', defaultsTo: 'cherrypick', help: 'DI implementation: cherrypick, getit or riverpod')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
   final result = parser.parse(args);
   if (result['help'] == true) {
