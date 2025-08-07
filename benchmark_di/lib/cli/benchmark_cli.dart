@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:benchmark_di/cli/report/markdown_report.dart';
+import 'package:cherrypick/cherrypick.dart';
+import 'package:get_it/get_it.dart';
+import 'package:riverpod/riverpod.dart' as rp;
 
 import '../scenarios/universal_chain_module.dart';
 import 'report/pretty_report.dart';
@@ -33,7 +36,7 @@ class BenchmarkCliRunner {
           if (config.di == 'getit') {
             final di = GetItAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark(di,
+              final benchAsync = UniversalChainAsyncBenchmark<GetIt>(di,
                 chainCount: c, nestingDepth: d, mode: mode,
               );
               benchResult = await BenchmarkRunner.runAsync(
@@ -42,7 +45,7 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark(di,
+              final benchSync = UniversalChainBenchmark<GetIt>(di,
                 chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
               );
               benchResult = await BenchmarkRunner.runSync(
@@ -54,7 +57,7 @@ class BenchmarkCliRunner {
           } else if (config.di == 'riverpod') {
             final di = RiverpodAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark(di,
+              final benchAsync = UniversalChainAsyncBenchmark<Map<String, rp.ProviderBase<Object?>>>(di,
                 chainCount: c, nestingDepth: d, mode: mode,
               );
               benchResult = await BenchmarkRunner.runAsync(
@@ -63,7 +66,7 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark(di,
+              final benchSync = UniversalChainBenchmark<Map<String, rp.ProviderBase<Object?>>>(di,
                 chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
               );
               benchResult = await BenchmarkRunner.runSync(
@@ -75,7 +78,7 @@ class BenchmarkCliRunner {
           } else {
             final di = CherrypickDIAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark(di,
+              final benchAsync = UniversalChainAsyncBenchmark<Scope>(di,
                 chainCount: c, nestingDepth: d, mode: mode,
               );
               benchResult = await BenchmarkRunner.runAsync(
@@ -84,7 +87,7 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark(di,
+              final benchSync = UniversalChainBenchmark<Scope>(di,
                 chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
               );
               benchResult = await BenchmarkRunner.runSync(

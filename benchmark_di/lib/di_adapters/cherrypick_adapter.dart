@@ -1,7 +1,7 @@
 import 'package:cherrypick/cherrypick.dart';
 import 'di_adapter.dart';
+import '../scenarios/universal_chain_module.dart';
 
-/// Универсальный DIAdapter для CherryPick с поддержкой subScope без дублирования логики.
 class CherrypickDIAdapter extends DIAdapter<Scope> {
   Scope? _scope;
   final bool _isSubScope;
@@ -14,6 +14,28 @@ class CherrypickDIAdapter extends DIAdapter<Scope> {
   void setupDependencies(void Function(Scope container) registration) {
     _scope ??= CherryPick.openRootScope();
     registration(_scope!);
+  }
+
+  @override
+  Registration<Scope> universalRegistration<S extends Enum>({
+    required S scenario,
+    required int chainCount,
+    required int nestingDepth,
+    required UniversalBindingMode bindingMode,
+  }) {
+    if (scenario is UniversalScenario) {
+      return (scope) {
+        scope.installModules([
+          UniversalChainModule(
+            chainCount: chainCount,
+            nestingDepth: nestingDepth,
+            bindingMode: bindingMode,
+            scenario: scenario,
+          ),
+        ]);
+      };
+    }
+    throw UnsupportedError('Scenario $scenario not supported by CherrypickDIAdapter');
   }
 
   @override

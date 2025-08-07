@@ -2,15 +2,14 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:benchmark_di/di_adapters/di_adapter.dart';
 import 'package:benchmark_di/scenarios/universal_chain_module.dart';
 import 'package:benchmark_di/scenarios/universal_service.dart';
-import 'package:benchmark_di/scenarios/di_universal_registration.dart';
 
-class UniversalChainBenchmark extends BenchmarkBase {
-  final DIAdapter _di;
+class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
+  final DIAdapter<TContainer> _di;
   final int chainCount;
   final int nestingDepth;
   final UniversalBindingMode mode;
   final UniversalScenario scenario;
-  DIAdapter? _childDi;
+  DIAdapter<TContainer>? _childDi;
 
   UniversalChainBenchmark(
     this._di, {
@@ -24,25 +23,22 @@ class UniversalChainBenchmark extends BenchmarkBase {
   void setup() {
     switch (scenario) {
       case UniversalScenario.override:
-        _di.setupDependencies(getUniversalRegistration(
-          _di,
+        _di.setupDependencies(_di.universalRegistration(
           chainCount: chainCount,
           nestingDepth: nestingDepth,
           bindingMode: UniversalBindingMode.singletonStrategy,
           scenario: UniversalScenario.chain,
         ));
         _childDi = _di.openSubScope('child');
-        _childDi!.setupDependencies(getUniversalRegistration(
-          _childDi!,
+        _childDi!.setupDependencies(_childDi!.universalRegistration(
           chainCount: chainCount,
           nestingDepth: nestingDepth,
           bindingMode: UniversalBindingMode.singletonStrategy,
-          scenario: UniversalScenario.chain, // критично: цепочку, а не просто alias!
+          scenario: UniversalScenario.chain,
         ));
         break;
       default:
-        _di.setupDependencies(getUniversalRegistration(
-          _di,
+        _di.setupDependencies(_di.universalRegistration(
           chainCount: chainCount,
           nestingDepth: nestingDepth,
           bindingMode: mode,

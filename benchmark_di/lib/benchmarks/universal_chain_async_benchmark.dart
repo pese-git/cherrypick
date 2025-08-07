@@ -2,10 +2,9 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:benchmark_di/di_adapters/di_adapter.dart';
 import 'package:benchmark_di/scenarios/universal_chain_module.dart';
 import 'package:benchmark_di/scenarios/universal_service.dart';
-import 'package:benchmark_di/scenarios/di_universal_registration.dart';
 
-class UniversalChainAsyncBenchmark extends AsyncBenchmarkBase {
-  final DIAdapter di;
+class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
+  final DIAdapter<TContainer> di;
   final int chainCount;
   final int nestingDepth;
   final UniversalBindingMode mode;
@@ -19,8 +18,7 @@ class UniversalChainAsyncBenchmark extends AsyncBenchmarkBase {
 
   @override
   Future<void> setup() async {
-    di.setupDependencies(getUniversalRegistration(
-      di,
+    di.setupDependencies(di.universalRegistration(
       chainCount: chainCount,
       nestingDepth: nestingDepth,
       bindingMode: mode,
