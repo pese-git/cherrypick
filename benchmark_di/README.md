@@ -88,11 +88,97 @@ Switch DI with the CLI option: `--di`
 
 ---
 
+## Universal DI registration: Adapter-centric approach
+
+Starting from vX.Y.Z, all DI registration scenarios and logic are encapsulated in the adapter itself via the `universalRegistration` method.
+
+### How to use (in Dart code):
+
+```dart
+final di = CherrypickDIAdapter(); // or GetItAdapter(), RiverpodAdapter(), etc
+
+di.setupDependencies(
+  di.universalRegistration(
+    scenario: UniversalScenario.chain,
+    chainCount: 10,
+    nestingDepth: 5,
+    bindingMode: UniversalBindingMode.singletonStrategy,
+  ),
+);
+```
+- There is **no more need to use any global function or switch**: each adapter provides its own type-safe implementation.
+
+### How to add a new scenario or DI:
+- Implement `universalRegistration<S extends Enum>(...)` in your adapter
+- Use your own Enum if you want adapter-specific scenarios!
+- Benchmarks and CLI become automatically extensible for custom DI and scenarios.
+
+### CLI usage (runs all universal scenarios for Cherrypick, GetIt, Riverpod):
+
+```
+dart run bin/main.dart --di=cherrypick --benchmark=all
+dart run bin/main.dart --di=getit --benchmark=all
+dart run bin/main.dart --di=riverpod --benchmark=all
+```
+
+See the `benchmark_di/lib/di_adapters/` folder for ready-to-use adapters.
+
+---
+## Advantages
+
+- **Type-safe:** Zero dynamic/object usage in DI flows.
+- **Extensible:** New scenarios are just new Enum values and a method extension.
+- **No global registration logic:** All DI-related logic is where it belongs: in the adapter.
+
+=======
 ## How to Add Your Own DI
 
 1. Implement a class extending `DIAdapter` (`lib/di_adapters/your_adapter.dart`)
-2. Register it in CLI (see `cli/benchmark_cli.dart`)
-3. Add registration logic to `di_universal_registration.dart` to build chains for your DI
+2. Implement the `universalRegistration<S extends Enum>(...)` method directly in your adapter for type-safe and scenario-specific registration
+3. Register your adapter in CLI (see `cli/benchmark_cli.dart`)
+4. No global function needed — all logic is within the adapter!
+
+---
+## Universal DI registration: Adapter-centric approach
+
+Starting from vX.Y.Z, all DI registration scenarios and logic are encapsulated in the adapter itself via the `universalRegistration` method.
+
+### How to use (in Dart code):
+
+```dart
+final di = CherrypickDIAdapter(); // or GetItAdapter(), RiverpodAdapter(), etc
+
+di.setupDependencies(
+  di.universalRegistration(
+    scenario: UniversalScenario.chain,
+    chainCount: 10,
+    nestingDepth: 5,
+    bindingMode: UniversalBindingMode.singletonStrategy,
+  ),
+);
+```
+- There is **no more need to use any global function or switch**: each adapter provides its own type-safe implementation.
+
+### How to add a new scenario or DI:
+- Implement `universalRegistration<S extends Enum>(...)` in your adapter
+- Use your own Enum if you want adapter-specific scenarios!
+- Benchmarks and CLI become automatically extensible for custom DI and scenarios.
+
+### CLI usage (runs all universal scenarios for Cherrypick, GetIt, Riverpod):
+
+```
+dart run bin/main.dart --di=cherrypick --benchmark=all
+dart run bin/main.dart --di=getit --benchmark=all
+dart run bin/main.dart --di=riverpod --benchmark=all
+```
+
+See the `benchmark_di/lib/di_adapters/` folder for ready-to-use adapters.
+
+## Advantages
+
+- **Type-safe:** Zero dynamic/object usage in DI flows.
+- **Extensible:** New scenarios are just new Enum values and a method extension.
+- **No global registration logic:** All DI-related logic is where it belongs: in the adapter.
 
 ---
 
