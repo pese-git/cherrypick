@@ -163,11 +163,11 @@ class CherrypickDIAdapter extends DIAdapter<Scope> {
 
   @override
   T resolve<T extends Object>({String? named}) =>
-      named == null ? _scope!.resolve<T>() : _scope!.resolve<T>(named: named);
+      _scope!.resolve<T>(named: named);
 
   @override
   Future<T> resolveAsync<T extends Object>({String? named}) async =>
-      named == null ? await _scope!.resolveAsync<T>() : await _scope!.resolveAsync<T>(named: named);
+      _scope!.resolveAsync<T>(named: named);
 
   @override
   void teardown() {
