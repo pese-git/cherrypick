@@ -1,10 +1,10 @@
-# benchmark_cherrypick
+# benchmark_di
 
 _Benchmark suite for cherrypick DI container, get_it, and other DI solutions._
 
 ## Overview
 
-benchmark_cherrypick is a flexible benchmarking suite to compare DI containers (like cherrypick and get_it) on synthetic, deep, and real-world dependency scenarios – chains, factories, async, named, override, etc.
+benchmark_di is a flexible benchmarking suite to compare DI containers (like cherrypick and get_it) on synthetic, deep, and real-world dependency scenarios – chains, factories, async, named, override, etc.
 
 **Features:**
 - Universal registration layer and modular scenario setup (works with any DI)

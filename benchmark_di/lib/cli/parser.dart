@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:benchmark_cherrypick/scenarios/universal_chain_module.dart';
+import 'package:benchmark_di/scenarios/universal_chain_module.dart';
 
 /// Enum describing all supported Universal DI benchmark types.
 enum UniversalBenchmark {

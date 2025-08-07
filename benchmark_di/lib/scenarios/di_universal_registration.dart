@@ -1,4 +1,4 @@
-import 'package:benchmark_cherrypick/scenarios/universal_service.dart';
+import 'package:benchmark_di/scenarios/universal_service.dart';
 
 import '../di_adapters/di_adapter.dart';
 import '../di_adapters/cherrypick_adapter.dart';

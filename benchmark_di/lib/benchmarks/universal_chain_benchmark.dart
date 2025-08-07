@@ -1,8 +1,8 @@
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:benchmark_cherrypick/di_adapters/di_adapter.dart';
-import 'package:benchmark_cherrypick/scenarios/universal_chain_module.dart';
-import 'package:benchmark_cherrypick/scenarios/universal_service.dart';
-import 'package:benchmark_cherrypick/scenarios/di_universal_registration.dart';
+import 'package:benchmark_di/di_adapters/di_adapter.dart';
+import 'package:benchmark_di/scenarios/universal_chain_module.dart';
+import 'package:benchmark_di/scenarios/universal_service.dart';
+import 'package:benchmark_di/scenarios/di_universal_registration.dart';
 
 class UniversalChainBenchmark extends BenchmarkBase {
   final DIAdapter _di;

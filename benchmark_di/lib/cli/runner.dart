@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
-import 'package:benchmark_cherrypick/benchmarks/universal_chain_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/universal_chain_async_benchmark.dart';
+import 'package:benchmark_di/benchmarks/universal_chain_benchmark.dart';
+import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
 
 /// Holds the results for a single benchmark execution.
 class BenchmarkResult {

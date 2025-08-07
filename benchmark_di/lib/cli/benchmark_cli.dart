@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:benchmark_cherrypick/cli/report/markdown_report.dart';
+import 'package:benchmark_di/cli/report/markdown_report.dart';
 
 import '../scenarios/universal_chain_module.dart';
 import 'report/pretty_report.dart';
@@ -8,10 +8,10 @@ import 'report/csv_report.dart';
 import 'report/json_report.dart';
 import 'parser.dart';
 import 'runner.dart';
-import 'package:benchmark_cherrypick/benchmarks/universal_chain_benchmark.dart';
-import 'package:benchmark_cherrypick/benchmarks/universal_chain_async_benchmark.dart';
-import 'package:benchmark_cherrypick/di_adapters/cherrypick_adapter.dart';
-import 'package:benchmark_cherrypick/di_adapters/get_it_adapter.dart';
+import 'package:benchmark_di/benchmarks/universal_chain_benchmark.dart';
+import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
+import 'package:benchmark_di/di_adapters/cherrypick_adapter.dart';
+import 'package:benchmark_di/di_adapters/get_it_adapter.dart';
 
 /// Command-line interface (CLI) runner for benchmarks.
 ///

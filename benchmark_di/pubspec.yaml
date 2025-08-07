@@ -1,7 +1,7 @@
-name: benchmark_cherrypick
+name: benchmark_di
 version: 0.1.0
 publish_to: none
-description: Benchmark for cherrypick core DI library
+description: Universal benchmark for any DI library (cherrypick, get_it, and others)
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
