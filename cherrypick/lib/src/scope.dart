@@ -258,11 +258,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         _parentScope?.tryResolveAsync(named: named, params: params);
   }
 
-  BindingResolver<T>? _findBindingResolver<T>(String? named) {
-    final byType = _bindingResolvers[T];
-    if (byType == null) return null;
-    return byType[named] as BindingResolver<T>?;
-  }
+  BindingResolver<T>? _findBindingResolver<T>(String? named) =>
+      _bindingResolvers[T]?[named] as BindingResolver<T>?;
 
   // Индексируем все binding’и после каждого installModules/dropModules
   void _rebuildResolversIndex() {
