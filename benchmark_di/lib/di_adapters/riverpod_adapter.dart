@@ -1,67 +1,71 @@
 import 'package:riverpod/riverpod.dart';
 import 'di_adapter.dart';
 
-/// RiverpodAdapter реализует DIAdapter для универсального бенчмарка через Riverpod.
-class RiverpodAdapter implements DIAdapter {
-  late ProviderContainer _container;
-  late final Map<String?, ProviderBase<Object?>> _namedProviders;
+/// Унифицированный DIAdapter для Riverpod с поддержкой scopes и строгой типизацией.
+class RiverpodAdapter extends DIAdapter<Map<String, ProviderBase<Object?>>> {
+  ProviderContainer? _container;
+  final Map<String, ProviderBase<Object?>> _namedProviders;
   final ProviderContainer? _parent;
+  final bool _isSubScope;
 
-  // Основной конструктор
-  RiverpodAdapter() : _parent = null {
-    _namedProviders = <String?, ProviderBase<Object?>>{};
-  }
-
-  // Внутренний конструктор для дочерних скоупов
-  RiverpodAdapter._child(this._container, this._namedProviders, this._parent);
+  RiverpodAdapter({
+    ProviderContainer? container,
+    Map<String, ProviderBase<Object?>>? providers,
+    ProviderContainer? parent,
+    bool isSubScope = false,
+  })  : _container = container,
+        _namedProviders = providers ?? <String, ProviderBase<Object?>>{},
+        _parent = parent,
+        _isSubScope = isSubScope;
 
   @override
-  void setupDependencies(void Function(dynamic container) registration) {
-    // Для главного контейнера
-    _container = _parent == null
+  void setupDependencies(void Function(Map<String, ProviderBase<Object?>> container) registration) {
+    _container ??= _parent == null
         ? ProviderContainer()
         : ProviderContainer(parent: _parent);
     registration(_namedProviders);
   }
 
-  /// Регистрировать провайдеры нужно по имени-сервису.
-  /// Пример: container['SomeClass'] = Provider((ref) => SomeClass());
-
   @override
   T resolve<T extends Object>({String? named}) {
-    final provider = _namedProviders[named ?? T.toString()];
+    final key = named ?? T.toString();
+    final provider = _namedProviders[key];
     if (provider == null) {
-      throw Exception('Provider not found for $named');
+      throw Exception('Provider not found for $key');
     }
-    return _container.read(provider) as T;
+    return _container!.read(provider) as T;
   }
 
   @override
   Future<T> resolveAsync<T extends Object>({String? named}) async {
-    final provider = _namedProviders[named ?? T.toString()];
+    final key = named ?? T.toString();
+    final provider = _namedProviders[key];
     if (provider == null) {
-      throw Exception('Provider not found for $named');
+      throw Exception('Provider not found for $key');
     }
     // Если это FutureProvider — используем .future
     if (provider.runtimeType.toString().contains('FutureProvider')) {
-      final result = await _container.read((provider as dynamic).future);
-      return result as T;
+      return await _container!.read((provider as dynamic).future) as T;
     }
     return resolve<T>(named: named);
   }
 
   @override
   void teardown() {
-    _container.dispose();
+    _container?.dispose();
+    _container = null;
     _namedProviders.clear();
   }
 
   @override
-  DIAdapter openSubScope(String name) {
-    // Создаём дочерний scope через новый контейнер с parent
-    final childContainer = ProviderContainer(parent: _container);
-    // Провайдеры будут унаследованы (immutable копия), но при желании можно их расширять в дочернем scope.
-    return RiverpodAdapter._child(childContainer, Map.of(_namedProviders), _container);
+  RiverpodAdapter openSubScope(String name) {
+    final newContainer = ProviderContainer(parent: _container);
+    return RiverpodAdapter(
+      container: newContainer,
+      providers: Map.of(_namedProviders),
+      parent: _container,
+      isSubScope: true,
+    );
   }
 
   @override

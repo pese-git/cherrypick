@@ -30,29 +30,69 @@ class BenchmarkCliRunner {
       for (final c in config.chainCounts) {
         for (final d in config.nestDepths) {
           BenchmarkResult benchResult;
-          final di = config.di == 'getit'
-              ? GetItAdapter()
-              : config.di == 'riverpod'
-                  ? RiverpodAdapter()
-                  : CherrypickDIAdapter();
-          if (scenario == UniversalScenario.asyncChain) {
-            final benchAsync = UniversalChainAsyncBenchmark(di,
-              chainCount: c, nestingDepth: d, mode: mode,
-            );
-            benchResult = await BenchmarkRunner.runAsync(
-              benchmark: benchAsync,
-              warmups: config.warmups,
-              repeats: config.repeats,
-            );
+          if (config.di == 'getit') {
+            final di = GetItAdapter();
+            if (scenario == UniversalScenario.asyncChain) {
+              final benchAsync = UniversalChainAsyncBenchmark(di,
+                chainCount: c, nestingDepth: d, mode: mode,
+              );
+              benchResult = await BenchmarkRunner.runAsync(
+                benchmark: benchAsync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            } else {
+              final benchSync = UniversalChainBenchmark(di,
+                chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
+              );
+              benchResult = await BenchmarkRunner.runSync(
+                benchmark: benchSync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            }
+          } else if (config.di == 'riverpod') {
+            final di = RiverpodAdapter();
+            if (scenario == UniversalScenario.asyncChain) {
+              final benchAsync = UniversalChainAsyncBenchmark(di,
+                chainCount: c, nestingDepth: d, mode: mode,
+              );
+              benchResult = await BenchmarkRunner.runAsync(
+                benchmark: benchAsync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            } else {
+              final benchSync = UniversalChainBenchmark(di,
+                chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
+              );
+              benchResult = await BenchmarkRunner.runSync(
+                benchmark: benchSync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            }
           } else {
-            final benchSync = UniversalChainBenchmark(di,
-              chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
-            );
-            benchResult = await BenchmarkRunner.runSync(
-              benchmark: benchSync,
-              warmups: config.warmups,
-              repeats: config.repeats,
-            );
+            final di = CherrypickDIAdapter();
+            if (scenario == UniversalScenario.asyncChain) {
+              final benchAsync = UniversalChainAsyncBenchmark(di,
+                chainCount: c, nestingDepth: d, mode: mode,
+              );
+              benchResult = await BenchmarkRunner.runAsync(
+                benchmark: benchAsync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            } else {
+              final benchSync = UniversalChainBenchmark(di,
+                chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
+              );
+              benchResult = await BenchmarkRunner.runSync(
+                benchmark: benchSync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            }
           }
           final timings = benchResult.timings;
           timings.sort();

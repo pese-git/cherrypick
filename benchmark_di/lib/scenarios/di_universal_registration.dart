@@ -6,10 +6,12 @@ import '../di_adapters/get_it_adapter.dart';
 import 'universal_chain_module.dart';
 import 'package:riverpod/riverpod.dart' as rp;
 
-/// Возвращает универсальную функцию регистрации зависимостей,
-/// подходящую под выбранный DI-адаптер.
-void Function(dynamic) getUniversalRegistration(
-  DIAdapter adapter, {
+/// Унифицированный generic-колбэк для регистрации зависимостей,
+/// подходящий под выбранный DI-адаптер.
+typedef Registration<TContainer> = void Function(TContainer);
+
+Registration<TContainer> getUniversalRegistration<TContainer>(
+  DIAdapter<TContainer> adapter, {
   required int chainCount,
   required int nestingDepth,
   required UniversalBindingMode bindingMode,
@@ -25,8 +27,9 @@ void Function(dynamic) getUniversalRegistration(
           scenario: scenario,
         ),
       ]);
-    };
-  } else if (adapter is GetItAdapter || adapter.runtimeType.toString().contains('GetItScopeAdapter')) {
+    } as Registration<TContainer>;
+  } 
+  if (adapter is GetItAdapter) {
     return (getIt) {
       switch (scenario) {
         case UniversalScenario.asyncChain:
@@ -39,7 +42,7 @@ void Function(dynamic) getUniversalRegistration(
                   final prev = level > 1
                       ? await getIt.getAsync<UniversalService>(instanceName: prevDepName)
                       : null;
-                return UniversalServiceImpl(value: depName, dependency: prev as UniversalService?);
+                  return UniversalServiceImpl(value: depName, dependency: prev as UniversalService?);
                 },
                 instanceName: depName,
               );
@@ -64,8 +67,8 @@ void Function(dynamic) getUniversalRegistration(
                     UniversalServiceImpl(
                       value: depName,
                       dependency: level > 1
-                        ? getIt<UniversalService>(instanceName: prevDepName)
-                        : null,
+                          ? getIt<UniversalService>(instanceName: prevDepName)
+                          : null,
                     ),
                     instanceName: depName,
                   );
@@ -75,20 +78,19 @@ void Function(dynamic) getUniversalRegistration(
                     () => UniversalServiceImpl(
                       value: depName,
                       dependency: level > 1
-                        ? getIt<UniversalService>(instanceName: prevDepName)
-                        : null,
+                          ? getIt<UniversalService>(instanceName: prevDepName)
+                          : null,
                     ),
                     instanceName: depName,
                   );
                   break;
                 case UniversalBindingMode.asyncStrategy:
-                  // getIt не поддерживает асинх. factory напрямую, но можно так:
                   getIt.registerSingletonAsync<UniversalService>(
                     () async => UniversalServiceImpl(
                       value: depName,
                       dependency: level > 1
-                        ? await getIt.getAsync<UniversalService>(instanceName: prevDepName)
-                        : null,
+                          ? await getIt.getAsync<UniversalService>(instanceName: prevDepName)
+                          : null,
                     ),
                     instanceName: depName,
                   );
@@ -108,14 +110,11 @@ void Function(dynamic) getUniversalRegistration(
           getIt<UniversalService>(instanceName: depName),
         );
       }
-    };
+    } as Registration<TContainer>;
   }
 
-  // Riverpod
-  if (adapter.runtimeType.toString().contains('RiverpodAdapter')) {
-    // Регистрация Provider-ов по универсальному сценарию
+  if (adapter is DIAdapter<Map<String, rp.ProviderBase<Object?>>> && adapter.runtimeType.toString().contains('RiverpodAdapter')) {
     return (providers) {
-      // providers это Map<String, ProviderBase<Object?>>
       switch (scenario) {
         case UniversalScenario.register:
           providers['UniversalService'] = rp.Provider<UniversalService>((ref) => UniversalServiceImpl(value: 'reg', dependency: null));
@@ -135,7 +134,6 @@ void Function(dynamic) getUniversalRegistration(
               ));
             }
           }
-          // Alias для последнего (универсальное имя)
           final depName = '${chainCount}_$nestingDepth';
           providers['UniversalService'] = rp.Provider<UniversalService>((ref) => ref.watch(providers[depName] as rp.ProviderBase<UniversalService>));
           break;
@@ -157,15 +155,14 @@ void Function(dynamic) getUniversalRegistration(
               });
             }
           }
-          // Alias для последнего (универсальное имя)
           final depName = '${chainCount}_$nestingDepth';
           providers['UniversalService'] = rp.FutureProvider<UniversalService>((ref) async {
             return await ref.watch(providers[depName]!.future) as UniversalService;
           });
           break;
       }
-    };
+    } as Registration<TContainer>;
   }
 
-  throw UnsupportedError('Unknown DIAdapter type: ${adapter.runtimeType}');
+  throw UnsupportedError('Unknown DIAdapter type: [38;5;3m${adapter.runtimeType}[0m');
 }
