@@ -12,9 +12,7 @@
 //
 
 import 'dart:collection';
-import 'dart:math';
 import 'package:cherrypick/cherrypick.dart';
-import 'package:cherrypick/src/cycle_detector.dart';
 import 'package:cherrypick/src/log_format.dart';
 
 
