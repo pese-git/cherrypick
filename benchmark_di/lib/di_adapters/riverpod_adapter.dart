@@ -9,7 +9,6 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
   rp.ProviderContainer? _container;
   final Map<String, rp.ProviderBase<Object?>> _namedProviders;
   final rp.ProviderContainer? _parent;
-  final bool _isSubScope;
 
   RiverpodAdapter({
     rp.ProviderContainer? container,
@@ -18,8 +17,7 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
     bool isSubScope = false,
   })  : _container = container,
         _namedProviders = providers ?? <String, rp.ProviderBase<Object?>>{},
-        _parent = parent,
-        _isSubScope = isSubScope;
+        _parent = parent;
 
   @override
   void setupDependencies(void Function(Map<String, rp.ProviderBase<Object?>> container) registration) {
