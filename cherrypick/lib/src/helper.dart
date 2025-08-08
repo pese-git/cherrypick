@@ -33,23 +33,46 @@ bool _globalCrossScopeCycleDetectionEnabled = false;
 /// - Supports hierarchical/named subscopes by string path.
 /// - Manages global/protected logging and DI diagnostics.
 /// - Suitable for most application & CLI scenarios. For test isolation, manually create [Scope]s instead.
+///
+/// ### Example: Opening a root scope and installing modules
+/// ```dart
+/// class AppModule extends Module {
+///   @override
+///   void builder(Scope scope) {
+///     scope.bind<Service>().toProvide(() => ServiceImpl());
+///   }
+/// }
+///
+/// final root = CherryPick.openRootScope();
+/// root.installModules([AppModule()]);
+/// final service = root.resolve<Service>();
+/// ```
 class CherryPick {
   static Scope? _rootScope;
 
-  /// Sets the global logger for all subsequent [Scope]s created by [CherryPick].
+  /// Sets the global logger for all [Scope]s created by CherryPick.
   ///
-  /// [logger] The logger implementation to use (see [SilentLogger], [DefaultLogger], etc).
+  /// Allows customizing log output and DI diagnostics globally.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.setGlobalLogger(DefaultLogger());
+  /// ```
   static void setGlobalLogger(CherryPickLogger logger) {
     _globalLogger = logger;
   }
 
-  /// Returns the current global logger used by [CherryPick].
+  /// Returns the current global logger used by CherryPick.
   static CherryPickLogger get globalLogger => _globalLogger;
 
   /// Returns the singleton root [Scope], creating it if needed.
   ///
-  /// Uses the current [globalLogger], and applies global cycle detection flags if enabled.
-  /// Call [closeRootScope] to dispose and reset the singleton.
+  /// Applies configured [globalLogger] and cycle detection settings.
+  ///
+  /// Example:
+  /// ```dart
+  /// final root = CherryPick.openRootScope();
+  /// ```
   static Scope openRootScope() {
     _rootScope ??= Scope(null, logger: _globalLogger);
     // Apply cycle detection settings
@@ -63,14 +86,25 @@ class CherryPick {
   }
 
   /// Disposes and resets the root [Scope] singleton.
-  /// The next [openRootScope] call will create a new root [Scope].
+  ///
+  /// Call before tests or when needing full re-initialization.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.closeRootScope();
+  /// ```
   static void closeRootScope() {
     _rootScope = null;
   }
 
-  /// Globally enables local cycle detection on all [Scope]s created by [CherryPick].
+  /// Globally enables cycle detection for all new [Scope]s created by CherryPick.
   ///
-  /// Also calls [Scope.enableCycleDetection] on the rootScope (if already created).
+  /// Strongly recommended for safety in all projects.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.enableGlobalCycleDetection();
+  /// ```
   static void enableGlobalCycleDetection() {
     _globalCycleDetectionEnabled = true;
     if (_rootScope != null) {
@@ -78,7 +112,12 @@ class CherryPick {
     }
   }
 
-  /// Disables global local cycle detection.
+  /// Disables global local cycle detection. Existing and new scopes won't check for local cycles.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.disableGlobalCycleDetection();
+  /// ```
   static void disableGlobalCycleDetection() {
     _globalCycleDetectionEnabled = false;
     if (_rootScope != null) {
@@ -86,53 +125,79 @@ class CherryPick {
     }
   }
 
-  /// Returns whether global local cycle detection is enabled via [enableGlobalCycleDetection].
+  /// Returns `true` if global local cycle detection is enabled.
   static bool get isGlobalCycleDetectionEnabled => _globalCycleDetectionEnabled;
 
-  /// Enables cycle detection for a specific (possibly nested) [Scope].
+  /// Enables cycle detection for a particular scope tree.
   ///
-  /// [scopeName] Hierarchical path string ("outer.inner.deeper"),
-  /// or empty for root. [separator] custom path delimiter (defaults to '.').
+  /// [scopeName] - hierarchical string path (e.g. 'feature.api'), or empty for root.
+  /// [separator] - path separator (default: '.'), e.g. '/' for "feature/api/module"
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.enableCycleDetectionForScope(scopeName: 'api.feature');
+  /// ```
   static void enableCycleDetectionForScope({String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     scope.enableCycleDetection();
   }
 
-  /// Disables cycle detection for a specific Scope.
+  /// Disables cycle detection for a given scope. See [enableCycleDetectionForScope].
   static void disableCycleDetectionForScope({String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     scope.disableCycleDetection();
   }
 
-  /// Returns true if cycle detection is enabled for the requested scope.
+  /// Returns `true` if cycle detection is enabled for the requested scope.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.isCycleDetectionEnabledForScope(scopeName: 'feature.api');
+  /// ```
   static bool isCycleDetectionEnabledForScope({String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     return scope.isCycleDetectionEnabled;
   }
 
   /// Returns the current dependency resolution chain inside the given scope.
-  /// Useful for diagnostics and runtime debugging.
+  ///
+  /// Useful for diagnostics (to print what types are currently resolving).
+  ///
+  /// Example:
+  /// ```dart
+  /// print(CherryPick.getCurrentResolutionChain(scopeName: 'feature.api'));
+  /// ```
   static List<String> getCurrentResolutionChain({String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     return scope.currentResolutionChain;
   }
 
-  /// Opens [openRootScope] and enables local cycle detection on it.
+  /// Opens the root scope and enables local cycle detection.
+  ///
+  /// Example:
+  /// ```dart
+  /// final safeRoot = CherryPick.openSafeRootScope();
+  /// ```
   static Scope openSafeRootScope() {
     final scope = openRootScope();
     scope.enableCycleDetection();
     return scope;
   }
 
-  /// Opens a scope (by hierarchical name) with local cycle detection enabled.
+  /// Opens a named/nested scope and enables local cycle detection for it.
+  ///
+  /// Example:
+  /// ```dart
+  /// final api = CherryPick.openSafeScope(scopeName: 'feature.api');
+  /// ```
   static Scope openSafeScope({String scopeName = '', String separator = '.'}) {
     final scope = openScope(scopeName: scopeName, separator: separator);
     scope.enableCycleDetection();
     return scope;
   }
 
-  /// Returns a [Scope] by path (or the rootScope if none specified).
-  /// Used internally for diagnostics and utility operations.
+  /// Returns a [Scope] by path (or the root if none specified).
+  /// Used for internal diagnostics & helpers.
   static Scope _getScope(String scopeName, String separator) {
     if (scopeName.isEmpty) {
       return openRootScope();
@@ -140,11 +205,17 @@ class CherryPick {
     return openScope(scopeName: scopeName, separator: separator);
   }
 
-  /// Opens (and creates nested subscopes if needed) a scope by name/path.
+  /// Opens (and creates nested subscopes if needed) a scope by hierarchical path.
   ///
-  /// - [scopeName]: Hierarchical dot-separated path (e.g. 'outer.inner.sub'). Empty string is root.
-  /// - [separator]: Use a custom string separator (default ".").
-  /// - Always applies global cycle detection settings.
+  /// [scopeName] - dot-separated path ("api.feature"). Empty = root.
+  /// [separator] - path delimiter (default: '.')
+  ///
+  /// Applies global cycle detection settings to the returned scope.
+  ///
+  /// Example:
+  /// ```dart
+  /// final apiScope = CherryPick.openScope(scopeName: 'network.super.api');
+  /// ```
   @experimental
   static Scope openScope({String scopeName = '', String separator = '.'}) {
     if (scopeName.isEmpty) {
@@ -167,10 +238,15 @@ class CherryPick {
     return scope;
   }
 
-  /// Closes a named or root scope (if [scopeName] omitted).
+  /// Closes a named or root scope (if [scopeName] is omitted).
   ///
-  /// - [scopeName]: Hierarchical dot-separated path (e.g. 'outer.inner.sub'). Empty string is root.
-  /// - [separator]: Custom separator for path.
+  /// [scopeName] - dot-separated hierarchical path (e.g. 'api.feature'). Empty = root.
+  /// [separator] - path delimiter.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.closeScope(scopeName: 'network.super.api');
+  /// ```
   @experimental
   static void closeScope({String scopeName = '', String separator = '.'}) {
     if (scopeName.isEmpty) {
@@ -193,7 +269,17 @@ class CherryPick {
     }
   }
 
-  /// Enables cross-scope cycle detection globally. All new and current [Scope]s get this feature.
+  /// Enables cross-scope cycle detection globally.
+  ///
+  /// This will activate detection of cycles that may span across multiple scopes
+  /// in the entire dependency graph. All new and existing [Scope]s will participate.
+  ///
+  /// Strongly recommended for complex solutions with modular architecture.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.enableGlobalCrossScopeCycleDetection();
+  /// ```
   static void enableGlobalCrossScopeCycleDetection() {
     _globalCrossScopeCycleDetectionEnabled = true;
     if (_rootScope != null) {
@@ -201,7 +287,15 @@ class CherryPick {
     }
   }
 
-  /// Disables cross-scope cycle detection globally, and clears the detector.
+  /// Disables global cross-scope cycle detection.
+  ///
+  /// Existing and new scopes stop checking for global (cross-scope) cycles.
+  /// The internal global cycle detector will be cleared as well.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.disableGlobalCrossScopeCycleDetection();
+  /// ```
   static void disableGlobalCrossScopeCycleDetection() {
     _globalCrossScopeCycleDetectionEnabled = false;
     if (_rootScope != null) {
@@ -210,20 +304,50 @@ class CherryPick {
     GlobalCycleDetector.instance.clear();
   }
 
-  /// Returns whether global cross-scope detection is enabled.
+  /// Returns `true` if global cross-scope cycle detection is enabled.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (CherryPick.isGlobalCrossScopeCycleDetectionEnabled) {
+  ///   print('Global cross-scope detection is ON');
+  /// }
+  /// ```
   static bool get isGlobalCrossScopeCycleDetectionEnabled => _globalCrossScopeCycleDetectionEnabled;
 
-  /// Returns the global dependency resolution chain (for diagnostics/cross-scope cycle detection).
+  /// Returns the current global dependency resolution chain (across all scopes).
+  ///
+  /// Shows the cross-scope resolution stack, which is useful for advanced diagnostics
+  /// and debugging cycle issues that occur between scopes.
+  ///
+  /// Example:
+  /// ```dart
+  /// print(CherryPick.getGlobalResolutionChain());
+  /// ```
   static List<String> getGlobalResolutionChain() {
     return GlobalCycleDetector.instance.globalResolutionChain;
   }
 
-  /// Clears the global cross-scope detector, useful for tests and resets.
+  /// Clears the global cross-scope cycle detector.
+  ///
+  /// Useful in tests or when resetting application state.
+  ///
+  /// Example:
+  /// ```dart
+  /// CherryPick.clearGlobalCycleDetector();
+  /// ```
   static void clearGlobalCycleDetector() {
     GlobalCycleDetector.reset();
   }
 
-  /// Opens [openRootScope], then enables local and cross-scope cycle detection.
+  /// Opens the root scope with both local and global cross-scope cycle detection enabled.
+  ///
+  /// This is the safest way to start IoC for most apps — cycles will be detected
+  /// both inside a single scope and between scopes.
+  ///
+  /// Example:
+  /// ```dart
+  /// final root = CherryPick.openGlobalSafeRootScope();
+  /// ```
   static Scope openGlobalSafeRootScope() {
     final scope = openRootScope();
     scope.enableCycleDetection();
@@ -231,7 +355,14 @@ class CherryPick {
     return scope;
   }
 
-  /// Opens [openScope] and enables both local and cross-scope cycle detection on the result.
+  /// Opens the given named/nested scope and enables both local and cross-scope cycle detection on it.
+  ///
+  /// Recommended when creating feature/module scopes in large apps.
+  ///
+  /// Example:
+  /// ```dart
+  /// final featureScope = CherryPick.openGlobalSafeScope(scopeName: 'featureA.api');
+  /// ```
   static Scope openGlobalSafeScope({String scopeName = '', String separator = '.'}) {
     final scope = openScope(scopeName: scopeName, separator: separator);
     scope.enableCycleDetection();
