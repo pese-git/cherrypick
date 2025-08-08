@@ -270,6 +270,7 @@ scope.installModules([...]);
 - [x] Modular and Hierarchical Composition
 - [x] Null-safe Resolution (tryResolve/tryResolveAsync)
 - [x] Circular Dependency Detection (Local and Global)
+- [x] Comprehensive logging of dependency injection state and actions
 
 ## Quick Guide: Circular Dependency Detection
 
