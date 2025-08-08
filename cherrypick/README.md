@@ -351,7 +351,7 @@ Contributions are welcome! Please open issues or submit pull requests on [GitHub
 
 ## License
 
-Licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+Licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ---
 

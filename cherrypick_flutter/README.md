@@ -94,4 +94,4 @@ Contributions to improve this library are welcome. Feel free to open issues and 
 
 ## License
 
-This project is licensed under the Apache License 2.0. A copy of the license can be obtained at [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+This project is licensed under the Apache License 2.0. A copy of the license can be obtained at [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
