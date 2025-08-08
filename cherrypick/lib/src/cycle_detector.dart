@@ -12,6 +12,7 @@
 //
 
 import 'dart:collection';
+import 'package:cherrypick/src/logger.dart';
 
 /// RU: Исключение, выбрасываемое при обнаружении циклической зависимости.
 /// ENG: Exception thrown when a circular dependency is detected.
@@ -31,11 +32,16 @@ class CircularDependencyException implements Exception {
 /// RU: Детектор циклических зависимостей для CherryPick DI контейнера.
 /// ENG: Circular dependency detector for CherryPick DI container.
 class CycleDetector {
+  final CherryPickLogger logger;
   // Стек текущих разрешаемых зависимостей
   final Set<String> _resolutionStack = HashSet<String>();
   
   // История разрешения для построения цепочки зависимостей
   final List<String> _resolutionHistory = [];
+
+  CycleDetector({CherryPickLogger? logger}) : logger = logger ?? const SilentLogger() {
+    // print removed (trace)
+  }
 
   /// RU: Начинает отслеживание разрешения зависимости.
   /// ENG: Starts tracking dependency resolution.
@@ -43,12 +49,13 @@ class CycleDetector {
   /// Throws [CircularDependencyException] if circular dependency is detected.
   void startResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
-    
+    logger.info('CycleDetector: startResolving $dependencyKey stackSize=${_resolutionStack.length}');
     if (_resolutionStack.contains(dependencyKey)) {
       // Найдена циклическая зависимость
       final cycleStartIndex = _resolutionHistory.indexOf(dependencyKey);
       final cycle = _resolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
-      
+      // print removed (trace)
+      logger.error('CycleDetector: CYCLE DETECTED! $dependencyKey chain: ${cycle.join(' -> ')}');
       throw CircularDependencyException(
         'Circular dependency detected for $dependencyKey',
         cycle,
@@ -63,8 +70,8 @@ class CycleDetector {
   /// ENG: Finishes tracking dependency resolution.
   void finishResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
+    logger.info('CycleDetector: finishResolving $dependencyKey');
     _resolutionStack.remove(dependencyKey);
-    
     // Удаляем из истории только если это последний элемент
     if (_resolutionHistory.isNotEmpty && 
         _resolutionHistory.last == dependencyKey) {
@@ -75,6 +82,7 @@ class CycleDetector {
   /// RU: Очищает все состояние детектора.
   /// ENG: Clears all detector state.
   void clear() {
+    logger.info('CycleDetector: clear');
     _resolutionStack.clear();
     _resolutionHistory.clear();
   }
@@ -103,16 +111,21 @@ class CycleDetector {
 mixin CycleDetectionMixin {
   CycleDetector? _cycleDetector;
 
+  CherryPickLogger? get logger;
+
   /// RU: Включает обнаружение циклических зависимостей.
   /// ENG: Enables circular dependency detection.
   void enableCycleDetection() {
-    _cycleDetector = CycleDetector();
+    // print removed (trace)
+    _cycleDetector = CycleDetector(logger: logger);
+    logger?.info('CycleDetection: cycle detection enabled');
   }
 
   /// RU: Отключает обнаружение циклических зависимостей.
   /// ENG: Disables circular dependency detection.
   void disableCycleDetection() {
     _cycleDetector?.clear();
+    logger?.info('CycleDetection: cycle detection disabled');
     _cycleDetector = null;
   }
 

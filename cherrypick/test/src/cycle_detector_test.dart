@@ -1,7 +1,5 @@
-import 'package:cherrypick/src/cycle_detector.dart';
-import 'package:cherrypick/src/module.dart';
-import 'package:cherrypick/src/scope.dart';
 import 'package:test/test.dart';
+import 'package:cherrypick/cherrypick.dart';
 
 void main() {
   group('CycleDetector', () {

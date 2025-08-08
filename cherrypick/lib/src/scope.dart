@@ -17,11 +17,21 @@ import 'package:cherrypick/src/cycle_detector.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
+import 'package:cherrypick/src/logger.dart';
 
-Scope openRootScope() => Scope(null);
+
+CherryPickLogger _globalLogger = const SilentLogger();
+
+Scope openRootScope({CherryPickLogger? logger}) => Scope(null, logger: logger);
 
 class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   final Scope? _parentScope;
+
+  CherryPickLogger? _logger;
+  
+  @override
+  CherryPickLogger? get logger => _logger;
+  set logger(CherryPickLogger? value) => _logger = value;
 
   /// RU: Метод возвращает родительский [Scope].
   ///
@@ -32,9 +42,11 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   final Map<String, Scope> _scopeMap = HashMap();
 
-  Scope(this._parentScope) {
+  Scope(this._parentScope, {CherryPickLogger? logger}) : _logger = logger ?? _globalLogger {
+    // print removed (trace)
     // Генерируем уникальный ID для скоупа
     setScopeId(_generateScopeId());
+    _logger?.info('Scope created: id=${scopeId ?? "NO_ID"}, parent=${_parentScope?.scopeId}');
   }
 
   final Set<Module> _modulesList = HashSet();
@@ -59,8 +71,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// return [Scope]
   Scope openSubScope(String name) {
     if (!_scopeMap.containsKey(name)) {
-      final childScope = Scope(this);
-      
+      final childScope = Scope(this, logger: logger); // Наследуем логгер вниз по иерархии
+      // print removed (trace)
       // Наследуем настройки обнаружения циклических зависимостей
       if (isCycleDetectionEnabled) {
         childScope.enableCycleDetection();
@@ -68,8 +80,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       if (isGlobalCycleDetectionEnabled) {
         childScope.enableGlobalCycleDetection();
       }
-      
       _scopeMap[name] = childScope;
+      logger?.info('SubScope created: $name, id=${childScope.scopeId} (parent=$scopeId)');
     }
     return _scopeMap[name]!;
   }
@@ -86,6 +98,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
       }
+      logger?.info('SubScope closed: $name, id=${childScope.scopeId} (parent=$scopeId)');
     }
     _scopeMap.remove(name);
   }
@@ -98,7 +111,13 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
     for (var module in modules) {
+      logger?.info('Installing module: ${module.runtimeType} in scope $scopeId');
       module.builder(this);
+      // После builder: для всех новых биндингов
+      for (final binding in module.bindingSet) {
+        binding.logger = logger;
+        binding.logAllDeferred();
+      }
     }
     _rebuildResolversIndex();
     return this;
@@ -110,7 +129,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   /// return [Scope]
   Scope dropModules() {
-    // [AlexeyYuPopkov](https://github.com/AlexeyYuPopkov) Thank you for the [Removed exception "ConcurrentModificationError"](https://github.com/pese-git/cherrypick/pull/2)
+    logger?.info('Modules dropped from scope: $scopeId');
     _modulesList.clear();
     _rebuildResolversIndex();
     return this;
@@ -130,11 +149,21 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   T resolve<T>({String? named, dynamic params}) {
     // Используем глобальное отслеживание, если включено
     if (isGlobalCycleDetectionEnabled) {
-      return withGlobalCycleDetection<T>(T, named, () {
-        return _resolveWithLocalDetection<T>(named: named, params: params);
-      });
+      try {
+        return withGlobalCycleDetection<T>(T, named, () {
+          return _resolveWithLocalDetection<T>(named: named, params: params);
+        });
+      } catch (e, s) {
+        logger?.error('Global cycle detection failed during resolve<$T>', e, s);
+        rethrow;
+      }
     } else {
-      return _resolveWithLocalDetection<T>(named: named, params: params);
+      try {
+        return _resolveWithLocalDetection<T>(named: named, params: params);
+      } catch (e, s) {
+        logger?.error('Failed to resolve<$T>', e, s);
+        rethrow;
+      }
     }
   }
 
@@ -144,8 +173,10 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return withCycleDetection<T>(T, named, () {
       var resolved = _tryResolveInternal<T>(named: named, params: params);
       if (resolved != null) {
+        logger?.info('Resolve<$T> [named=$named]: successfully resolved in scope $scopeId.');
         return resolved;
       } else {
+        logger?.error('Failed to resolve<$T> [named=$named] in scope $scopeId.');
         throw StateError(
             'Can\'t resolve dependency `$T`. Maybe you forget register it?');
       }

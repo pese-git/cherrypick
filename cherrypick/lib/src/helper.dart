@@ -12,30 +12,72 @@
 //
 import 'package:cherrypick/src/scope.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
+import 'package:cherrypick/src/logger.dart';
 import 'package:meta/meta.dart';
+
+CherryPickLogger? _globalLogger = const SilentLogger();
 
 Scope? _rootScope;
 bool _globalCycleDetectionEnabled = false;
 bool _globalCrossScopeCycleDetectionEnabled = false;
 
 class CherryPick {
+  /// Позволяет задать глобальный логгер для всей DI-системы.
+  /// ----------------------------------------------------------------------------
+  /// setGlobalLogger — установка глобального логгера для всей системы CherryPick DI.
+  ///
+  /// ENGLISH:
+  /// Sets the global logger for all CherryPick DI containers and scopes.
+  /// All dependency resolution, scope lifecycle, and error events will use
+  /// this logger instance for info/warn/error output.
+  /// Can be used to connect a custom logger (e.g. to external monitoring or UI).
+  ///
+  /// Usage example:
+  /// ```dart
+  /// import 'package:cherrypick/cherrypick.dart';
+  ///
+  /// void main() {
+  ///   CherryPick.setGlobalLogger(PrintLogger()); // Or your custom logger
+  ///   final rootScope = CherryPick.openRootScope();
+  ///   // DI logs and errors will now go to your logger
+  /// }
+  /// ```
+  ///
+  /// RUSSIAN:
+  /// Устанавливает глобальный логгер для всей DI-системы CherryPick.
+  /// Все операции разрешения зависимостей, жизненного цикла скоупов и ошибки
+  /// будут регистрироваться через этот логгер (info/warn/error).
+  /// Можно подключить свою реализацию для интеграции со сторонними системами.
+  ///
+  /// Пример использования:
+  /// ```dart
+  /// import 'package:cherrypick/cherrypick.dart';
+  ///
+  /// void main() {
+  ///   CherryPick.setGlobalLogger(PrintLogger()); // Или ваш собственный логгер
+  ///   final rootScope = CherryPick.openRootScope();
+  ///   // Все события DI и ошибки попадут в ваш логгер.
+  /// }
+  /// ```
+  /// ----------------------------------------------------------------------------
+  static void setGlobalLogger(CherryPickLogger logger) {
+    _globalLogger = logger;
+  }
+
   /// RU: Метод открывает главный [Scope].
   /// ENG: The method opens the main [Scope].
   ///
   /// return
   static Scope openRootScope() {
-    _rootScope ??= Scope(null);
-    
+    _rootScope ??= Scope(null, logger: _globalLogger);
     // Применяем глобальную настройку обнаружения циклических зависимостей
     if (_globalCycleDetectionEnabled && !_rootScope!.isCycleDetectionEnabled) {
       _rootScope!.enableCycleDetection();
     }
-    
     // Применяем глобальную настройку обнаружения между скоупами
     if (_globalCrossScopeCycleDetectionEnabled && !_rootScope!.isGlobalCycleDetectionEnabled) {
       _rootScope!.enableGlobalCycleDetection();
     }
-    
     return _rootScope!;
   }
 
