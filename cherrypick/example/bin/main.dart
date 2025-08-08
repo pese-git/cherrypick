@@ -47,7 +47,7 @@ class FeatureModule extends Module {
 
 Future<void> main() async {
   try {
-  final scope = openRootScope().installModules([AppModule()]);
+  final scope = CherryPick.openRootScope().installModules([AppModule()]);
 
     final subScope = scope
         .openSubScope("featureScope")

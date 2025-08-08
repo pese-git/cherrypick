@@ -1,12 +1,19 @@
 import 'package:test/test.dart';
 import 'package:cherrypick/cherrypick.dart';
 
+import '../mock_logger.dart';
+
 void main() {
+  late MockLogger logger;
+  setUp(() {
+    logger = MockLogger();
+    CherryPick.setGlobalLogger(logger);
+  });
   group('CycleDetector', () {
     late CycleDetector detector;
 
     setUp(() {
-      detector = CycleDetector();
+      detector = CycleDetector(logger: logger);
     });
 
     test('should detect simple circular dependency', () {
@@ -73,7 +80,7 @@ void main() {
 
   group('Scope with Cycle Detection', () {
     test('should detect circular dependency in real scenario', () {
-      final scope = Scope(null);
+      final scope = CherryPick.openRootScope();
       scope.enableCycleDetection();
       
       // Создаем циклическую зависимость: A зависит от B, B зависит от A
@@ -89,7 +96,7 @@ void main() {
     });
 
     test('should work normally without cycle detection enabled', () {
-      final scope = Scope(null);
+      final scope = CherryPick.openRootScope();
       // Не включаем обнаружение циклических зависимостей
       
       scope.installModules([
@@ -101,7 +108,7 @@ void main() {
     });
 
     test('should allow disabling cycle detection', () {
-      final scope = Scope(null);
+      final scope = CherryPick.openRootScope();
       scope.enableCycleDetection();
       expect(scope.isCycleDetectionEnabled, isTrue);
       
@@ -110,7 +117,7 @@ void main() {
     });
 
     test('should handle named dependencies in cycle detection', () {
-      final scope = Scope(null);
+      final scope = CherryPick.openRootScope();
       scope.enableCycleDetection();
       
       scope.installModules([
@@ -124,7 +131,7 @@ void main() {
     });
 
     test('should detect cycles in async resolution', () async {
-      final scope = Scope(null);
+      final scope = CherryPick.openRootScope();
       scope.enableCycleDetection();
       
       scope.installModules([

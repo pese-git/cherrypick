@@ -1,7 +1,6 @@
 import 'package:cherrypick/cherrypick.dart';
 import 'package:test/test.dart';
 import '../mock_logger.dart';
-import 'package:cherrypick/cherrypick.dart';
 
 void main() {
   late MockLogger logger;
