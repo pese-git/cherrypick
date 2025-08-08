@@ -16,6 +16,9 @@ import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/logger.dart';
 import 'package:meta/meta.dart';
 
+
+Scope? _rootScope;
+
 /// Global logger for all [Scope]s managed by [CherryPick].
 ///
 /// Defaults to [SilentLogger] unless set via [setGlobalLogger].
@@ -48,8 +51,6 @@ bool _globalCrossScopeCycleDetectionEnabled = false;
 /// final service = root.resolve<Service>();
 /// ```
 class CherryPick {
-  static Scope? _rootScope;
-
   /// Sets the global logger for all [Scope]s created by CherryPick.
   ///
   /// Allows customizing log output and DI diagnostics globally.
