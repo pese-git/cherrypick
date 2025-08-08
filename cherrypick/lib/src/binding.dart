@@ -13,8 +13,8 @@
 
 import 'package:cherrypick/src/binding_resolver.dart';
 
-/// RU: Класс Binding<T> настраивает параметры экземпляра.
-/// ENG: The Binding<T> class configures the settings for the instance.
+/// RU: Класс Binding&lt;T&gt; настраивает параметры экземпляра.
+/// ENG: The Binding&lt;T&gt; class configures the settings for the instance.
 ///
 import 'package:cherrypick/src/logger.dart';
 import 'package:cherrypick/src/log_format.dart';
