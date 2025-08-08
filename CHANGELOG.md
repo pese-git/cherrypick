@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.6`](#cherrypick---v300-dev6)
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.3-dev.6`](#cherrypick_flutter---v113-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.6`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.6`
+
+ - **FIX**: improve global cycle detector logic.
+ - **DOCS**(readme): add comprehensive DI state and action logging to features.
+ - **DOCS**(helper): add complete DartDoc with real usage examples for CherryPick class.
+ - **DOCS**(log_format): add detailed English documentation for formatLogMessage function.
+ - **BREAKING** **FEAT**(core): refactor root scope API, improve logger injection, helpers, and tests.
+ - **BREAKING** **FEAT**(logger): add extensible logging API, usage examples, and bilingual documentation.
+
+
 ## 2025-08-07
 
 ### Changes

@@ -1,3 +1,14 @@
+## 3.0.0-dev.6
+
+> Note: This release has breaking changes.
+
+ - **FIX**: improve global cycle detector logic.
+ - **DOCS**(readme): add comprehensive DI state and action logging to features.
+ - **DOCS**(helper): add complete DartDoc with real usage examples for CherryPick class.
+ - **DOCS**(log_format): add detailed English documentation for formatLogMessage function.
+ - **BREAKING** **FEAT**(core): refactor root scope API, improve logger injection, helpers, and tests.
+ - **BREAKING** **FEAT**(logger): add extensible logging API, usage examples, and bilingual documentation.
+
 ## 3.0.0-dev.5
 
  - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
