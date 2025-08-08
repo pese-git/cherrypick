@@ -79,6 +79,24 @@ Example:
     Cherrypick.closeRootScope();
 ```
 
+## Logging
+
+To enable logging of all dependency injection (DI) events and errors in CherryPick, set the global logger before creating your scopes:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+void main() {
+  // Set a global logger before any scopes are created
+  CherryPick.setGlobalLogger(PrintLogger()); // or your own custom logger
+  final scope = CherryPick.openRootScope();
+  // All DI events and cycle errors will now be sent to your logger
+}
+```
+
+- By default, CherryPick uses SilentLogger (no output in production).
+- Any dependency resolution, scope events, or cycle detection errors are logged via info/error on your logger.
+
 ## Example app
 
 

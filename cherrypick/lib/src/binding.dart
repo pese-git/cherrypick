@@ -16,14 +16,67 @@ import 'package:cherrypick/src/binding_resolver.dart';
 /// RU: Класс Binding<T> настраивает параметры экземпляра.
 /// ENG: The Binding<T> class configures the settings for the instance.
 ///
+import 'package:cherrypick/src/logger.dart';
+import 'package:cherrypick/src/log_format.dart';
+
 class Binding<T> {
   late Type _key;
   String? _name;
 
   BindingResolver<T>? _resolver;
 
-  Binding() {
+  CherryPickLogger? logger;
+
+  // Deferred logging flags
+  bool _createdLogged = false;
+  bool _namedLogged = false;
+  bool _singletonLogged = false;
+
+  Binding({this.logger}) {
     _key = T;
+    // Не логируем здесь! Делаем deferred лог после назначения logger
+  }
+
+  void markCreated() {
+    if (!_createdLogged) {
+      logger?.info(formatLogMessage(
+        type: 'Binding',
+        name: T.toString(),
+        params: _name != null ? {'name': _name} : null,
+        description: 'created',
+      ));
+      _createdLogged = true;
+    }
+  }
+
+  void markNamed() {
+    if (isNamed && !_namedLogged) {
+      logger?.info(formatLogMessage(
+        type: 'Binding',
+        name: T.toString(),
+        params: {'name': _name},
+        description: 'named',
+      ));
+      _namedLogged = true;
+    }
+  }
+
+  void markSingleton() {
+    if (isSingleton && !_singletonLogged) {
+      logger?.info(formatLogMessage(
+        type: 'Binding',
+        name: T.toString(),
+        params: _name != null ? {'name': _name} : null,
+        description: 'singleton mode enabled',
+      ));
+      _singletonLogged = true;
+    }
+  }
+
+  void logAllDeferred() {
+    markCreated();
+    markNamed();
+    markSingleton();
   }
 
   /// RU: Метод возвращает тип экземпляра.
@@ -58,6 +111,7 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> withName(String name) {
     _name = name;
+    // Не логируем здесь, deferred log via markNamed()
     return this;
   }
 
@@ -67,7 +121,6 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> toInstance(Instance<T> value) {
     _resolver = InstanceResolver<T>(value);
-
     return this;
   }
 
@@ -77,7 +130,6 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> toProvide(Provider<T> value) {
     _resolver = ProviderResolver<T>((_) => value.call(), withParams: false);
-
     return this;
   }
 
@@ -87,7 +139,6 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
     _resolver = ProviderResolver<T>(value, withParams: true);
-
     return this;
   }
 
@@ -112,15 +163,73 @@ class Binding<T> {
   /// return [Binding]
   Binding<T> singleton() {
     _resolver?.toSingleton();
-
+    // Не логируем здесь, deferred log via markSingleton()
     return this;
   }
 
   T? resolveSync([dynamic params]) {
-    return resolver?.resolveSync(params);
+    final res = resolver?.resolveSync(params);
+    if (res != null) {
+      logger?.info(formatLogMessage(
+        type: 'Binding',
+        name: T.toString(),
+        params: {
+          if (_name != null) 'name': _name,
+          'method': 'resolveSync',
+        },
+        description: 'object created/resolved',
+      ));
+    } else {
+      logger?.warn(formatLogMessage(
+        type: 'Binding',
+        name: T.toString(),
+        params: {
+          if (_name != null) 'name': _name,
+          'method': 'resolveSync',
+        },
+        description: 'resolveSync returned null',
+      ));
+    }
+    return res;
   }
 
   Future<T>? resolveAsync([dynamic params]) {
-    return resolver?.resolveAsync(params);
+    final future = resolver?.resolveAsync(params);
+    if (future != null) {
+      future
+          .then((res) => logger?.info(formatLogMessage(
+                type: 'Binding',
+                name: T.toString(),
+                params: {
+                  if (_name != null) 'name': _name,
+                  'method': 'resolveAsync',
+                },
+                description: 'Future resolved',
+              )))
+          .catchError((e, s) => logger?.error(
+                formatLogMessage(
+                  type: 'Binding',
+                  name: T.toString(),
+                  params: {
+                    if (_name != null) 'name': _name,
+                    'method': 'resolveAsync',
+                  },
+                  description: 'resolveAsync error',
+                ),
+                e,
+                s,
+              ));
+    } else {
+      logger?.warn(formatLogMessage(
+        type: 'Binding',
+        name: T.toString(),
+        params: {
+          if (_name != null) 'name': _name,
+          'method': 'resolveAsync',
+        },
+        description: 'resolveAsync returned null',
+      ));
+    }
+    return future;
   }
 }

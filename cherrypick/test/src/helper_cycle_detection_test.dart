@@ -1,7 +1,13 @@
 import 'package:cherrypick/cherrypick.dart';
 import 'package:test/test.dart';
+import '../mock_logger.dart';
 
 void main() {
+  late MockLogger logger;
+  setUp(() {
+    logger = MockLogger();
+    CherryPick.setGlobalLogger(logger);
+  });
   group('CherryPick Cycle Detection Helper Methods', () {
     setUp(() {
       // Сбрасываем состояние перед каждым тестом

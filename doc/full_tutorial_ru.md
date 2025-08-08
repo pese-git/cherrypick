@@ -359,6 +359,26 @@ class MyApp extends StatelessWidget {
   `final subScope = CherryPickProvider.of(context).openSubScope(scopeName: "profileFeature");`
 
 ---
+
+## Логирование
+
+Чтобы включить вывод логов о событиях и ошибках DI в CherryPick, настройте глобальный логгер до создания любых scope:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+void main() {
+  // Установите глобальный логгер до создания scope
+  CherryPick.setGlobalLogger(PrintLogger()); // или свой логгер
+  final scope = CherryPick.openRootScope();
+  // Логи DI и циклов будут выводиться через ваш логгер
+}
+```
+
+- По умолчанию используется SilentLogger (нет логов в продакшене).
+- Любые ошибки резолва и события циклов логируются через info/error на логгере.
+
+---
 ## CherryPick подходит не только для Flutter!
 
 Вы можете использовать CherryPick и в Dart CLI, серверных проектах и микросервисах. Все основные возможности доступны и без Flutter.

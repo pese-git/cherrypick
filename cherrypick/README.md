@@ -234,6 +234,32 @@ class ApiClientImpl implements ApiClient {
 }
 ```
 
+## Logging
+
+CherryPick supports centralized logging of all dependency injection (DI) events and errors. You can globally enable logs for your application or test environment with:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+void main() {
+  // Set a global logger before any scopes are created
+  CherryPick.setGlobalLogger(PrintLogger()); // or your custom logger
+
+  final scope = CherryPick.openRootScope();
+  // All DI actions and errors will now be logged!
+}
+```
+- All dependency resolution, scope creation, module installation, and circular dependency errors will be sent to your logger (via info/error method).
+- By default, logs are off (SilentLogger is used in production).
+
+If you want fine-grained, test-local, or isolated logging, you can provide a logger directly to each scope:
+
+```dart
+final logger = MockLogger();
+final scope = Scope(null, logger: logger); // works in tests for isolation
+scope.installModules([...]);
+```
+
 ## Features
 
 - [x] Main Scope and Named Subscopes
@@ -244,6 +270,7 @@ class ApiClientImpl implements ApiClient {
 - [x] Modular and Hierarchical Composition
 - [x] Null-safe Resolution (tryResolve/tryResolveAsync)
 - [x] Circular Dependency Detection (Local and Global)
+- [x] Comprehensive logging of dependency injection state and actions
 
 ## Quick Guide: Circular Dependency Detection
 

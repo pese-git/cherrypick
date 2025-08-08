@@ -7,6 +7,7 @@ import 'di/app_module.dart';
 void main() {
   // Включаем cycle-detection только в debug/test
   if (kDebugMode) {
+    CherryPick.setGlobalLogger(PrintLogger());
     CherryPick.enableGlobalCycleDetection();
     CherryPick.enableGlobalCrossScopeCycleDetection();
   }

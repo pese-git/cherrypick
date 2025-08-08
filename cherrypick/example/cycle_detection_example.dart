@@ -126,7 +126,7 @@ void main() {
   // Example 1: Demonstrate circular dependency
   print('1. Attempt to create a scope with circular dependencies:');
   try {
-    final scope = Scope(null);
+    final scope = CherryPick.openRootScope();
     scope.enableCycleDetection(); // Включаем обнаружение циклических зависимостей
     
     scope.installModules([
@@ -144,7 +144,7 @@ void main() {
   // Example 2: Without circular dependency detection (dangerous!)
   print('2. Same code without circular dependency detection:');
   try {
-    final scope = Scope(null);
+    final scope = CherryPick.openRootScope();
     // НЕ включаем обнаружение циклических зависимостей
     
     scope.installModules([
@@ -166,7 +166,7 @@ void main() {
   // Example 3: Correct architecture without circular dependencies
   print('3. Correct architecture without circular dependencies:');
   try {
-    final scope = Scope(null);
+    final scope = CherryPick.openRootScope();
     scope.enableCycleDetection(); // Включаем для безопасности
     
     scope.installModules([
