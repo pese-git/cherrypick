@@ -12,12 +12,33 @@
 //
 
 
-/// Ёдиный форматтер лог-сообщений CherryPick.
+/// Formats a log message string for CherryPick's logging system.
 ///
-/// Используйте для формирования сообщений всех уровней (info, warn, error)
-/// Например:
-///   log.info(formatLogMessage(type:'Binding', name:..., params:{...}, description:'created'));
-
+/// This function provides a unified structure for framework logs (info, warn, error, debug, etc.),
+/// making it easier to parse and analyze events related to DI operations such as resolving bindings,
+/// scope creation, module installation, etc.
+///
+/// All parameters except [name] and [params] are required.
+///
+/// Example:
+/// ```dart
+/// final msg = formatLogMessage(
+///   type: 'Binding',
+///   name: 'MyService',
+///   params: {'parent': 'AppModule', 'lifecycle': 'singleton'},
+///   description: 'created',
+/// );
+/// // Result: [Binding:MyService] parent=AppModule lifecycle=singleton created
+/// ```
+///
+/// Parameters:
+/// - [type]: The type of the log event subject (e.g., 'Binding', 'Scope', 'Module'). Required.
+/// - [name]: Optional name of the subject (binding/scope/module) to disambiguate multiple instances/objects.
+/// - [params]: Optional map for additional context (e.g., id, parent, lifecycle, named, etc.).
+/// - [description]: Concise description of the event. Required.
+///
+/// Returns a structured string:
+///   [type(:name)] param1=val1 param2=val2 ... description
 String formatLogMessage({
   required String type,        // Binding, Scope, Module, ...
   String? name,               // Имя binding/scope/module
