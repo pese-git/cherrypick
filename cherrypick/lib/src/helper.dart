@@ -94,9 +94,9 @@ class CherryPick {
   /// ```dart
   /// CherryPick.closeRootScope();
   /// ```
-  static void closeRootScope() {
+  static Future<void> closeRootScope() async {
     if (_rootScope != null) {
-      _rootScope!.dispose(); // Автоматический вызов dispose для rootScope!
+      await _rootScope!.dispose(); // Автоматический вызов dispose для rootScope!
       _rootScope = null;
     }
   }
@@ -252,9 +252,9 @@ class CherryPick {
   /// CherryPick.closeScope(scopeName: 'network.super.api');
   /// ```
   @experimental
-  static void closeScope({String scopeName = '', String separator = '.'}) {
+  static Future<void> closeScope({String scopeName = '', String separator = '.'}) async {
     if (scopeName.isEmpty) {
-      closeRootScope();
+      await closeRootScope();
       return;
     }
     final nameParts = scopeName.split(separator);
@@ -267,9 +267,9 @@ class CherryPick {
         openRootScope(),
         (Scope previous, String element) => previous.openSubScope(element)
       );
-      scope.closeSubScope(lastPart);
+      await scope.closeSubScope(lastPart);
     } else {
-      openRootScope().closeSubScope(nameParts.first);
+      await openRootScope().closeSubScope(nameParts.first);
     }
   }
 
