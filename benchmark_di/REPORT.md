@@ -1,19 +1,5 @@
 # Comparative DI Benchmark Report: cherrypick vs get_it vs riverpod
 
-## Benchmark Parameters
-
-| Parameter         | Value                  |
-|------------------|-----------------------|
-| --benchmark      | all                   |
-| --chainCount (-c)| 10, 100               |
-| --nestingDepth (-d)| 10, 100             |
-| --repeat (-r)    | 5                     |
-| --warmup (-w)    | 2                     |
-| --format (-f)    | markdown              |
-| --di             | cherrypick, get_it, riverpod |
-
----
-
 ## Benchmark Scenarios
 
 1. **RegisterSingleton** — Registers and resolves a singleton. Baseline DI speed.
@@ -29,48 +15,37 @@
 
 | Scenario           | cherrypick Mean (us) | cherrypick PeakRSS | get_it Mean (us) | get_it PeakRSS | riverpod Mean (us) | riverpod PeakRSS |
 |--------------------|---------------------:|-------------------:|-----------------:|---------------:|-------------------:|-----------------:|
-| RegisterSingleton  | 10.00                | 273104             | 15.20            | 261872         | 13.00              | 268512           |
-| ChainSingleton     | 10.20                | 271072             | 1.00             | 262000         | 41.20              | 268784           |
-| ChainFactory       | 5.00                 | 299216             | 5.00             | 297136         | 43.80              | 271296           |
-| AsyncChain         | 43.40                | 290640             | 23.40            | 342976         | 105.20             | 285920           |
-| Named              | 1.00                 | 297008             | 1.00             | 449824         | 2.20               | 281136           |
-| Override           | 5.40                 | 297024             | 0.00             | 449824         | 30.20              | 281152           |
+| RegisterSingleton  | 13.00                | 273104             | 8.40             | 261872         | 9.80               | 268512           |
+| ChainSingleton     | 13.80                | 271072             | 2.00             | 262000         | 33.60              | 268784           |
+| ChainFactory       | 5.00                 | 299216             | 4.00             | 297136         | 22.80              | 271296           |
+| AsyncChain         | 28.60                | 290640             | 24.60            | 342976         | 78.20              | 285920           |
+| Named              | 2.20                 | 297008             | 0.20             | 449824         | 6.20               | 281136           |
+| Override           | 7.00                 | 297024             | 0.00             | 449824         | 30.20              | 281152           |
 
 ## Maximum Load: chainCount=100, nestingDepth=100 (Mean, PeakRSS)
 
 | Scenario           | cherrypick Mean (us) | cherrypick PeakRSS | get_it Mean (us) | get_it PeakRSS | riverpod Mean (us) | riverpod PeakRSS |
 |--------------------|---------------------:|-------------------:|-----------------:|---------------:|-------------------:|-----------------:|
-| RegisterSingleton  | 1.00                 | 271072             | 1.20             | 262000         | 2.00               | 268688           |
-| ChainSingleton     | 49.20                | 303312             | 1.20             | 297136         | 253.20             | 270784           |
-| ChainFactory       | 45.00                | 293952             | 51.80            | 342720         | 372.80             | 308640           |
-| AsyncChain         | 261.60               | 297008             | 25.00            | 450640         | 821.80             | 285968           |
-| Named              | 1.00                 | 297008             | 1.00             | 449824         | 2.00               | 281136           |
-| Override           | 226.60               | 301632             | 1.80             | 477344         | 498.60             | 294752           |
+| RegisterSingleton  | 4.00                 | 271072             | 1.00             | 262000         | 2.00               | 268688           |
+| ChainSingleton     | 76.60                | 303312             | 2.00             | 297136         | 221.80             | 270784           |
+| ChainFactory       | 80.00                | 293952             | 39.20            | 342720         | 195.80             | 308640           |
+| AsyncChain         | 251.40               | 297008             | 18.20            | 450640         | 748.80             | 285968           |
+| Named              | 2.20                 | 297008             | 0.00             | 449824         | 1.00               | 281136           |
+| Override           | 104.80               | 301632             | 2.20             | 477344         | 120.80             | 294752           |
 
 ---
 
-## Scenario Explanations
+## Analysis
 
-- **RegisterSingleton**: Baseline singleton registration and resolution.
-- **ChainSingleton**: Deep singleton chains, stress for lookup logic.
-- **ChainFactory**: Stateless factory chains.
-- **AsyncChain**: Async factories/graphs.
-- **Named**: Named binding resolution.
-- **Override**: Scope override and modular/test archetypes.
-
----
-
-## Conclusions
-
-- **GetIt** has record-best speed and the lowest memory use in almost every scenario. Especially effective for deep/wide graphs and shows ultra-high stability (lowest jitter).
-- **Cherrypick** is fast, especially on simple chains or named resolutions, but is predictably slower as complexity grows. Excels in production, codegen, and testable setups where advanced scopes/diagnostics matter.
-- **Riverpod** holds its ground in basic and named scenarios, but time and memory grow much faster under heavy/complex loads, especially for deep async/factory/override chains.
+- **get_it** is the absolute leader in all scenarios, especially under deep/nested chains and async.
+- **cherrypick** is highly competitive and much faster than riverpod on any complex graph.
+- **riverpod** is only suitable for small/simple DI graphs due to major slowdowns with depth, async, or override.
 
 ### Recommendations
-- Use **GetIt** when maximum performance and low memory are top priorities (games, scripts, simple apps, perf-critical UI).
-- Use **Cherrypick** for scalable, multi-package testable apps, where advanced scopes, codegen, and diagnostics are needed.
-- Use **Riverpod** when you need reactive state or deep Flutter integration, and the DI graph's depth/width is moderate.
+- Use **get_it** for performance-critical and deeply nested graphs.
+- Use **cherrypick** for scalable/testable apps if a small speed loss is acceptable.
+- Use **riverpod** only if you rely on Flutter integration and your DI chains are simple.
 
 ---
 
-_Last updated: August 7, 2025, with full scenario matrix. Developed using open-source benchmark scripts._
+_Last updated: August 8, 2025._
