@@ -21,3 +21,4 @@ export 'package:cherrypick/src/helper.dart';
 export 'package:cherrypick/src/module.dart';
 export 'package:cherrypick/src/scope.dart';
 export 'package:cherrypick/src/logger.dart';
+export 'package:cherrypick/src/disposable.dart';
