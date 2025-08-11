@@ -24,6 +24,7 @@ It provides an easy-to-use system for registering, scoping, and resolving depend
 - [Example Application](#example-application)
 - [FAQ](#faq)
 - [Documentation Links](#documentation-links)
+- [Additional Modules](#additional-modules)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -661,6 +662,18 @@ Yes! Even if none of your services currently implement `Disposable`, always use 
 ## Documentation Links
 
 * Circular Dependency Detection [(En)](doc/cycle_detection.en.md)[(Ru)](doc/cycle_detection.ru.md)
+
+---
+
+## Additional Modules
+
+CherryPick provides a set of official add-on modules for advanced use cases and specific platforms:
+
+| Module name | Description | Documentation |
+|-------------|-------------|---------------|
+| [**cherrypick_annotations**](https://pub.dev/packages/cherrypick_annotations) | Dart annotations for concise DI definitions and code generation. | [README](../cherrypick_annotations/README.md) |
+| [**cherrypick_generator**](https://pub.dev/packages/cherrypick_generator) | Code generator to produce DI bindings based on annotations. | [README](../cherrypick_generator/README.md) |
+| [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Flutter integration: DI provider widgets and helpers for Flutter. | [README](../cherrypick_flutter/README.md) |
 
 ---
 
