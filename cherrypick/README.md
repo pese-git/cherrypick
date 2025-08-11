@@ -337,7 +337,7 @@ class ProfilePage with _\$ProfilePage {
 }
 ```
 
-- After running build_runner, the mixin `_ 5ProfilePage` will be generated for field injection.
+- After running build_runner, the mixin `_ProfilePage` will be generated for field injection.
 - Call `myProfilePage.injectFields();` or use the mixin's auto-inject feature, and all dependencies will be set up for you.
 
 ---
