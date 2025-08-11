@@ -120,8 +120,8 @@ void main() {
       expect(Scope(scope, observer: observer), isNotNull); // эквивалент
     });
     test('closeSubScope removes subscope so next openSubScope returns new', () async {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
       final subScope = scope.openSubScope("child");
       expect(scope.openSubScope("child"), same(subScope));
       await scope.closeSubScope("child");
@@ -295,7 +295,7 @@ void main() {
       expect(t.disposed, isTrue);
     });
     test('scope.disposeAsync calls dispose on all unique disposables', () async {
-      final scope = Scope(null, logger: MockLogger());
+      final scope = Scope(null, observer: MockObserver());
       scope.installModules([ModuleWithDisposable()]);
       final t1 = scope.resolve<TestDisposable>();
       final t2 = scope.resolve<AnotherDisposable>();
