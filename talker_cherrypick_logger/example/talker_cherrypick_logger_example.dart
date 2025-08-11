@@ -3,11 +3,11 @@ import 'package:talker/talker.dart';
 
 void main() {
   final talker = Talker();
-  final logger = TalkerCherryPickLogger(talker);
+  final logger = TalkerCherryPickObserver(talker);
 
-  logger.info('Hello from CherryPickLogger!');
-  logger.warn('Something might be wrong...');
-  logger.error('Oops! An error occurred', Exception('Test error'));
+  logger.onDiagnostic('Hello from CherryPickLogger!');
+  logger.onWarning('Something might be wrong...');
+  logger.onError('Oops! An error occurred', Exception('Test error'), null);
 
   // Вывод всех логов
   print('\nВсе сообщения логирования через Talker:');

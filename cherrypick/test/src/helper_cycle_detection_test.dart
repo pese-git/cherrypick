@@ -3,10 +3,10 @@ import 'package:test/test.dart';
 import '../mock_logger.dart';
 
 void main() {
-  late MockLogger logger;
+  late MockObserver observer;
   setUp(() {
-    logger = MockLogger();
-    CherryPick.setGlobalLogger(logger);
+    observer = MockObserver();
+    CherryPick.setGlobalObserver(observer);
   });
   group('CherryPick Cycle Detection Helper Methods', () {
     setUp(() {

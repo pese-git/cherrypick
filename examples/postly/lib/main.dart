@@ -11,12 +11,12 @@ import 'package:talker_cherrypick_logger/talker_cherrypick_logger.dart';
 
 void main() {
   final talker = Talker();
-  final talkerLogger = TalkerCherryPickLogger(talker);
+  final talkerLogger = TalkerCherryPickObserver(talker);
 
 
   Bloc.observer = TalkerBlocObserver(talker: talker);
 
-  CherryPick.setGlobalLogger(talkerLogger);
+  CherryPick.setGlobalObserver(talkerLogger);
   // Включаем cycle-detection только в debug/test
   if (kDebugMode) {
     CherryPick.enableGlobalCycleDetection();

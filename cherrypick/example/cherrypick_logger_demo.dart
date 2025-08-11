@@ -15,7 +15,7 @@ class AppModule extends Module {
 
 void main() {
   // Set a global logger for the DI system
-  CherryPick.setGlobalLogger(PrintLogger());
+  CherryPick.setGlobalObserver(PrintCherryPickObserver());
 
   // Open the root scope
   final rootScope = CherryPick.openRootScope();
@@ -32,6 +32,6 @@ void main() {
   subScope.closeSubScope('feature.profile');
 
   // Demonstrate disabling and re-enabling logging
-  CherryPick.setGlobalLogger(const SilentLogger());
+  CherryPick.setGlobalObserver(SilentCherryPickObserver());
   rootScope.resolve<UserRepository>(); // now without logs
 }

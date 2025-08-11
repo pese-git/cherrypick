@@ -12,8 +12,7 @@
 //
 
 import 'dart:collection';
-import 'package:cherrypick/src/logger.dart';
-import 'package:cherrypick/src/log_format.dart';
+import 'package:cherrypick/src/observer.dart';
 
 /// RU: Исключение, выбрасываемое при обнаружении циклической зависимости.
 /// ENG: Exception thrown when a circular dependency is detected.
@@ -36,11 +35,11 @@ class CircularDependencyException implements Exception {
 /// RU: Детектор циклических зависимостей для CherryPick DI контейнера.
 /// ENG: Circular dependency detector for CherryPick DI container.
 class CycleDetector {
-  final CherryPickLogger _logger;
+  final CherryPickObserver _observer;
   final Set<String> _resolutionStack = HashSet<String>();
   final List<String> _resolutionHistory = [];
 
-  CycleDetector({required CherryPickLogger logger}): _logger = logger;
+  CycleDetector({required CherryPickObserver observer}) : _observer = observer;
 
   /// RU: Начинает отслеживание разрешения зависимости.
   /// ENG: Starts tracking dependency resolution.
@@ -48,25 +47,24 @@ class CycleDetector {
   /// Throws [CircularDependencyException] if circular dependency is detected.
   void startResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
-    print('[DEBUG] CycleDetector logger type=${_logger.runtimeType} hash=${_logger.hashCode}');
-    _logger.info(formatLogMessage(
-      type: 'CycleDetector',
-      name: dependencyKey.toString(),
-      params: {'event': 'startResolving', 'stackSize': _resolutionStack.length},
-      description: 'start resolving',
-    ));
+    _observer.onDiagnostic(
+      'CycleDetector startResolving: $dependencyKey',
+      details: {
+        'event': 'startResolving',
+        'stackSize': _resolutionStack.length,
+      },
+    );
     if (_resolutionStack.contains(dependencyKey)) {
-      // Найдена циклическая зависимость
       final cycleStartIndex = _resolutionHistory.indexOf(dependencyKey);
       final cycle = _resolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
-      // print removed (trace)
-      final msg = formatLogMessage(
-        type: 'CycleDetector',
-        name: dependencyKey.toString(),
-        params: {'chain': cycle.join('->')},
-        description: 'cycle detected',
+      _observer.onCycleDetected(
+        cycle,
       );
-      _logger.error(msg);
+      _observer.onError(
+        'Cycle detected for $dependencyKey',
+        null,
+        null,
+      );
       throw CircularDependencyException(
         'Circular dependency detected for $dependencyKey',
         cycle,
@@ -81,12 +79,10 @@ class CycleDetector {
   /// ENG: Finishes tracking dependency resolution.
   void finishResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
-    _logger.info(formatLogMessage(
-      type: 'CycleDetector',
-      name: dependencyKey.toString(),
-      params: {'event': 'finishResolving'},
-      description: 'finish resolving',
-    ));
+    _observer.onDiagnostic(
+      'CycleDetector finishResolving: $dependencyKey',
+      details: {'event': 'finishResolving'},
+    );
     _resolutionStack.remove(dependencyKey);
     // Удаляем из истории только если это последний элемент
     if (_resolutionHistory.isNotEmpty && 
@@ -98,11 +94,13 @@ class CycleDetector {
   /// RU: Очищает все состояние детектора.
   /// ENG: Clears all detector state.
   void clear() {
-    _logger.info(formatLogMessage(
-      type: 'CycleDetector',
-      params: {'event': 'clear'},
-      description: 'resolution stack cleared',
-    ));
+    _observer.onDiagnostic(
+      'CycleDetector clear',
+      details: {
+        'event': 'clear',
+        'description': 'resolution stack cleared',
+      },
+    );
     _resolutionStack.clear();
     _resolutionHistory.clear();
   }
@@ -130,28 +128,32 @@ class CycleDetector {
 /// ENG: Mixin for adding circular dependency detection support.
 mixin CycleDetectionMixin {
   CycleDetector? _cycleDetector;
-  CherryPickLogger get logger;
+  CherryPickObserver get observer;
 
   /// RU: Включает обнаружение циклических зависимостей.
   /// ENG: Enables circular dependency detection.
   void enableCycleDetection() {
-    _cycleDetector = CycleDetector(logger: logger);
-    logger.info(formatLogMessage(
-      type: 'CycleDetection',
-      params: {'event': 'enable'},
-      description: 'cycle detection enabled',
-    ));
+    _cycleDetector = CycleDetector(observer: observer);
+    observer.onDiagnostic(
+      'CycleDetection enabled',
+      details: {
+        'event': 'enable',
+        'description': 'cycle detection enabled',
+      },
+    );
   }
 
   /// RU: Отключает обнаружение циклических зависимостей.
   /// ENG: Disables circular dependency detection.
   void disableCycleDetection() {
     _cycleDetector?.clear();
-    logger.info(formatLogMessage(
-      type: 'CycleDetection',
-      params: {'event': 'disable'},
-      description: 'cycle detection disabled',
-    ));
+    observer.onDiagnostic(
+      'CycleDetection disabled',
+      details: {
+        'event': 'disable',
+        'description': 'cycle detection disabled',
+      },
+    );
     _cycleDetector = null;
   }
 
@@ -178,12 +180,14 @@ mixin CycleDetectionMixin {
       final cycleStartIndex = _cycleDetector!._resolutionHistory.indexOf(dependencyKey);
       final cycle = _cycleDetector!._resolutionHistory.sublist(cycleStartIndex)
         ..add(dependencyKey);
-      logger.error(formatLogMessage(
-        type: 'CycleDetector',
-        name: dependencyKey.toString(),
-        params: {'chain': cycle.join('->')},
-        description: 'cycle detected',
-      ));
+      observer.onCycleDetected(
+        cycle,
+      );
+      observer.onError(
+        'Cycle detected for $dependencyKey',
+        null,
+        null,
+      );
       throw CircularDependencyException(
         'Circular dependency detected for $dependencyKey',
         cycle,

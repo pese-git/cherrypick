@@ -110,14 +110,14 @@ void main() {
   // --------------------------------------------------------------------------
   group('Scope & Subscope Management', () {
     test('Scope has no parent if constructed with null', () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
       expect(scope.parentScope, null);
     });
     test('Can open and retrieve the same subScope by key', () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
-      expect(Scope(scope, logger: logger), isNotNull); // эквивалент
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
+      expect(Scope(scope, observer: observer), isNotNull); // эквивалент
     });
     test('closeSubScope removes subscope so next openSubScope returns new', () async {
       final logger = MockLogger();
@@ -130,9 +130,9 @@ void main() {
     });
 
     test('closeSubScope removes subscope so next openSubScope returns new', () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
-      expect(Scope(scope, logger: logger), isNotNull); // эквивалент
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
+      expect(Scope(scope, observer: observer), isNotNull); // эквивалент
       // Нет необходимости тестировать open/closeSubScope в этом юните
     });
   });
@@ -140,48 +140,48 @@ void main() {
   // --------------------------------------------------------------------------
   group('Dependency Resolution (standard)', () {
     test("Throws StateError if value can't be resolved", () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
       expect(() => scope.resolve<String>(), throwsA(isA<StateError>()));
     });
     test('Resolves value after adding a dependency', () {
-      final logger = MockLogger();
+      final observer = MockObserver();
       final expectedValue = 'test string';
-      final scope = Scope(null, logger: logger)
+      final scope = Scope(null, observer: observer)
           .installModules([TestModule<String>(value: expectedValue)]);
       expect(scope.resolve<String>(), expectedValue);
     });
     test('Returns a value from parent scope', () {
-      final logger = MockLogger();
+      final observer = MockObserver();
       final expectedValue = 5;
-      final parentScope = Scope(null, logger: logger);
-      final scope = Scope(parentScope, logger: logger);
+      final parentScope = Scope(null, observer: observer);
+      final scope = Scope(parentScope, observer: observer);
 
       parentScope.installModules([TestModule<int>(value: expectedValue)]);
       expect(scope.resolve<int>(), expectedValue);
     });
     test('Returns several values from parent container', () {
-      final logger = MockLogger();
+      final observer = MockObserver();
       final expectedIntValue = 5;
       final expectedStringValue = 'Hello world';
-      final parentScope = Scope(null, logger: logger).installModules([
+      final parentScope = Scope(null, observer: observer).installModules([
         TestModule<int>(value: expectedIntValue),
         TestModule<String>(value: expectedStringValue)
       ]);
-      final scope = Scope(parentScope, logger: logger);
+      final scope = Scope(parentScope, observer: observer);
 
       expect(scope.resolve<int>(), expectedIntValue);
       expect(scope.resolve<String>(), expectedStringValue);
     });
     test("Throws StateError if parent hasn't value too", () {
-      final logger = MockLogger();
-      final parentScope = Scope(null, logger: logger);
-      final scope = Scope(parentScope, logger: logger);
+      final observer = MockObserver();
+      final parentScope = Scope(null, observer: observer);
+      final scope = Scope(parentScope, observer: observer);
       expect(() => scope.resolve<int>(), throwsA(isA<StateError>()));
     });
     test("After dropModules resolves fail", () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)..installModules([TestModule<int>(value: 5)]);
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)..installModules([TestModule<int>(value: 5)]);
       expect(scope.resolve<int>(), 5);
       scope.dropModules();
       expect(() => scope.resolve<int>(), throwsA(isA<StateError>()));
@@ -191,8 +191,8 @@ void main() {
   // --------------------------------------------------------------------------
   group('Named Dependencies', () {
     test('Resolve named binding', () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           TestModule<String>(value: "first"),
           TestModule<String>(value: "second", name: "special")
@@ -201,8 +201,8 @@ void main() {
       expect(scope.resolve<String>(), "first");
     });
     test('Named binding does not clash with unnamed', () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           TestModule<String>(value: "foo", name: "bar"),
         ]);
@@ -210,8 +210,8 @@ void main() {
       expect(scope.resolve<String>(named: "bar"), "foo");
     });
     test("tryResolve returns null for missing named", () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           TestModule<String>(value: "foo"),
         ]);
@@ -222,8 +222,8 @@ void main() {
   // --------------------------------------------------------------------------
   group('Provider with parameters', () {
     test('Resolve dependency using providerWithParams', () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           _InlineModule((m, s) {
             m.bind<int>().toProvideWithParams((param) => (param as int) * 2);
@@ -237,8 +237,8 @@ void main() {
   // --------------------------------------------------------------------------
   group('Async Resolution', () {
     test('Resolve async instance', () async {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           _InlineModule((m, s) {
             m.bind<String>().toInstance(Future.value('async value'));
@@ -247,8 +247,8 @@ void main() {
       expect(await scope.resolveAsync<String>(), "async value");
     });
     test('Resolve async provider', () async {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           _InlineModule((m, s) {
             m.bind<int>().toProvide(() async => 7);
@@ -257,8 +257,8 @@ void main() {
       expect(await scope.resolveAsync<int>(), 7);
     });
     test('Resolve async provider with param', () async {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger)
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
         ..installModules([
           _InlineModule((m, s) {
             m.bind<int>().toProvideWithParams((x) async => (x as int) * 3);
@@ -268,8 +268,8 @@ void main() {
       expect(() => scope.resolveAsync<int>(), throwsA(isA<StateError>()));
     });
     test('tryResolveAsync returns null for missing', () async {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
       final result = await scope.tryResolveAsync<String>();
       expect(result, isNull);
     });
@@ -278,8 +278,8 @@ void main() {
   // --------------------------------------------------------------------------
   group('Optional resolution and error handling', () {
     test("tryResolve returns null for missing dependency", () {
-      final logger = MockLogger();
-      final scope = Scope(null, logger: logger);
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
       expect(scope.tryResolve<int>(), isNull);
     });
   });

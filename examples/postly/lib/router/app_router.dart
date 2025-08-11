@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import '../presentation/pages/logs_page.dart';
 import 'app_router.gr.dart';
 
 @AutoRouterConfig()

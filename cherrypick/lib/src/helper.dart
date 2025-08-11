@@ -13,7 +13,7 @@
 
 import 'package:cherrypick/src/scope.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
-import 'package:cherrypick/src/logger.dart';
+import 'package:cherrypick/src/observer.dart';
 import 'package:meta/meta.dart';
 
 
@@ -22,7 +22,7 @@ Scope? _rootScope;
 /// Global logger for all [Scope]s managed by [CherryPick].
 ///
 /// Defaults to [SilentLogger] unless set via [setGlobalLogger].
-CherryPickLogger _globalLogger = const SilentLogger();
+CherryPickObserver _globalObserver = SilentCherryPickObserver();
 
 /// Whether global local-cycle detection is enabled for all Scopes ([Scope.enableCycleDetection]).
 bool _globalCycleDetectionEnabled = false;
@@ -59,12 +59,12 @@ class CherryPick {
   /// ```dart
   /// CherryPick.setGlobalLogger(DefaultLogger());
   /// ```
-  static void setGlobalLogger(CherryPickLogger logger) {
-    _globalLogger = logger;
+  static void setGlobalObserver(CherryPickObserver observer) {
+    _globalObserver = observer;
   }
 
   /// Returns the current global logger used by CherryPick.
-  static CherryPickLogger get globalLogger => _globalLogger;
+  static CherryPickObserver get globalObserver => _globalObserver;
 
   /// Returns the singleton root [Scope], creating it if needed.
   ///
@@ -75,7 +75,7 @@ class CherryPick {
   /// final root = CherryPick.openRootScope();
   /// ```
   static Scope openRootScope() {
-    _rootScope ??= Scope(null, logger: _globalLogger);
+    _rootScope ??= Scope(null, observer: _globalObserver);
     // Apply cycle detection settings
     if (_globalCycleDetectionEnabled && !_rootScope!.isCycleDetectionEnabled) {
       _rootScope!.enableCycleDetection();

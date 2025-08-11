@@ -2,7 +2,8 @@ import 'package:cherrypick/cherrypick.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:talker/talker.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+
 
 import 'domain/repository/post_repository.dart';
 import 'presentation/bloc/post_bloc.dart';
@@ -12,7 +13,7 @@ part 'app.inject.cherrypick.g.dart';
 
 class TalkerProvider extends InheritedWidget {
   final Talker talker;
-  const TalkerProvider({required this.talker, required Widget child, Key? key}) : super(key: key, child: child);
+  const TalkerProvider({required this.talker, required super.child, super.key});
   static Talker of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TalkerProvider>()!.talker;
   @override
   bool updateShouldNotify(TalkerProvider oldWidget) => oldWidget.talker != talker;

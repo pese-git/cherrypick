@@ -3,38 +3,44 @@ import 'package:talker/talker.dart';
 import 'package:talker_cherrypick_logger/talker_cherrypick_logger.dart';
 
 void main() {
-  group('TalkerCherryPickLogger', () {
+  group('TalkerCherryPickObserver', () {
     late Talker talker;
-    late TalkerCherryPickLogger logger;
+    late TalkerCherryPickObserver observer;
 
     setUp(() {
       talker = Talker();
-      logger = TalkerCherryPickLogger(talker);
+      observer = TalkerCherryPickObserver(talker);
     });
 
-    test('logs info messages correctly', () {
-      logger.info('Test info');
+    test('onInstanceRequested logs info', () {
+      observer.onInstanceRequested('A', String, scopeName: 'test');
       final log = talker.history.last;
-      expect(log.message, contains('[CherryPick] Test info'));
-      //xpect(log.level, TalkerLogLevel.info);
+      expect(log.message, contains('[request][CherryPick] A — String (scope: test)'));
     });
 
-    test('logs warning messages correctly', () {
-      logger.warn('Danger!');
+    test('onCycleDetected logs warning', () {
+      observer.onCycleDetected(['A', 'B'], scopeName: 's');
       final log = talker.history.last;
-      expect(log.message, contains('[CherryPick] Danger!'));
+      expect(log.message, contains('[cycle][CherryPick] Detected'));
       //expect(log.level, TalkerLogLevel.warning);
     });
 
-    test('logs error messages correctly', () {
-      final error = Exception('some error');
+    test('onError calls handle', () {
+      final error = Exception('fail');
       final stack = StackTrace.current;
-      logger.error('ERR', error, stack);
+      observer.onError('Oops', error, stack);
       final log = talker.history.last;
-      //expect(log.level, TalkerLogLevel.error);
-      expect(log.message, contains('[CherryPick] ERR'));
+      expect(log.message, contains('[error][CherryPick] Oops'));
       expect(log.exception, error);
       expect(log.stackTrace, stack);
+    });
+
+    test('onDiagnostic logs verbose', () {
+      observer.onDiagnostic('hello', details: 123);
+      final log = talker.history.last;
+      //expect(log.level, TalkerLogLevel.verbose);
+      expect(log.message, contains('hello'));
+      expect(log.message, contains('123'));
     });
   });
 }
