@@ -1,3 +1,17 @@
+## 3.0.0-dev.7
+
+> Note: This release has breaking changes.
+
+ - **FIX**(comment): fix warnings.
+ - **FIX**(license): correct urls.
+ - **FEAT**: add Disposable interface source and usage example.
+ - **DOCS**(readme): add comprehensive section on annotations and DI code generation.
+ - **DOCS**(readme): add detailed section and examples for automatic Disposable resource cleanup\n\n- Added a dedicated section with English description and code samples on using Disposable for automatic resource management.\n- Updated Features to include automatic resource cleanup for Disposable dependencies.\n\nHelps developers understand and implement robust DI resource management practices.
+ - **DOCS**(faq): add best practice FAQ about using await with scope disposal.
+ - **DOCS**(faq): add best practice FAQ about using await with scope disposal.
+ - **BREAKING** **REFACTOR**(core): make closeRootScope async and await dispose.
+ - **BREAKING** **DOCS**(disposable): add detailed English documentation and usage examples for Disposable interface; chore: update binding_resolver and add explanatory comment in scope_test for deprecated usage.\n\n- Expanded Disposable interface docs, added sync & async example classes, and CherryPick integration sample.\n- Clarified how to implement and use Disposable in DI context.\n- Updated binding_resolver for internal improvements.\n- Added ignore for deprecated member use in scope_test for clarity and future upgrades.\n\nBREAKING CHANGE: Documentation style enhancement and clearer API usage for Disposable implementations.
+
 ## 3.0.0-dev.6
 
 > Note: This release has breaking changes.

@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-11
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.7`](#cherrypick---v300-dev7)
+
+Packages with other changes:
+
+ - [`cherrypick_annotations` - `v1.1.1`](#cherrypick_annotations---v111)
+ - [`cherrypick_flutter` - `v1.1.3-dev.7`](#cherrypick_flutter---v113-dev7)
+ - [`cherrypick_generator` - `v1.1.1`](#cherrypick_generator---v111)
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.7`
+
+ - **FIX**(comment): fix warnings.
+ - **FIX**(license): correct urls.
+ - **FEAT**: add Disposable interface source and usage example.
+ - **DOCS**(readme): add comprehensive section on annotations and DI code generation.
+ - **DOCS**(readme): add detailed section and examples for automatic Disposable resource cleanup\n\n- Added a dedicated section with English description and code samples on using Disposable for automatic resource management.\n- Updated Features to include automatic resource cleanup for Disposable dependencies.\n\nHelps developers understand and implement robust DI resource management practices.
+ - **DOCS**(faq): add best practice FAQ about using await with scope disposal.
+ - **DOCS**(faq): add best practice FAQ about using await with scope disposal.
+ - **BREAKING** **REFACTOR**(core): make closeRootScope async and await dispose.
+ - **BREAKING** **DOCS**(disposable): add detailed English documentation and usage examples for Disposable interface; chore: update binding_resolver and add explanatory comment in scope_test for deprecated usage.\n\n- Expanded Disposable interface docs, added sync & async example classes, and CherryPick integration sample.\n- Clarified how to implement and use Disposable in DI context.\n- Updated binding_resolver for internal improvements.\n- Added ignore for deprecated member use in scope_test for clarity and future upgrades.\n\nBREAKING CHANGE: Documentation style enhancement and clearer API usage for Disposable implementations.
+
+#### `cherrypick_annotations` - `v1.1.1`
+
+ - **FIX**(license): correct urls.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.7`
+
+ - **FIX**(license): correct urls.
+
+#### `cherrypick_generator` - `v1.1.1`
+
+ - **FIX**(license): correct urls.
+
+
 ## 2025-08-08
 
 ### Changes

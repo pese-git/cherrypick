@@ -1,6 +1,6 @@
 name: cherrypick_flutter
 description: "Flutter library that allows access to the root scope through the context using `CherryPickProvider`."
-version: 1.1.3-dev.6
+version: 1.1.3-dev.7
 homepage: https://pese-git.github.io/cherrypick-site/
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
@@ -19,7 +19,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cherrypick: ^3.0.0-dev.6
+  cherrypick: ^3.0.0-dev.7
 
 dev_dependencies:
   flutter_test:
