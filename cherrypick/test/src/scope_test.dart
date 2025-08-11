@@ -95,6 +95,7 @@ class AsyncModule extends Module {
   @override
   void builder(Scope scope) {
     bind<AsyncCreatedDisposable>()
+        // ignore: deprecated_member_use_from_same_package
         .toProvideAsync(() async {
           await Future.delayed(Duration(milliseconds: 10));
           return AsyncCreatedDisposable();
