@@ -43,6 +43,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   Scope(this._parentScope, {required CherryPickObserver observer}) : _observer = observer {
     setScopeId(_generateScopeId());
+    observer.onScopeOpened(scopeId ?? 'NO_ID');
     observer.onDiagnostic(
       'Scope created: ${scopeId ?? 'NO_ID'}',
       details: {
@@ -113,6 +114,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
       }
+      observer.onScopeClosed(childScope.scopeId ?? name);
       observer.onDiagnostic(
         'SubScope closed: $name',
         details: {
@@ -134,6 +136,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// return [Scope]
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
+    if (modules.isNotEmpty) {
+      observer.onModulesInstalled(
+        modules.map((m) => m.runtimeType.toString()).toList(),
+        scopeName: scopeId,
+      );
+    }
     for (var module in modules) {
       observer.onDiagnostic(
         'Module installed: ${module.runtimeType}',
@@ -161,6 +169,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   /// return [Scope]
   Scope dropModules() {
+    if (_modulesList.isNotEmpty) {
+      observer.onModulesRemoved(
+        _modulesList.map((m) => m.runtimeType.toString()).toList(),
+        scopeName: scopeId,
+      );
+    }
     observer.onDiagnostic(
       'Modules dropped for scope: $scopeId',
       details: {
@@ -186,6 +200,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// return - returns an object of type [T] or [StateError]
   ///
   T resolve<T>({String? named, dynamic params}) {
+    observer.onInstanceRequested(T.toString(), T, scopeName: scopeId);
     // Используем глобальное отслеживание, если включено
     T result;
     if (isGlobalCycleDetectionEnabled) {
@@ -223,6 +238,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return withCycleDetection<T>(T, named, () {
       var resolved = _tryResolveInternal<T>(named: named, params: params);
       if (resolved != null) {
+        observer.onInstanceCreated(T.toString(), T, resolved, scopeName: scopeId);
         observer.onDiagnostic(
           'Successfully resolved: $T',
           details: {
@@ -316,8 +332,24 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return withCycleDetection<Future<T>>(T, named, () async {
       var resolved = await _tryResolveAsyncInternal<T>(named: named, params: params);
       if (resolved != null) {
+        observer.onInstanceCreated(T.toString(), T, resolved, scopeName: scopeId);
+        observer.onDiagnostic(
+          'Successfully async resolved: $T',
+          details: {
+            'type': 'Scope',
+            'name': scopeId,
+            'resolve': T.toString(),
+            if (named != null) 'named': named,
+            'description': 'successfully resolved (async)',
+          },
+        );
         return resolved;
       } else {
+        observer.onError(
+          'Failed to async resolve: $T',
+          null,
+          null,
+        );
         throw StateError(
             'Can\'t resolve async dependency `$T`. Maybe you forget register it?');
       }
