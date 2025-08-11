@@ -185,6 +185,41 @@ final service = scope.tryResolve<OptionalService>(); // returns null if not exis
 ---
 
 
+## Automatic resource management: Disposable and dispose
+
+CherryPick makes it easy to clean up resources for your singleton services and other objects registered in DI.  
+If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was resolved via DI.  
+This ensures safe and graceful resource management (including any async resource cleanup: streams, DB connections, sockets, etc.).
+
+### Example
+
+```dart
+class LoggingService implements Disposable {
+  @override
+  FutureOr<void> dispose() async {
+    // Close files, streams, and perform async cleanup here.
+    print('LoggingService disposed!');
+  }
+}
+
+Future<void> main() async {
+  final scope = openRootScope();
+  scope.installModules([
+    _LoggingModule(),
+  ]);
+  final logger = scope.resolve<LoggingService>();
+  // Use logger...
+  await scope.dispose(); // prints: LoggingService disposed!
+}
+
+class _LoggingModule extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<LoggingService>().toProvide(() => LoggingService()).singleton();
+  }
+}
+```
+
 ## Dependency injection with annotations & code generation
 
 CherryPick supports DI with annotations, letting you eliminate manual DI setup.
@@ -424,6 +459,16 @@ You can use CherryPick in Dart CLI, server apps, and microservices. All major fe
 | `@injectable` | Field injection support   | Classes                            |
 | `@inject`     | Auto-injection            | Class fields                       |
 | `@scope`      | Scope/realm               | Class fields                       |
+
+
+---
+
+## FAQ
+
+### Q: Do I need to use `await` with CherryPick.closeRootScope(), CherryPick.closeScope(), or scope.dispose() if I have no Disposable services?
+
+**A:**  
+Yes! Even if none of your services currently implement `Disposable`, always use `await` when closing scopes. If you later add resource cleanup (by implementing `dispose()`), CherryPick will handle it automatically without you needing to change your scope cleanup code. This ensures resource management is future-proof, robust, and covers all application scenarios.
 
 ---
 
