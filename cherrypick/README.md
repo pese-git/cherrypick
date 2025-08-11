@@ -5,15 +5,6 @@ It provides an easy-to-use system for registering, scoping, and resolving depend
 
 ---
 
-### Performance Improvements
-
-> **Performance Note:**  
-> **Starting from version 3.0.0**, CherryPick uses a Map-based resolver index for dependency lookup. This means calls to `resolve<T>()` and related methods are now O(1) operations, regardless of the number of modules or bindings in your scope. Previously, the library had to iterate over all modules and bindings to locate the requested dependency, which could impact performance as your project grew.
->
-> This optimization is internal and does not change any library APIs or usage patterns, but it significantly improves resolution speed in larger applications.
-
----
-
 ## Table of Contents
 - [Key Features](#key-features)
 - [Installation](#installation)
@@ -22,7 +13,7 @@ It provides an easy-to-use system for registering, scoping, and resolving depend
   - [Binding](#binding)
   - [Module](#module)
   - [Scope](#scope)
-  - [Automatic Resource Cleanup with Disposable](#automatic-resource-cleanup-with-disposable)
+  - [Disposable](#disposable)
 - [Dependency Resolution API](#dependency-resolution-api)
 - [Using Annotations & Code Generation](#using-annotations--code-generation)
 - [Advanced Features](#advanced-features)
@@ -59,13 +50,14 @@ Add to your `pubspec.yaml`:
 ```yaml
 dependencies:
   cherrypick: ^<latest_version>
-```
+````
 
 Then run:
 
 ```shell
 dart pub get
 ```
+
 ---
 
 ## Getting Started
@@ -74,7 +66,6 @@ Here is a minimal example that registers and resolves a dependency:
 
 ```dart
 import 'package:cherrypick/cherrypick.dart';
-
 
 class AppModule extends Module {
   @override
@@ -101,11 +92,11 @@ await CherryPick.closeRootScope();
 
 A **Binding** acts as a configuration for how to create or provide a particular dependency. Bindings support:
 
-- Direct instance assignment (`toInstance()`, `toInstanceAsync()`)
-- Lazy providers (sync/async functions)
-- Provider functions supporting dynamic parameters
-- Named instances for resolving by string key
-- Optional singleton lifecycle
+* Direct instance assignment (`toInstance()`, `toInstanceAsync()`)
+* Lazy providers (sync/async functions)
+* Provider functions supporting dynamic parameters
+* Named instances for resolving by string key
+* Optional singleton lifecycle
 
 #### Example
 
@@ -181,7 +172,7 @@ await CherryPick.closeRootScope();
 
 ---
 
-### Automatic Resource Cleanup with Disposable
+### Disposable
 
 CherryPick can automatically clean up any dependency that implements the `Disposable` interface. This makes resource management (for controllers, streams, sockets, files, etc.) easy and reliable—especially when scopes or the app are shut down.
 
@@ -232,16 +223,17 @@ await CherryPick.closeRootScope(); // awaits async disposal
 
 ---
 
-#### Working with Subscopes
+## Dependency Resolution API
 
-```dart
-// Open a named child scope (e.g., for a feature/module)
-final subScope = rootScope.openSubScope('featureScope')
-  ..installModules([FeatureModule()]);
+- `resolve<T>()` — Locates a dependency instance or throws if missing.
+- `resolveAsync<T>()` — Async variant for dependencies requiring async binding.
+- `tryResolve<T>()` — Returns `null` if not found (sync).
+- `tryResolveAsync<T>()` — Returns `null` async if not found.
 
-// Resolve from subScope, with fallback to parents if missing
-final dataBloc = await subScope.resolveAsync<DataBloc>();
-```
+Supports:
+- Synchronous and asynchronous dependencies
+- Named dependencies
+- Provider functions with and without runtime parameters
 
 ---
 
@@ -381,17 +373,158 @@ abstract class AppModule {
 
 ---
 
-### Dependency Resolution API
+## Advanced Features
 
-- `resolve<T>()` — Locates a dependency instance or throws if missing.
-- `resolveAsync<T>()` — Async variant for dependencies requiring async binding.
-- `tryResolve<T>()` — Returns `null` if not found (sync).
-- `tryResolveAsync<T>()` — Returns `null` async if not found.
+### Hierarchical Subscopes
 
-Supports:
-- Synchronous and asynchronous dependencies
-- Named dependencies
-- Provider functions with and without runtime parameters
+CherryPick supports a hierarchical structure of scopes, allowing you to create complex and modular dependency graphs for advanced application architectures. Each subscope inherits from its parent, enabling context-specific overrides while still allowing access to global or shared services.
+
+#### Key Points
+
+- **Subscopes** are child scopes that can be opened from any existing scope (including the root).
+- Dependencies registered in a subscope override those from parent scopes when resolved.
+- If a dependency is not found in the current subscope, the resolution process automatically searches parent scopes up the hierarchy.
+- Subscopes can have their own modules, lifetime, and disposable objects.
+- You can nest subscopes to any depth, modeling features, flows, or components independently.
+
+#### Example
+
+```dart
+final rootScope = CherryPick.openRootScope();
+rootScope.installModules([AppModule()]);
+
+// Open a hierarchical subscope for a feature or page
+final userFeatureScope = rootScope.openSubScope('userFeature');
+userFeatureScope.installModules([UserFeatureModule()]);
+
+// Dependencies defined in UserFeatureModule will take precedence
+final userService = userFeatureScope.resolve<UserService>();
+
+// If not found in the subscope, lookup continues in the parent (rootScope)
+final sharedService = userFeatureScope.resolve<SharedService>();
+
+// You can nest subscopes
+final dialogScope = userFeatureScope.openSubScope('dialog');
+dialogScope.installModules([DialogModule()]);
+final dialogManager = dialogScope.resolve<DialogManager>();
+```
+
+#### Use Cases
+
+- Isolate feature modules, flows, or screens with their own dependencies.
+- Provide and override services for specific navigation stacks or platform-specific branches.
+- Manage the lifetime and disposal of groups of dependencies independently (e.g., per-user, per-session, per-component).
+
+**Tip:** Always close subscopes when they are no longer needed to release resources and trigger cleanup of Disposable dependencies.
+
+---
+
+### Logging
+
+CherryPick supports centralized logging of all dependency injection (DI) events and errors. You can globally enable logs for your application or test environment with:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+void main() {
+  // Set a global logger before any scopes are created
+  CherryPick.setGlobalLogger(PrintLogger()); // or your custom logger
+
+  final scope = CherryPick.openRootScope();
+  // All DI actions and errors will now be logged!
+}
+```
+- All dependency resolution, scope creation, module installation, and circular dependency errors will be sent to your logger (via info/error method).
+- By default, logs are off (SilentLogger is used in production).
+
+If you want fine-grained, test-local, or isolated logging, you can provide a logger directly to each scope:
+
+```dart
+final logger = MockLogger();
+final scope = Scope(null, logger: logger); // works in tests for isolation
+scope.installModules([...]);
+```
+
+---
+
+### Circular Dependency Detection
+
+CherryPick can detect circular dependencies in your DI configuration, helping you avoid infinite loops and hard-to-debug errors.
+
+**How to use:**
+
+#### 1. Enable Cycle Detection for Development
+
+**Local detection (within one scope):**
+```dart
+final scope = CherryPick.openSafeRootScope(); // Local detection enabled by default
+// or, for an existing scope:
+scope.enableCycleDetection();
+```
+
+**Global detection (across all scopes):**
+```dart
+CherryPick.enableGlobalCrossScopeCycleDetection();
+final rootScope = CherryPick.openGlobalSafeRootScope();
+```
+
+#### 2. Error Example
+
+If you declare mutually dependent services:
+```dart
+class A { A(B b); }
+class B { B(A a); }
+
+scope.installModules([
+  Module((bind) {
+    bind<A>().to((s) => A(s.resolve<B>()));
+    bind<B>().to((s) => B(s.resolve<A>()));
+  }),
+]);
+
+scope.resolve<A>(); // Throws CircularDependencyException
+```
+
+#### 3. Typical Usage Pattern
+
+- **Always enable detection** in debug and test environments for maximum safety.
+- **Disable detection** in production for performance (after code is tested).
+
+```dart
+import 'package:flutter/foundation.dart';
+
+void main() {
+  if (kDebugMode) {
+    CherryPick.enableGlobalCycleDetection();
+    CherryPick.enableGlobalCrossScopeCycleDetection();
+  }
+  runApp(MyApp());
+}
+```
+
+#### 4. Handling and Debugging Errors
+
+On detection, `CircularDependencyException` is thrown with a readable dependency chain:
+```dart
+try {
+  scope.resolve<MyService>();
+} on CircularDependencyException catch (e) {
+  print('Dependency chain: ${e.dependencyChain}');
+}
+```
+
+**More details:** See [cycle_detection.en.md](doc/cycle_detection.en.md)
+
+---
+
+### Performance Improvements
+
+> **Performance Note:**  
+> **Starting from version 3.0.0**, CherryPick uses a Map-based resolver index for dependency lookup. This means calls to `resolve<T>()` and related methods are now O(1) operations, regardless of the number of modules or bindings in your scope. Previously, the library had to iterate over all modules and bindings to locate the requested dependency, which could impact performance as your project grew.
+>
+> This optimization is internal and does not change any library APIs or usage patterns, but it significantly improves resolution speed in larger applications.
+
+---
 
 ## Example Application
 
@@ -514,158 +647,7 @@ class ApiClientImpl implements ApiClient {
 }
 ```
 
-## Logging
-
-CherryPick supports centralized logging of all dependency injection (DI) events and errors. You can globally enable logs for your application or test environment with:
-
-```dart
-import 'package:cherrypick/cherrypick.dart';
-
-void main() {
-  // Set a global logger before any scopes are created
-  CherryPick.setGlobalLogger(PrintLogger()); // or your custom logger
-
-  final scope = CherryPick.openRootScope();
-  // All DI actions and errors will now be logged!
-}
-```
-- All dependency resolution, scope creation, module installation, and circular dependency errors will be sent to your logger (via info/error method).
-- By default, logs are off (SilentLogger is used in production).
-
-If you want fine-grained, test-local, or isolated logging, you can provide a logger directly to each scope:
-
-```dart
-final logger = MockLogger();
-final scope = Scope(null, logger: logger); // works in tests for isolation
-scope.installModules([...]);
-```
-
-## Features
-
-- [x] Main Scope and Named Subscopes
-- [x] Named Instance Binding and Resolution
-- [x] Asynchronous and Synchronous Providers
-- [x] Providers Supporting Runtime Parameters
-- [x] Singleton Lifecycle Management
-- [x] Modular and Hierarchical Composition
-- [x] Null-safe Resolution (tryResolve/tryResolveAsync)
-- [x] Circular Dependency Detection (Local and Global)
-- [x] Comprehensive logging of dependency injection state and actions
-- [x] Automatic resource cleanup for all registered Disposable dependencies
-
 ---
-
-## Hierarchical Subscopes
-
-CherryPick supports a hierarchical structure of scopes, allowing you to create complex and modular dependency graphs for advanced application architectures. Each subscope inherits from its parent, enabling context-specific overrides while still allowing access to global or shared services.
-
-### Key Points
-
-- **Subscopes** are child scopes that can be opened from any existing scope (including the root).
-- Dependencies registered in a subscope override those from parent scopes when resolved.
-- If a dependency is not found in the current subscope, the resolution process automatically searches parent scopes up the hierarchy.
-- Subscopes can have their own modules, lifetime, and disposable objects.
-- You can nest subscopes to any depth, modeling features, flows, or components independently.
-
-### Example
-
-```dart
-final rootScope = CherryPick.openRootScope();
-rootScope.installModules([AppModule()]);
-
-// Open a hierarchical subscope for a feature or page
-final userFeatureScope = rootScope.openSubScope('userFeature');
-userFeatureScope.installModules([UserFeatureModule()]);
-
-// Dependencies defined in UserFeatureModule will take precedence
-final userService = userFeatureScope.resolve<UserService>();
-
-// If not found in the subscope, lookup continues in the parent (rootScope)
-final sharedService = userFeatureScope.resolve<SharedService>();
-
-// You can nest subscopes
-final dialogScope = userFeatureScope.openSubScope('dialog');
-dialogScope.installModules([DialogModule()]);
-final dialogManager = dialogScope.resolve<DialogManager>();
-```
-
-### Use Cases
-
-- Isolate feature modules, flows, or screens with their own dependencies.
-- Provide and override services for specific navigation stacks or platform-specific branches.
-- Manage the lifetime and disposal of groups of dependencies independently (e.g., per-user, per-session, per-component).
-
-**Tip:** Always close subscopes when they are no longer needed to release resources and trigger cleanup of Disposable dependencies.
-
-
-## Circular Dependency Detection
-
-CherryPick can detect circular dependencies in your DI configuration, helping you avoid infinite loops and hard-to-debug errors.
-
-**How to use:**
-
-### 1. Enable Cycle Detection for Development
-
-**Local detection (within one scope):**
-```dart
-final scope = CherryPick.openSafeRootScope(); // Local detection enabled by default
-// or, for an existing scope:
-scope.enableCycleDetection();
-```
-
-**Global detection (across all scopes):**
-```dart
-CherryPick.enableGlobalCrossScopeCycleDetection();
-final rootScope = CherryPick.openGlobalSafeRootScope();
-```
-
-### 2. Error Example
-
-If you declare mutually dependent services:
-```dart
-class A { A(B b); }
-class B { B(A a); }
-
-scope.installModules([
-  Module((bind) {
-    bind<A>().to((s) => A(s.resolve<B>()));
-    bind<B>().to((s) => B(s.resolve<A>()));
-  }),
-]);
-
-scope.resolve<A>(); // Throws CircularDependencyException
-```
-
-### 3. Typical Usage Pattern
-
-- **Always enable detection** in debug and test environments for maximum safety.
-- **Disable detection** in production for performance (after code is tested).
-
-```dart
-import 'package:flutter/foundation.dart';
-
-void main() {
-  if (kDebugMode) {
-    CherryPick.enableGlobalCycleDetection();
-    CherryPick.enableGlobalCrossScopeCycleDetection();
-  }
-  runApp(MyApp());
-}
-```
-
-### 4. Handling and Debugging Errors
-
-On detection, `CircularDependencyException` is thrown with a readable dependency chain:
-```dart
-try {
-  scope.resolve<MyService>();
-} on CircularDependencyException catch (e) {
-  print('Dependency chain: ${e.dependencyChain}');
-}
-```
-
-**More details:** See [cycle_detection.en.md](doc/cycle_detection.en.md)
-
 
 ## FAQ
 
@@ -674,14 +656,19 @@ try {
 **A:**  
 Yes! Even if none of your services currently implement `Disposable`, always use `await` when closing scopes. If you later add resource cleanup (by implementing `dispose()`), CherryPick will handle it automatically without you needing to change your scope cleanup code. This ensures resource management is future-proof, robust, and covers all application scenarios.
 
+---
+
 ## Documentation Links
 
-- [Circular Dependency Detection (English)](doc/cycle_detection.en.md)
-- [Обнаружение циклических зависимостей (Русский)](doc/cycle_detection.ru.md)
+* Circular Dependency Detection [(En)](doc/cycle_detection.en.md)[(Ru)](doc/cycle_detection.ru.md)
+
+---
 
 ## Contributing
 
 Contributions are welcome! Please open issues or submit pull requests on [GitHub](https://github.com/pese-git/cherrypick).
+
+---
 
 ## License
 
@@ -690,6 +677,8 @@ Licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-
 ---
 
 **Important:** Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for specific language governing permissions and limitations under the License.
+
+---
 
 ## Links
 
