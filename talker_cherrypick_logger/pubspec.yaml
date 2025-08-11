@@ -8,6 +8,9 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  talker: ^4.9.3
+  cherrypick:
+    path: ../cherrypick
   # path: ^1.8.0
 
 dev_dependencies:

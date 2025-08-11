@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:postly/app.dart';
 
 import '../../router/app_router.gr.dart';
 import '../bloc/post_bloc.dart';
@@ -15,7 +16,18 @@ class PostsPage extends StatelessWidget {
       create: (context) =>
           context.read<PostBloc>()..add(const PostEvent.fetchAll()),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Posts')),
+        appBar: AppBar(
+          title: const Text('Posts'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bug_report),
+              tooltip: 'Open logs',
+              onPressed: () {
+                AutoRouter.of(context).push(const LogsRoute());
+              },
+            ),
+          ],
+        ),
         body: BlocBuilder<PostBloc, PostState>(
           builder: (context, state) {
             return state.when(

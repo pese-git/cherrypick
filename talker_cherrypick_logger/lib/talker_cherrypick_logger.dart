@@ -3,6 +3,6 @@
 /// More dartdocs go here.
 library;
 
-export 'src/talker_cherrypick_logger_base.dart';
+export 'src/talker_cherrypick_logger.dart';
 
 // TODO: Export any libraries intended for clients of this package.

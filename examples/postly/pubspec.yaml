@@ -24,9 +24,12 @@ dependencies:
   flutter_bloc: ^9.1.1
   auto_route: ^9.3.0+1
 
+
   cupertino_icons: ^1.0.8
 
-dev_dependencies:
+  talker_flutter: ^4.9.3
+  talker_cherrypick_logger:
+    path: ../../talker_cherrypick_logger
   flutter_test:
     sdk: flutter
 
@@ -40,7 +43,11 @@ dev_dependencies:
   freezed: ^2.5.8
   json_serializable: ^6.9.0
   auto_route_generator: ^9.0.0
+  talker_dio_logger: ^4.9.3
+  talker_bloc_logger: ^4.9.3
 
 flutter:
 
   uses-material-design: true
+dev_dependencies:
+  melos: ^6.3.2
