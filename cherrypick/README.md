@@ -381,7 +381,7 @@ abstract class AppModule {
 
 ---
 
-### Dependency Lookup API
+### Dependency Resolution API
 
 - `resolve<T>()` — Locates a dependency instance or throws if missing.
 - `resolveAsync<T>()` — Async variant for dependencies requiring async binding.
