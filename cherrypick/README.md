@@ -1,8 +1,92 @@
 # CherryPick
 
-`cherrypick` is a flexible and lightweight dependency injection library for Dart and Flutter. It provides an easy-to-use system for registering, scoping, and resolving dependencies using modular bindings and hierarchical scopes. The design enables cleaner architecture, testability, and modular code in your applications.
+`cherrypick` is a flexible and lightweight dependency injection library for Dart and Flutter.
+It provides an easy-to-use system for registering, scoping, and resolving dependencies using modular bindings and hierarchical scopes. The design enables cleaner architecture, testability, and modular code in your applications.
 
-## Key Concepts
+---
+
+## Table of Contents
+- [Key Features](#key-features)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Core Concepts](#core-concepts)
+  - [Binding](#binding)
+  - [Module](#module)
+  - [Scope](#scope)
+  - [Automatic Resource Cleanup with Disposable](#automatic-resource-cleanup-with-disposable)
+- [Dependency Resolution API](#dependency-resolution-api)
+- [Using Annotations & Code Generation](#using-annotations--code-generation)
+- [Advanced Features](#advanced-features)
+  - [Hierarchical Subscopes](#hierarchical-subscopes)
+  - [Logging](#logging)
+  - [Circular Dependency Detection](#circular-dependency-detection)
+  - [Performance Improvements](#performance-improvements)
+- [Example Application](#example-application)
+- [FAQ](#faq)
+- [Documentation Links](#documentation-links)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Key Features
+- Main Scope and Named Subscopes
+- Named Instance Binding and Resolution
+- Asynchronous and Synchronous Providers
+- Providers Supporting Runtime Parameters
+- Singleton Lifecycle Management
+- Modular and Hierarchical Composition
+- Null-safe Resolution (tryResolve/tryResolveAsync)
+- Circular Dependency Detection (Local and Global)
+- Comprehensive logging of dependency injection state and actions
+- Automatic resource cleanup for all registered Disposable dependencies
+
+---
+
+## Installation
+
+Add to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  cherrypick: ^<latest_version>
+```
+
+Then run:
+
+```shell
+dart pub get
+```
+---
+
+## Getting Started
+
+Here is a minimal example that registers and resolves a dependency:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+
+class AppModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<ApiClient>().toInstance(ApiClientMock());
+    bind<String>().toProvide(() => "Hello, CherryPick!");
+  }
+}
+
+final rootScope = CherryPick.openRootScope();
+rootScope.installModules([AppModule()]);
+
+final greeting = rootScope.resolve<String>();
+print(greeting); // prints: Hello, CherryPick!
+
+await CherryPick.closeRootScope();
+```
+
+---
+
+## Core Concepts
 
 ### Binding
 
@@ -200,6 +284,144 @@ final dataBloc = await subScope.resolveAsync<DataBloc>();
 > **Starting from version 3.0.0**, CherryPick uses a Map-based resolver index for dependency lookup. This means calls to `resolve<T>()` and related methods are now O(1) operations, regardless of the number of modules or bindings in your scope. Previously, the library had to iterate over all modules and bindings to locate the requested dependency, which could impact performance as your project grew.
 >
 > This optimization is internal and does not change any library APIs or usage patterns, but it significantly improves resolution speed in larger applications.
+
+---
+
+## Using Annotations & Code Generation
+
+CherryPick provides best-in-class developer ergonomics and type safety through **Dart annotations** and code generation. This lets you dramatically reduce boilerplate: simply annotate your classes, fields, and modules, run the code generator, and enjoy auto-wired dependency injection!
+
+### How It Works
+
+1. **Annotate** your services, providers, and fields using `cherrypick_annotations`.
+2. **Generate** code using `cherrypick_generator` with `build_runner`.
+3. **Use** generated modules and mixins for fully automated DI (dependency injection).
+
+---
+
+### Supported Annotations
+
+| Annotation        | Target         | Description                                                                    |
+|-------------------|---------------|--------------------------------------------------------------------------------|
+| `@injectable()`   | class         | Enables automatic field injection for this class (mixin will be generated)      |
+| `@inject()`       | field         | Field will be injected using DI (works with @injectable classes)                |
+| `@module()`       | class         | Declares a DI module; its methods can provide services/providers                |
+| `@provide`        | method        | Registers as a DI provider method (may have dependencies as parameters)         |
+| `@instance`       | method/class  | Registers an instance (new object on each resolution, i.e. factory)             |
+| `@singleton`      | method/class  | Registers as a singleton (one instance per scope)                               |
+| `@named`          | field/param   | Use named instance (bind/resolve by name or apply to field/param)               |
+| `@scope`          | field/param   | Inject or resolve from a specific named scope                                   |
+| `@params`         | param         | Marks method parameter as filled by user-supplied runtime params at resolution  |
+
+You can easily **combine** these annotations for advanced scenarios!
+
+---
+
+### Field Injection Example
+
+```dart
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+@injectable()
+class ProfilePage with _\$ProfilePage {
+  @inject()
+  late final AuthService auth;
+
+  @inject()
+  @scope('profile')
+  late final ProfileManager manager;
+
+  @inject()
+  @named('admin')
+  late final UserService adminUserService;
+}
+```
+
+- After running build_runner, the mixin `_ 5ProfilePage` will be generated for field injection.
+- Call `myProfilePage.injectFields();` or use the mixin's auto-inject feature, and all dependencies will be set up for you.
+
+---
+
+### Module and Provider Example
+
+```dart
+@module()
+abstract class AppModule {
+  @singleton
+  AuthService provideAuth(Api api) => AuthService(api);
+
+  @named('logging')
+  @provide
+  Future<Logger> provideLogger(@params Map<String, dynamic> args) async => ...;
+}
+```
+
+- Mark class as `@module`, write provider methods.
+- Use `@singleton`, `@named`, `@provide`, `@params` to control lifecycle, key names, and parameters.
+- The generator will produce a class like `$AppModule` with the proper DI bindings.
+
+---
+
+### Usage Steps
+
+1. **Add to your pubspec.yaml**:
+
+   ```yaml
+   dependencies:
+     cherrypick: any
+     cherrypick_annotations: any
+
+   dev_dependencies:
+     cherrypick_generator: any
+     build_runner: any
+   ```
+
+2. **Annotate** your classes and modules as above.
+
+3. **Run code generation:**
+
+   ```shell
+   dart run build_runner build --delete-conflicting-outputs
+   # or in Flutter:
+   flutter pub run build_runner build --delete-conflicting-outputs
+   ```
+
+4. **Register modules and use auto-injection:**
+
+   ```dart
+   final scope = CherryPick.openRootScope()
+     ..installModules([$AppModule()]);
+
+   final profile = ProfilePage();
+   profile.injectFields(); // injects all @inject fields
+   ```
+
+---
+
+### Advanced: Parameters, Named Instances, and Scopes
+
+- Use `@named` for key-based multi-implementation injection.
+- Use `@scope` when dependencies live in a non-root scope.
+- Use `@params` for runtime arguments passed during resolution.
+
+---
+
+### Troubleshooting & Tips
+
+- After modifying DI-related code, always re-run `build_runner`.
+- Do not manually edit `.g.dart` files—let the generator manage them.
+- Errors in annotation usage (e.g., using `@singleton` on wrong target) are shown at build time.
+
+---
+
+### References
+
+- [Full annotation reference (en)](doc/annotations_en.md)
+- [cherrypick_annotations/README.md](../cherrypick_annotations/README.md)
+- [cherrypick_generator/README.md](../cherrypick_generator/README.md)
+- See the [`examples/postly`](../examples/postly) for a full working DI+annotations app.
+
+---
 
 ### Dependency Lookup API
 
