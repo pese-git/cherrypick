@@ -1,5 +1,3 @@
-library;
-
 //
 // Copyright 2021 Sergey Penkovsky (sergey.penkovsky@gmail.com)
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +11,8 @@ library;
 // limitations under the License.
 //
 
-export 'package:cherrypick/src/binding_resolver.dart';
-export 'package:cherrypick/src/binding.dart';
-export 'package:cherrypick/src/cycle_detector.dart';
-export 'package:cherrypick/src/global_cycle_detector.dart';
-export 'package:cherrypick/src/helper.dart';
-export 'package:cherrypick/src/module.dart';
-export 'package:cherrypick/src/scope.dart';
-export 'package:cherrypick/src/disposable.dart';
-export 'package:cherrypick/src/observer.dart';
+library;
+
+export 'src/talker_cherrypick_observer.dart';
+
+// TODO: Export any libraries intended for clients of this package.

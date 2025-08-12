@@ -15,7 +15,18 @@ class PostsPage extends StatelessWidget {
       create: (context) =>
           context.read<PostBloc>()..add(const PostEvent.fetchAll()),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Posts')),
+        appBar: AppBar(
+          title: const Text('Posts'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bug_report),
+              tooltip: 'Open logs',
+              onPressed: () {
+                AutoRouter.of(context).push(const LogsRoute());
+              },
+            ),
+          ],
+        ),
         body: BlocBuilder<PostBloc, PostState>(
           builder: (context, state) {
             return state.when(

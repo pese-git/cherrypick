@@ -8,6 +8,7 @@ packages:
   - cherrypick_flutter
   - cherrypick_annotations
   - cherrypick_generator
+  - talker_cherrypick_logger
   - examples/client_app
   - examples/postly
 

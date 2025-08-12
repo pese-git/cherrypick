@@ -13,7 +13,6 @@
 
 import 'dart:collection';
 import 'package:cherrypick/cherrypick.dart';
-import 'package:cherrypick/src/log_format.dart';
 
 
 /// RU: Глобальный детектор циклических зависимостей для всей иерархии скоупов.
@@ -21,7 +20,7 @@ import 'package:cherrypick/src/log_format.dart';
 class GlobalCycleDetector {
   static GlobalCycleDetector? _instance;
 
-  final CherryPickLogger _logger;
+  final CherryPickObserver _observer;
   
   // Глобальный стек разрешения зависимостей
   final Set<String> _globalResolutionStack = HashSet<String>();
@@ -32,12 +31,12 @@ class GlobalCycleDetector {
   // Карта активных детекторов по скоупам
   final Map<String, CycleDetector> _scopeDetectors = HashMap<String, CycleDetector>();
 
-  GlobalCycleDetector._internal({required CherryPickLogger logger}): _logger = logger;
+  GlobalCycleDetector._internal({required CherryPickObserver observer}): _observer = observer;
 
   /// RU: Получить единственный экземпляр глобального детектора.
   /// ENG: Get singleton instance of global detector.
   static GlobalCycleDetector get instance {
-    _instance ??= GlobalCycleDetector._internal(logger:  CherryPick.globalLogger);
+    _instance ??= GlobalCycleDetector._internal(observer:  CherryPick.globalObserver);
     return _instance!;
   }
 
@@ -59,12 +58,15 @@ class GlobalCycleDetector {
       // Найдена глобальная циклическая зависимость
       final cycleStartIndex = _globalResolutionHistory.indexOf(dependencyKey);
       final cycle = _globalResolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
-      _logger.error(formatLogMessage(
-        type: 'CycleDetector',
-        name: dependencyKey.toString(),
-        params: {'chain': cycle.join('->')},
-        description: 'cycle detected',
-      ));
+      _observer.onCycleDetected(
+        cycle,
+        scopeName: scopeId,
+      );
+      _observer.onError(
+        'Global circular dependency detected for $dependencyKey',
+        null,
+        null,
+      );
       throw CircularDependencyException(
         'Global circular dependency detected for $dependencyKey',
         cycle,
@@ -102,12 +104,15 @@ class GlobalCycleDetector {
       final cycleStartIndex = _globalResolutionHistory.indexOf(dependencyKey);
       final cycle = _globalResolutionHistory.sublist(cycleStartIndex)
         ..add(dependencyKey);
-      _logger.error(formatLogMessage(
-        type: 'CycleDetector',
-        name: dependencyKey.toString(),
-        params: {'chain': cycle.join('->')},
-        description: 'cycle detected',
-      ));
+      _observer.onCycleDetected(
+        cycle,
+        scopeName: scopeId,
+      );
+      _observer.onError(
+        'Global circular dependency detected for $dependencyKey',
+        null,
+        null,
+      );
       throw CircularDependencyException(
         'Global circular dependency detected for $dependencyKey',
         cycle,
@@ -131,7 +136,7 @@ class GlobalCycleDetector {
   /// RU: Получить детектор для конкретного скоупа.
   /// ENG: Get detector for specific scope.
   CycleDetector getScopeDetector(String scopeId) {
-    return _scopeDetectors.putIfAbsent(scopeId, () => CycleDetector(logger: CherryPick.globalLogger));
+    return _scopeDetectors.putIfAbsent(scopeId, () => CycleDetector(observer: CherryPick.globalObserver));
   }
 
   /// RU: Удалить детектор для скоупа.

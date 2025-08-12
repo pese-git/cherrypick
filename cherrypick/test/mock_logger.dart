@@ -1,16 +1,48 @@
 import 'package:cherrypick/cherrypick.dart';
 
-class MockLogger implements CherryPickLogger {
-  final List<String> infos = [];
-  final List<String> warns = [];
+class MockObserver implements CherryPickObserver {
+  final List<String> diagnostics = [];
+  final List<String> warnings = [];
   final List<String> errors = [];
+  final List<List<String>> cycles = [];
+  final List<String> bindings = [];
 
   @override
-  void info(String message) => infos.add(message);
+  void onDiagnostic(String message, {Object? details}) =>
+      diagnostics.add(message);
+
   @override
-  void warn(String message) => warns.add(message);
+  void onWarning(String message, {Object? details}) => warnings.add(message);
+
   @override
-  void error(String message, [Object? e, StackTrace? s]) =>
+  void onError(String message, Object? error, StackTrace? stackTrace) =>
       errors.add(
-          '$message${e != null ? ' $e' : ''}${s != null ? '\n$s' : ''}');
+          '$message${error != null ? ' $error' : ''}${stackTrace != null ? '\n$stackTrace' : ''}');
+
+  @override
+  void onCycleDetected(List<String> chain, {String? scopeName}) =>
+      cycles.add(chain);
+
+  @override
+  void onBindingRegistered(String name, Type type, {String? scopeName}) =>
+      bindings.add('$name $type');
+
+  @override
+  void onInstanceRequested(String name, Type type, {String? scopeName}) {}
+  @override
+  void onInstanceCreated(String name, Type type, Object instance, {String? scopeName}) {}
+  @override
+  void onInstanceDisposed(String name, Type type, Object instance, {String? scopeName}) {}
+  @override
+  void onModulesInstalled(List<String> moduleNames, {String? scopeName}) {}
+  @override
+  void onModulesRemoved(List<String> moduleNames, {String? scopeName}) {}
+  @override
+  void onScopeOpened(String name) {}
+  @override
+  void onScopeClosed(String name) {}
+  @override
+  void onCacheHit(String name, Type type, {String? scopeName}) {}
+  @override
+  void onCacheMiss(String name, Type type, {String? scopeName}) {}
 }

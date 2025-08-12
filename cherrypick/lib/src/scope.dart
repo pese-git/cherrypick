@@ -18,16 +18,16 @@ import 'package:cherrypick/src/disposable.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
-import 'package:cherrypick/src/logger.dart';
-import 'package:cherrypick/src/log_format.dart';
+import 'package:cherrypick/src/observer.dart';
+// import 'package:cherrypick/src/log_format.dart';
 
 class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   final Scope? _parentScope;
 
-  late final CherryPickLogger _logger;
+  late final CherryPickObserver _observer;
 
   @override
-  CherryPickLogger get logger => _logger;
+  CherryPickObserver get observer => _observer;
 
   /// COLLECTS all resolved instances that implement [Disposable].
   final Set<Disposable> _disposables = HashSet();
@@ -41,16 +41,18 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   final Map<String, Scope> _scopeMap = HashMap();
 
-  Scope(this._parentScope, {required CherryPickLogger logger}) : _logger = logger {
+  Scope(this._parentScope, {required CherryPickObserver observer}) : _observer = observer {
     setScopeId(_generateScopeId());
-    logger.info(formatLogMessage(
-      type: 'Scope',
-      name: scopeId ?? 'NO_ID',
-      params: {
+    observer.onScopeOpened(scopeId ?? 'NO_ID');
+    observer.onDiagnostic(
+      'Scope created: ${scopeId ?? 'NO_ID'}',
+      details: {
+        'type': 'Scope',
+        'name': scopeId ?? 'NO_ID',
         if (_parentScope?.scopeId != null) 'parent': _parentScope!.scopeId,
+        'description': 'scope created',
       },
-      description: 'scope created',
-    ));
+    );
   }
 
   final Set<Module> _modulesList = HashSet();
@@ -75,7 +77,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// return [Scope]
   Scope openSubScope(String name) {
     if (!_scopeMap.containsKey(name)) {
-      final childScope = Scope(this, logger: logger); // Наследуем логгер вниз по иерархии
+      final childScope = Scope(this, observer: observer); // Наследуем observer вниз по иерархии
       // print removed (trace)
       // Наследуем настройки обнаружения циклических зависимостей
       if (isCycleDetectionEnabled) {
@@ -85,15 +87,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         childScope.enableGlobalCycleDetection();
       }
       _scopeMap[name] = childScope;
-      logger.info(formatLogMessage(
-        type: 'SubScope',
-        name: name,
-        params: {
+      observer.onDiagnostic(
+        'SubScope created: $name',
+        details: {
+          'type': 'SubScope',
+          'name': name,
           'id': childScope.scopeId,
           if (scopeId != null) 'parent': scopeId,
+          'description': 'subscope created',
         },
-        description: 'subscope created',
-      ));
+      );
     }
     return _scopeMap[name]!;
   }
@@ -111,15 +114,17 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
       }
-      logger.info(formatLogMessage(
-        type: 'SubScope',
-        name: name,
-        params: {
+      observer.onScopeClosed(childScope.scopeId ?? name);
+      observer.onDiagnostic(
+        'SubScope closed: $name',
+        details: {
+          'type': 'SubScope',
+          'name': name,
           'id': childScope.scopeId,
           if (scopeId != null) 'parent': scopeId,
+          'description': 'subscope closed',
         },
-        description: 'subscope closed',
-      ));
+      );
     }
     _scopeMap.remove(name);
   }
@@ -131,19 +136,26 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// return [Scope]
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
+    if (modules.isNotEmpty) {
+      observer.onModulesInstalled(
+        modules.map((m) => m.runtimeType.toString()).toList(),
+        scopeName: scopeId,
+      );
+    }
     for (var module in modules) {
-      logger.info(formatLogMessage(
-        type: 'Module',
-        name: module.runtimeType.toString(),
-        params: {
+      observer.onDiagnostic(
+        'Module installed: ${module.runtimeType}',
+        details: {
+          'type': 'Module',
+          'name': module.runtimeType.toString(),
           'scope': scopeId,
+          'description': 'module installed',
         },
-        description: 'module installed',
-      ));
+      );
       module.builder(this);
       // После builder: для всех новых биндингов
       for (final binding in module.bindingSet) {
-        binding.logger = logger;
+        binding.observer = observer;
         binding.logAllDeferred();
       }
     }
@@ -157,11 +169,20 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   /// return [Scope]
   Scope dropModules() {
-    logger.info(formatLogMessage(
-      type: 'Scope',
-      name: scopeId,
-      description: 'modules dropped',
-    ));
+    if (_modulesList.isNotEmpty) {
+      observer.onModulesRemoved(
+        _modulesList.map((m) => m.runtimeType.toString()).toList(),
+        scopeName: scopeId,
+      );
+    }
+    observer.onDiagnostic(
+      'Modules dropped for scope: $scopeId',
+      details: {
+        'type': 'Scope',
+        'name': scopeId,
+        'description': 'modules dropped',
+      },
+    );
     _modulesList.clear();
     _rebuildResolversIndex();
     return this;
@@ -179,6 +200,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// return - returns an object of type [T] or [StateError]
   ///
   T resolve<T>({String? named, dynamic params}) {
+    observer.onInstanceRequested(T.toString(), T, scopeName: scopeId);
     // Используем глобальное отслеживание, если включено
     T result;
     if (isGlobalCycleDetectionEnabled) {
@@ -187,13 +209,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
           return _resolveWithLocalDetection<T>(named: named, params: params);
         });
       } catch (e, s) {
-        logger.error(
-          formatLogMessage(
-            type: 'Scope',
-            name: scopeId,
-            params: {'resolve': T.toString()},
-            description: 'global cycle detection failed during resolve',
-          ),
+        observer.onError(
+          'Global cycle detection failed during resolve: $T',
           e,
           s,
         );
@@ -203,13 +220,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       try {
         result = _resolveWithLocalDetection<T>(named: named, params: params);
       } catch (e, s) {
-        logger.error(
-          formatLogMessage(
-            type: 'Scope',
-            name: scopeId,
-            params: {'resolve': T.toString()},
-            description: 'failed to resolve',
-          ),
+        observer.onError(
+          'Failed to resolve: $T',
           e,
           s,
         );
@@ -226,27 +238,23 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return withCycleDetection<T>(T, named, () {
       var resolved = _tryResolveInternal<T>(named: named, params: params);
       if (resolved != null) {
-        logger.info(formatLogMessage(
-          type: 'Scope',
-          name: scopeId,
-          params: {
+        observer.onInstanceCreated(T.toString(), T, resolved, scopeName: scopeId);
+        observer.onDiagnostic(
+          'Successfully resolved: $T',
+          details: {
+            'type': 'Scope',
+            'name': scopeId,
             'resolve': T.toString(),
             if (named != null) 'named': named,
+            'description': 'successfully resolved',
           },
-          description: 'successfully resolved',
-        ));
+        );
         return resolved;
       } else {
-        logger.error(
-          formatLogMessage(
-            type: 'Scope',
-            name: scopeId,
-            params: {
-              'resolve': T.toString(),
-              if (named != null) 'named': named,
-            },
-            description: 'failed to resolve',
-          ),
+        observer.onError(
+          'Failed to resolve: $T',
+          null,
+          null,
         );
         throw StateError(
             'Can\'t resolve dependency `$T`. Maybe you forget register it?');
@@ -324,8 +332,24 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return withCycleDetection<Future<T>>(T, named, () async {
       var resolved = await _tryResolveAsyncInternal<T>(named: named, params: params);
       if (resolved != null) {
+        observer.onInstanceCreated(T.toString(), T, resolved, scopeName: scopeId);
+        observer.onDiagnostic(
+          'Successfully async resolved: $T',
+          details: {
+            'type': 'Scope',
+            'name': scopeId,
+            'resolve': T.toString(),
+            if (named != null) 'named': named,
+            'description': 'successfully resolved (async)',
+          },
+        );
         return resolved;
       } else {
+        observer.onError(
+          'Failed to async resolve: $T',
+          null,
+          null,
+        );
         throw StateError(
             'Can\'t resolve async dependency `$T`. Maybe you forget register it?');
       }
