@@ -13,25 +13,41 @@
 
 import 'package:meta/meta.dart';
 
-/// Annotation to specify a scope for dependency injection in CherryPick.
-/// Use this on an injected field to indicate from which scope
-/// the dependency must be resolved.
+/// Specifies the DI scope or region from which a dependency should be resolved.
 ///
-/// ---
+/// Use `@scope('scopeName')` on an injected field, parameter, or provider method when you want
+/// to resolve a dependency not from the current scope, but from another named scope/subcontainer.
 ///
-/// Аннотация для указания области внедрения (scope) в CherryPick.
-/// Используйте её на инъецируемом поле, чтобы определить из какой области
-/// должна быть получена зависимость.
+/// Useful for advanced DI scenarios: multi-feature/state isolation, navigation stacks, explicit subscopes, or testing.
 ///
-/// Example / Пример:
+/// Example (injected field):
 /// ```dart
-/// @inject()
-/// @scope('profile')
-/// late final ProfileManager profileManager;
+/// @injectable()
+/// class ProfileScreen with _\$ProfileScreen {
+///   @inject()
+///   @scope('profile')
+///   late final ProfileManager manager;
+/// }
+/// ```
+///
+/// Example (parameter):
+/// ```dart
+/// class TabBarModel {
+///   TabBarModel(@scope('tabs') TabContext context);
+/// }
+/// ```
+///
+/// Example (in a module):
+/// ```dart
+/// @module()
+/// abstract class FeatureModule {
+///   @provide
+///   Service service(@scope('shared') SharedConfig config);
+/// }
 /// ```
 @experimental
-// ignore: camel_case_types
 final class scope {
+  /// The name/key of the DI scope from which to resolve this dependency.
   final String? name;
   const scope(this.name);
 }

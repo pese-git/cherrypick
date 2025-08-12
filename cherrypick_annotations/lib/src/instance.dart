@@ -11,58 +11,39 @@
 // limitations under the License.
 //
 
-/// ENGLISH:
-/// Annotation to specify that a new instance should be provided on each request.
+import 'package:meta/meta.dart';
+
+/// Marks a provider method or class to always create a new instance (factory) in CherryPick DI.
 ///
-/// Use the `@instance()` annotation for methods or classes in your DI module
-/// to declare that the DI container must create a new object every time
-/// the dependency is injected (i.e., no singleton behavior).
+/// Use `@instance()` to annotate methods or classes in your DI module/class
+/// when you want a new object to be created on every injection (no singleton caching).
+/// The default DI lifecycle is instance/factory unless otherwise specified.
 ///
-/// Example:
+/// ### Example (in a module method)
 /// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
 /// @module()
-/// abstract class AppModule extends Module {
+/// abstract class FeatureModule {
 ///   @instance()
-///   Foo foo() => Foo();
+///   MyService provideService() => MyService();
+///
+///   @singleton()
+///   Logger provideLogger() => Logger();
 /// }
 /// ```
 ///
-/// This will generate:
+/// ### Example (on a class, with @injectable)
 /// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Foo>().toInstance(() => foo());
-///   }
+/// @injectable()
+/// @instance()
+/// class MyFactoryClass {
+///   // ...
 /// }
 /// ```
 ///
-/// RUSSIAN (Русский):
-/// Аннотация для создания нового экземпляра при каждом запросе.
-///
-/// Используйте `@instance()` для методов или классов в DI-модуле,
-/// чтобы указать, что контейнер внедрения зависимостей должен создавать
-/// новый объект при каждом обращении к зависимости (то есть, не синглтон).
-///
-/// Пример:
-/// ```dart
-/// @module()
-/// abstract class AppModule extends Module {
-///   @instance()
-///   Foo foo() => Foo();
-/// }
-/// ```
-///
-/// Будет сгенерирован следующий код:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Foo>().toInstance(() => foo());
-///   }
-/// }
-/// ```
-// ignore: camel_case_types
+/// See also: [@singleton]
+@experimental
 final class instance {
   const instance();
 }

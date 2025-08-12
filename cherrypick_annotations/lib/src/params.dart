@@ -11,46 +11,33 @@
 // limitations under the License.
 //
 
-/// ENGLISH:
-/// Annotation to mark a method parameter for injection with run-time arguments.
+import 'package:meta/meta.dart';
+
+/// Marks a parameter in a provider method to receive dynamic runtime arguments when resolving a dependency.
 ///
-/// Use the `@params()` annotation to specify that a particular parameter of a
-/// provider method should be assigned a value supplied at resolution time,
-/// rather than during static dependency graph creation. This is useful in DI
-/// when a dependency must receive dynamic data passed by the consumer
-/// (via `.withParams(...)` in the generated code).
+/// Use `@params()` in a DI module/factory method when the value must be supplied by the user/code at injection time,
+/// not during static wiring (such as user input, navigation arguments, etc).
+///
+/// This enables CherryPick and its codegen to generate .withParams or .toProvideWithParams bindings — so your provider can access runtime values.
 ///
 /// Example:
 /// ```dart
-/// @provide()
-/// String greet(@params() dynamic params) => 'Hello $params';
-/// ```
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 ///
-/// This will generate:
+/// @module()
+/// abstract class FeatureModule {
+///   @provide
+///   UserManager createManager(@params Map<String, dynamic> runtimeParams) {
+///     return UserManager.forUserId(runtimeParams['userId']);
+///   }
+/// }
+/// ```
+/// Usage at injection/resolution:
 /// ```dart
-/// bind<String>().toProvideWithParams((args) => greet(args));
+/// final manager = scope.resolve<UserManager>(params: {'userId': myId});
 /// ```
-///
-/// RUSSIAN (Русский):
-/// Аннотация для пометки параметра метода, который будет внедряться со значением во время выполнения.
-///
-/// Используйте `@params()` чтобы указать, что конкретный параметр метода-провайдера
-/// должен получать значение, передаваемое в момент обращения к зависимости,
-/// а не на этапе построения графа зависимостей. Это полезно, если зависимость
-/// должна получать данные динамически от пользователя или другого процесса
-/// через `.withParams(...)` в сгенерированном коде.
-///
-/// Пример:
-/// ```dart
-/// @provide()
-/// String greet(@params() dynamic params) => 'Hello $params';
-/// ```
-///
-/// Будет сгенерировано:
-/// ```dart
-/// bind<String>().toProvideWithParams((args) => greet(args));
-/// ```
-// ignore: camel_case_types
+@experimental
 final class params {
+  /// Marks a method/constructor parameter as supplied at runtime by the caller.
   const params();
 }

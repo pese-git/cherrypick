@@ -11,63 +11,32 @@
 // limitations under the License.
 //
 
-/// ENGLISH:
-/// Annotation to declare a dependency as a singleton.
+import 'package:meta/meta.dart';
+
+/// Marks a provider method or class so its instance is created only once and shared (singleton) for DI in CherryPick.
 ///
-/// Use the `@singleton()` annotation on provider methods inside a module
-/// to indicate that only a single instance of this dependency should be
-/// created and shared throughout the application's lifecycle. This is
-/// typically used in dependency injection frameworks or service locators
-/// to guarantee a single shared instance.
+/// Use `@singleton()` on provider methods or classes in your DI module to ensure only one instance is ever created
+/// and reused across the application's lifetime (or scope lifetime).
 ///
 /// Example:
 /// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
 /// @module()
-/// abstract class AppModule extends Module {
+/// abstract class AppModule {
 ///   @singleton()
-///   Dio dio() => Dio();
+///   ApiClient createApi() => ApiClient();
 /// }
 /// ```
 ///
-/// This will generate code like:
+/// The generated code will ensure:
 /// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).singleton();
-///   }
-/// }
+/// bind<ApiClient>().toProvide(() => createApi()).singleton();
 /// ```
 ///
-/// RUSSIAN (Русский):
-/// Аннотация для объявления зависимости как синглтона.
-///
-/// Используйте `@singleton()` для методов-провайдеров внутри модуля,
-/// чтобы указать, что соответствующий объект должен быть создан
-/// единожды и использоваться во всём приложении (общий синглтон).
-/// Это характерно для систем внедрения зависимостей и сервис-локаторов,
-/// чтобы гарантировать один общий экземпляр.
-///
-/// Пример:
-/// ```dart
-/// @module()
-/// abstract class AppModule extends Module {
-///   @singleton()
-///   Dio dio() => Dio();
-/// }
-/// ```
-///
-/// Будет сгенерирован следующий код:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).singleton();
-///   }
-/// }
-/// ```
-// ignore: camel_case_types
+/// See also: [@instance], [@provide], [@named]
+@experimental
 final class singleton {
-  /// Creates a [singleton] annotation.
+  /// Creates a [singleton] annotation for DI providers/classes.
   const singleton();
 }

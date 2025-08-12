@@ -13,26 +13,31 @@
 
 import 'package:meta/meta.dart';
 
-/// Marks a class as injectable for the CherryPick dependency injection framework.
-/// If a class is annotated with [@injectable()], the code generator will
-/// create a mixin to perform automatic injection of fields marked with [@inject].
+/// Marks a class as injectable, enabling automatic field injection by CherryPick's code generator.
 ///
-/// ---
+/// Use `@injectable()` on a class whose fields (marked with `@inject`) you want to be automatically injected from the DI [Scope].
+/// When used together with code generation (see cherrypick_generator), a mixin will be generated to inject fields.
 ///
-/// Помечает класс как внедряемый для фреймворка внедрения зависимостей CherryPick.
-/// Если класс помечен аннотацией [@injectable()], генератор создаст миксин
-/// для автоматического внедрения полей, отмеченных [@inject].
-///
-/// Example / Пример:
+/// Example:
 /// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
 /// @injectable()
-/// class MyWidget extends StatelessWidget {
+/// class ProfileScreen with _\$ProfileScreen {
 ///   @inject()
-///   late final MyService service;
+///   late final UserManager manager;
+///
+///   @inject()
+///   @named('main')
+///   late final ApiClient api;
 /// }
+///
+/// // After running build_runner, call:
+/// // profileScreen.injectFields();
 /// ```
+///
+/// After running the generator, the mixin (`_\$ProfileScreen`) will be available to help auto-inject all [@inject] fields in your widget/service/controller.
 @experimental
-// ignore: camel_case_types
 final class injectable {
   const injectable();
 }
