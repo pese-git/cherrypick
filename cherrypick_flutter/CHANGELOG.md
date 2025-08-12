@@ -1,3 +1,7 @@
+## 1.1.3-dev.8
+
+ - Update a dependency to the latest release.
+
 ## 1.1.3-dev.7
 
  - **FIX**(license): correct urls.

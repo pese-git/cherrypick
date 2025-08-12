@@ -1,3 +1,14 @@
+## 3.0.0-dev.8
+
+ - **REFACTOR**(tests): replace MockLogger with MockObserver in scope tests to align with updated observer API.
+ - **FIX**(doc): remove hide symbol.
+ - **FEAT**(core): add full DI lifecycle observability via onInstanceDisposed.
+ - **DOCS**(logging): update Logging section in README with modern Observer usage and Talker integration examples.
+ - **DOCS**(observer): improve documentation, translate all comments to English, add usage examples.
+ - **DOCS**(README): add section with overview table for additional modules.
+ - **DOCS**(README): refactor structure and improve clarity of advanced features.
+ - **DOCS**(README): add 'Hierarchical Subscopes' section and update structure for advanced features clarity.
+
 ## 3.0.0-dev.7
 
 > Note: This release has breaking changes.

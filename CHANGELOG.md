@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-12
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.8`](#cherrypick---v300-dev8)
+ - [`cherrypick_flutter` - `v1.1.3-dev.8`](#cherrypick_flutter---v113-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.8`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.8`
+
+ - **REFACTOR**(tests): replace MockLogger with MockObserver in scope tests to align with updated observer API.
+ - **FIX**(doc): remove hide symbol.
+ - **FEAT**(core): add full DI lifecycle observability via onInstanceDisposed.
+ - **DOCS**(logging): update Logging section in README with modern Observer usage and Talker integration examples.
+ - **DOCS**(observer): improve documentation, translate all comments to English, add usage examples.
+ - **DOCS**(README): add section with overview table for additional modules.
+ - **DOCS**(README): refactor structure and improve clarity of advanced features.
+ - **DOCS**(README): add 'Hierarchical Subscopes' section and update structure for advanced features clarity.
+
+
 ## 2025-08-11
 
 ### Changes

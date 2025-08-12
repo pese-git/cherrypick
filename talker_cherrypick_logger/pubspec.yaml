@@ -10,7 +10,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   talker: ^4.9.3
-  cherrypick: ^3.0.0-dev.7
+  cherrypick: ^3.0.0-dev.8
 
 
 dev_dependencies:
