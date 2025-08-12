@@ -21,6 +21,37 @@ import 'package:cherrypick/src/module.dart';
 import 'package:cherrypick/src/observer.dart';
 // import 'package:cherrypick/src/log_format.dart';
 
+/// Represents a DI scope (container) for modules, subscopes,
+/// and dependency resolution (sync/async) in CherryPick.
+///
+/// Scopes provide hierarchical DI: you can resolve dependencies from parents,
+/// override or isolate modules, and manage scope-specific singletons.
+///
+/// Each scope:
+/// - Can install modules ([installModules]) that define [Binding]s
+/// - Supports parent-child scope tree (see [openSubScope])
+/// - Can resolve dependencies synchronously ([resolve]) or asynchronously ([resolveAsync])
+/// - Cleans up resources for [Disposable] objects (see [dispose])
+/// - Detects dependency cycles (local and global, if enabled)
+///
+/// Example usage:
+/// ```dart
+/// final rootScope = CherryPick.openRootScope();
+/// rootScope.installModules([AppModule()]);
+///
+/// // Synchronous resolution:
+/// final auth = rootScope.resolve<AuthService>();
+///
+/// // Asynchronous resolution:
+/// final db = await rootScope.resolveAsync<Database>();
+///
+/// // Open a child scope (for a feature, page, or test):
+/// final userScope = rootScope.openSubScope('user');
+/// userScope.installModules([UserModule()]);
+///
+/// // Proper resource cleanup (calls dispose() on tracked objects)
+/// await CherryPick.closeRootScope();
+/// ```
 class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   final Scope? _parentScope;
 
@@ -32,11 +63,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// COLLECTS all resolved instances that implement [Disposable].
   final Set<Disposable> _disposables = HashSet();
 
-  /// RU: Метод возвращает родительский [Scope].
-  ///
-  /// ENG: The method returns the parent [Scope].
-  ///
-  /// return [Scope]
+  /// Returns the parent [Scope] if present, or null if this is the root scope.
   Scope? get parentScope => _parentScope;
 
   final Map<String, Scope> _scopeMap = HashMap();
@@ -61,8 +88,9 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
 
 
-  /// RU: Генерирует уникальный идентификатор для скоупа.
-  /// ENG: Generates unique identifier for scope.
+  /// Generates a unique identifier string for this scope instance.
+  ///
+  /// Used internally for diagnostics, logging and global scope tracking.
   String _generateScopeId() {
     final random = Random();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -70,16 +98,20 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return 'scope_${timestamp}_$randomPart';
   }
 
-  /// RU: Метод открывает дочерний (дополнительный) [Scope].
+  /// Opens a named child [Scope] (subscope) as a descendant of the current scope.
   ///
-  /// ENG: The method opens child (additional) [Scope].
+  /// Subscopes inherit modules and DI context from their parent, but can override or extend bindings.
+  /// Useful for feature-isolation, screens, request/transaction lifetimes, and test separation.
   ///
-  /// return [Scope]
+  /// Example:
+  /// ```dart
+  /// final featureScope = rootScope.openSubScope('feature');
+  /// featureScope.installModules([FeatureModule()]);
+  /// final dep = featureScope.resolve<MyDep>();
+  /// ```
   Scope openSubScope(String name) {
     if (!_scopeMap.containsKey(name)) {
-      final childScope = Scope(this, observer: observer); // Наследуем observer вниз по иерархии
-      // print removed (trace)
-      // Наследуем настройки обнаружения циклических зависимостей
+      final childScope = Scope(this, observer: observer);
       if (isCycleDetectionEnabled) {
         childScope.enableCycleDetection();
       }
@@ -101,16 +133,19 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return _scopeMap[name]!;
   }
 
-  /// RU: Метод закрывает дочерний (дополнительный) [Scope] асинхронно.
+  /// Asynchronously closes and disposes a named child [Scope] (subscope).
   ///
-  /// ENG: The method closes child (additional) [Scope] asynchronously.
+  /// Ensures all [Disposable] objects and internal modules
+  /// in the subscope are properly cleaned up. Also removes any global cycle detectors associated with the subscope.
   ///
-  /// return [Future<void>]
+  /// Example:
+  /// ```dart
+  /// await rootScope.closeSubScope('feature');
+  /// ```
   Future<void> closeSubScope(String name) async {
     final childScope = _scopeMap[name];
     if (childScope != null) {
-      await childScope.dispose(); // асинхронный вызов
-      // Очищаем детектор для дочернего скоупа
+      await childScope.dispose();
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
       }
@@ -129,11 +164,15 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     _scopeMap.remove(name);
   }
 
-  /// RU: Метод инициализирует пользовательские модули в  [Scope].
+  /// Installs a list of custom [Module]s into the [Scope].
   ///
-  /// ENG: The method initializes custom modules in [Scope].
+  /// Each module registers bindings and configuration for dependencies.
+  /// After calling this, bindings are immediately available for resolve/tryResolve.
   ///
-  /// return [Scope]
+  /// Example:
+  /// ```dart
+  /// rootScope.installModules([AppModule(), NetworkModule()]);
+  /// ```
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
     if (modules.isNotEmpty) {
@@ -153,7 +192,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         },
       );
       module.builder(this);
-      // После builder: для всех новых биндингов
+      // Associate bindings with this scope's observer
       for (final binding in module.bindingSet) {
         binding.observer = observer;
         binding.logAllDeferred();
@@ -163,11 +202,15 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return this;
   }
 
-  /// RU: Метод удаляет пользовательские модули из [Scope].
+  /// Removes all installed [Module]s and their bindings from this [Scope].
   ///
-  /// ENG: This method removes custom modules from [Scope].
+  /// Typically used in tests or when resetting app configuration/runtime environment.
+  /// Note: this does not dispose resolved [Disposable]s (call [dispose] for that).
   ///
-  /// return [Scope]
+  /// Example:
+  /// ```dart
+  /// testScope.dropModules();
+  /// ```
   Scope dropModules() {
     if (_modulesList.isNotEmpty) {
       observer.onModulesRemoved(
@@ -188,24 +231,22 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return this;
   }
 
-  /// RU: Возвращает найденную зависимость, определенную параметром типа [T].
-  /// Выдает [StateError], если зависимость не может быть разрешена.
-  /// Если вы хотите получить [null], если зависимость не может быть найдена,
-  /// то используйте вместо этого [tryResolve]
-  /// return - возвращает объект типа [T]  или [StateError]
+  /// Resolves a dependency of type [T], optionally by name and with params.
   ///
-  /// ENG: Returns the found dependency specified by the type parameter [T].
-  /// Throws [StateError] if the dependency cannot be resolved.
-  /// If you want to get [null] if the dependency cannot be found then use [tryResolve] instead
-  /// return - returns an object of type [T] or [StateError]
+  /// Throws [StateError] if the dependency cannot be resolved. (Use [tryResolve] for fallible lookup).
+  /// Resolves from installed modules or recurses up the parent scope chain.
   ///
+  /// Example:
+  /// ```dart
+  /// final logger = scope.resolve<Logger>();
+  /// final special = scope.resolve<Service>(named: 'special');
+  /// ```
   T resolve<T>({String? named, dynamic params}) {
     observer.onInstanceRequested(T.toString(), T, scopeName: scopeId);
-    // Используем глобальное отслеживание, если включено
     T result;
     if (isGlobalCycleDetectionEnabled) {
       try {
-        result =  withGlobalCycleDetection<T>(T, named, () {
+        result = withGlobalCycleDetection<T>(T, named, () {
           return _resolveWithLocalDetection<T>(named: named, params: params);
         });
       } catch (e, s) {
@@ -232,8 +273,9 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return result;
   }
 
-  /// RU: Разрешение с локальным детектором циклических зависимостей.
-  /// ENG: Resolution with local circular dependency detector.
+  /// Resolves [T] using the local cycle detector for this scope.
+  /// Throws [StateError] if not found or cycle is detected.
+  /// Used internally by [resolve].
   T _resolveWithLocalDetection<T>({String? named, dynamic params}) {
     return withCycleDetection<T>(T, named, () {
       var resolved = _tryResolveInternal<T>(named: named, params: params);
@@ -262,11 +304,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     });
   }
 
-  /// RU: Возвращает найденную зависимость типа [T] или null, если она не может быть найдена.
-  /// ENG: Returns found dependency of type [T] or null if it cannot be found.
+  /// Attempts to resolve a dependency of type [T], optionally by name and with params.
   ///
+  /// Returns the resolved dependency, or `null` if not found.
+  /// Does not throw if missing (unlike [resolve]).
+  ///
+  /// Example:
+  /// ```dart
+  /// final maybeDb = scope.tryResolve<Database>();
+  /// ```
   T? tryResolve<T>({String? named, dynamic params}) {
-    // Используем глобальное отслеживание, если включено
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = withGlobalCycleDetection<T?>(T, named, () {
@@ -279,8 +326,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return result;
   }
 
-  /// RU: Попытка разрешения с локальным детектором циклических зависимостей.
-  /// ENG: Try resolution with local circular dependency detector.
+  /// Attempts to resolve [T] using the local cycle detector. Returns null if not found or cycle.
+  /// Used internally by [tryResolve].
   T? _tryResolveWithLocalDetection<T>({String? named, dynamic params}) {
     if (isCycleDetectionEnabled) {
       return withCycleDetection<T?>(T, named, () {
@@ -291,29 +338,25 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     }
   }
 
-  /// RU: Внутренний метод для разрешения зависимостей без проверки циклических зависимостей.
-  /// ENG: Internal method for dependency resolution without circular dependency checking.
+  /// Locates and resolves [T] without cycle detection (direct lookup).
+  /// Returns null if not found. Used internally.
   T? _tryResolveInternal<T>({String? named, dynamic params}) {
     final resolver = _findBindingResolver<T>(named);
-
-    // 1 Поиск зависимости по всем модулям текущего скоупа
+    // 1 - Try from own modules; 2 - Fallback to parent
     return resolver?.resolveSync(params) ??
-        // 2 Поиск зависимостей в родительском скоупе
         _parentScope?.tryResolve(named: named, params: params);
   }
 
-  /// RU: Асинхронно возвращает найденную зависимость, определенную параметром типа [T].
-  /// Выдает [StateError], если зависимость не может быть разрешена.
-  /// Если хотите получить [null], если зависимость не может быть найдена, используйте [tryResolveAsync].
-  /// return - возвращает объект типа [T] or [StateError]
+  /// Asynchronously resolves a dependency of type [T].
   ///
-  /// ENG: Asynchronously returns the found dependency specified by the type parameter [T].
-  /// Throws [StateError] if the dependency cannot be resolved.
-  /// If you want to get [null] if the dependency cannot be found, use [tryResolveAsync] instead.
-  /// return - returns an object of type [T] or [StateError]
+  /// Throws [StateError] if not found. (Use [tryResolveAsync] for a fallible async resolve.)
   ///
+  /// Example:
+  /// ```dart
+  /// final db = await scope.resolveAsync<Database>();
+  /// final special = await scope.resolveAsync<Service>(named: "special");
+  /// ```
   Future<T> resolveAsync<T>({String? named, dynamic params}) async {
-    // Используем глобальное отслеживание, если включено
     T result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T>>(T, named, () async {
@@ -326,8 +369,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return result;
   }
 
-  /// RU: Асинхронное разрешение с локальным детектором циклических зависимостей.
-  /// ENG: Async resolution with local circular dependency detector.
+  /// Resolves [T] asynchronously using local cycle detector. Throws if not found.
+  /// Internal implementation for async [resolveAsync].
   Future<T> _resolveAsyncWithLocalDetection<T>({String? named, dynamic params}) async {
     return withCycleDetection<Future<T>>(T, named, () async {
       var resolved = await _tryResolveAsyncInternal<T>(named: named, params: params);
@@ -356,8 +399,14 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     });
   }
 
+  /// Attempts to asynchronously resolve a dependency of type [T].
+  /// Returns the dependency or null if not present (never throws).
+  ///
+  /// Example:
+  /// ```dart
+  /// final user = await scope.tryResolveAsync<User>();
+  /// ```
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
-    // Используем глобальное отслеживание, если включено
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T?>>(T, named, () async {
@@ -370,8 +419,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return result;
   }
 
-  /// RU: Асинхронная попытка разрешения с локальным детектором циклических зависимостей.
-  /// ENG: Async try resolution with local circular dependency detector.
+  /// Attempts to resolve [T] asynchronously using local cycle detector. Returns null if missing.
+  /// Internal implementation for async [tryResolveAsync].
   Future<T?> _tryResolveAsyncWithLocalDetection<T>({String? named, dynamic params}) async {
     if (isCycleDetectionEnabled) {
       return withCycleDetection<Future<T?>>(T, named, () async {
@@ -382,21 +431,21 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     }
   }
 
-  /// RU: Внутренний метод для асинхронного разрешения зависимостей без проверки циклических зависимостей.
-  /// ENG: Internal method for async dependency resolution without circular dependency checking.
+  /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
   Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) async {
     final resolver = _findBindingResolver<T>(named);
-
-    // 1 Поиск зависимости по всем модулям текущего скоупа
+    // 1 - Try from own modules; 2 - Fallback to parent
     return resolver?.resolveAsync(params) ??
-        // 2 Поиск зависимостей в родительском скоупе
         _parentScope?.tryResolveAsync(named: named, params: params);
   }
 
+  /// Looks up the [BindingResolver] for [T] and [named] within this scope.
+  /// Returns null if none found. Internal use only.
   BindingResolver<T>? _findBindingResolver<T>(String? named) =>
       _bindingResolvers[T]?[named] as BindingResolver<T>?;
 
-  // Индексируем все binding’и после каждого installModules/dropModules
+  /// Rebuilds the internal index of all [BindingResolver]s from installed modules.
+  /// Called after [installModules] and [dropModules]. Internal use only.
   void _rebuildResolversIndex() {
     _bindingResolvers.clear();
     for (var module in _modulesList) {
@@ -408,14 +457,24 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     }
   }
 
-  /// INTERNAL: Tracks Disposable objects
+  /// Tracks resolved [Disposable] instances, to ensure dispose is called automatically.
+  /// Internal use only.
   void _trackDisposable(Object? obj) {
     if (obj is Disposable && !_disposables.contains(obj)) {
       _disposables.add(obj);
     }
   }
 
-  /// Calls dispose on all tracked disposables and child scopes recursively (async).
+  /// Asynchronously disposes this [Scope], all tracked [Disposable] objects, and recursively
+  /// all its child subscopes.
+  ///
+  /// This method should always be called when a scope is no longer needed
+  /// to guarantee timely resource cleanup (files, sockets, streams, handles, etc).
+  ///
+  /// Example:
+  /// ```dart
+  /// await myScope.dispose();
+  /// ```
   Future<void> dispose() async {
     // First dispose children scopes
     for (final subScope in _scopeMap.values) {

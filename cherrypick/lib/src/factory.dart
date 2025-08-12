@@ -12,6 +12,28 @@
 //
 import 'package:cherrypick/src/scope.dart';
 
+/// Abstract factory interface for creating objects of type [T] using a [Scope].
+///
+/// Can be implemented for advanced dependency injection scenarios where
+/// the resolution requires contextual information from the DI [Scope].
+///
+/// Often used to supply complex objects, runtime-bound services,
+/// or objects depending on dynamic configuration.
+///
+/// Example usage:
+/// ```dart
+/// class MyServiceFactory implements Factory<MyService> {
+///   @override
+///   MyService createInstance(Scope scope) {
+///     final db = scope.resolve<Database>(named: "main");
+///     return MyService(db);
+///   }
+/// }
+///
+/// // Usage in a module:
+/// bind<MyService>().toProvide(() => MyServiceFactory().createInstance(scope));
+/// ```
 abstract class Factory<T> {
+  /// Implement this to provide an instance of [T], with access to the resolving [scope].
   T createInstance(Scope scope);
 }

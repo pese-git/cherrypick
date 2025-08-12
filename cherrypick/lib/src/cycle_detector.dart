@@ -14,16 +14,20 @@
 import 'dart:collection';
 import 'package:cherrypick/src/observer.dart';
 
-/// RU: Исключение, выбрасываемое при обнаружении циклической зависимости.
-/// ENG: Exception thrown when a circular dependency is detected.
+/// Exception thrown when a circular dependency is detected during dependency resolution.
+///
+/// Contains a [message] and the [dependencyChain] showing the resolution cycle.
+///
+/// Example diagnostic:
+/// ```
+/// CircularDependencyException: Circular dependency detected for A
+/// Dependency chain: A -> B -> C -> A
+/// ```
 class CircularDependencyException implements Exception {
   final String message;
   final List<String> dependencyChain;
 
-  CircularDependencyException(this.message, this.dependencyChain) {
-    // DEBUG
-    
-  }
+  CircularDependencyException(this.message, this.dependencyChain);
 
   @override
   String toString() {
@@ -32,8 +36,26 @@ class CircularDependencyException implements Exception {
   }
 }
 
-/// RU: Детектор циклических зависимостей для CherryPick DI контейнера.
-/// ENG: Circular dependency detector for CherryPick DI container.
+/// Circular dependency detector for CherryPick DI containers.
+///
+/// Tracks dependency resolution chains to detect and prevent infinite recursion caused by cycles.
+/// Whenever a resolve chain re-enters a started dependency, a [CircularDependencyException] is thrown with the full chain.
+///
+/// This class is used internally, but you can interact with it through [CycleDetectionMixin].
+///
+/// Example usage (pseudocode):
+/// ```dart
+/// final detector = CycleDetector(observer: myObserver);
+/// try {
+///   detector.startResolving<A>();
+///   // ... resolving A which depends on B, etc
+///   detector.startResolving<B>();
+///   detector.startResolving<A>(); // BOOM: throws exception
+/// } finally {
+///   detector.finishResolving<B>();
+///   detector.finishResolving<A>();
+/// }
+/// ```
 class CycleDetector {
   final CherryPickObserver _observer;
   final Set<String> _resolutionStack = HashSet<String>();
@@ -41,10 +63,9 @@ class CycleDetector {
 
   CycleDetector({required CherryPickObserver observer}) : _observer = observer;
 
-  /// RU: Начинает отслеживание разрешения зависимости.
-  /// ENG: Starts tracking dependency resolution.
-  /// 
-  /// Throws [CircularDependencyException] if circular dependency is detected.
+  /// Starts tracking dependency resolution for type [T] and optional [named] qualifier.
+  ///
+  /// Throws [CircularDependencyException] if a cycle is found.
   void startResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
     _observer.onDiagnostic(
@@ -57,26 +78,19 @@ class CycleDetector {
     if (_resolutionStack.contains(dependencyKey)) {
       final cycleStartIndex = _resolutionHistory.indexOf(dependencyKey);
       final cycle = _resolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
-      _observer.onCycleDetected(
-        cycle,
-      );
-      _observer.onError(
-        'Cycle detected for $dependencyKey',
-        null,
-        null,
-      );
+      _observer.onCycleDetected(cycle);
+      _observer.onError('Cycle detected for $dependencyKey', null, null);
       throw CircularDependencyException(
         'Circular dependency detected for $dependencyKey',
         cycle,
       );
     }
-    
     _resolutionStack.add(dependencyKey);
     _resolutionHistory.add(dependencyKey);
   }
 
-  /// RU: Завершает отслеживание разрешения зависимости.
-  /// ENG: Finishes tracking dependency resolution.
+  /// Stops tracking dependency resolution for type [T] and optional [named] qualifier.
+  /// Should always be called after [startResolving], including for errors.
   void finishResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
     _observer.onDiagnostic(
@@ -84,15 +98,13 @@ class CycleDetector {
       details: {'event': 'finishResolving'},
     );
     _resolutionStack.remove(dependencyKey);
-    // Удаляем из истории только если это последний элемент
-    if (_resolutionHistory.isNotEmpty && 
-        _resolutionHistory.last == dependencyKey) {
+    // Only remove from history if it's the last one
+    if (_resolutionHistory.isNotEmpty && _resolutionHistory.last == dependencyKey) {
       _resolutionHistory.removeLast();
     }
   }
 
-  /// RU: Очищает все состояние детектора.
-  /// ENG: Clears all detector state.
+  /// Clears all resolution state and resets the cycle detector.
   void clear() {
     _observer.onDiagnostic(
       'CycleDetector clear',
@@ -105,33 +117,45 @@ class CycleDetector {
     _resolutionHistory.clear();
   }
 
-  /// RU: Проверяет, находится ли зависимость в процессе разрешения.
-  /// ENG: Checks if dependency is currently being resolved.
+  /// Returns true if dependency [T] (and [named], if specified) is being resolved right now.
   bool isResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
     return _resolutionStack.contains(dependencyKey);
   }
 
-  /// RU: Возвращает текущую цепочку разрешения зависимостей.
-  /// ENG: Returns current dependency resolution chain.
+  /// Gets the current dependency resolution chain (for diagnostics or debugging).
   List<String> get currentResolutionChain => List.unmodifiable(_resolutionHistory);
 
-  /// RU: Создает уникальный ключ для зависимости.
-  /// ENG: Creates unique key for dependency.
+  /// Returns a unique string key for type [T] (+name).
   String _createDependencyKey<T>(String? named) {
     final typeName = T.toString();
     return named != null ? '$typeName@$named' : typeName;
   }
 }
 
-/// RU: Миксин для добавления поддержки обнаружения циклических зависимостей.
-/// ENG: Mixin for adding circular dependency detection support.
+/// Mixin for adding circular dependency detection support to custom DI containers/classes.
+///
+/// Fields:
+///   - `observer`: must be implemented by your class (used for diagnostics and error reporting)
+///
+/// Example usage:
+/// ```dart
+/// class MyContainer with CycleDetectionMixin {
+///   @override
+///   CherryPickObserver get observer => myObserver;
+/// }
+///
+/// final c = MyContainer();
+/// c.enableCycleDetection();
+/// c.withCycleDetection(String, null, () {
+///   // ... dependency resolution code
+/// });
+/// ```
 mixin CycleDetectionMixin {
   CycleDetector? _cycleDetector;
   CherryPickObserver get observer;
 
-  /// RU: Включает обнаружение циклических зависимостей.
-  /// ENG: Enables circular dependency detection.
+  /// Turns on circular dependency detection for this class/container.
   void enableCycleDetection() {
     _cycleDetector = CycleDetector(observer: observer);
     observer.onDiagnostic(
@@ -143,8 +167,7 @@ mixin CycleDetectionMixin {
     );
   }
 
-  /// RU: Отключает обнаружение циклических зависимостей.
-  /// ENG: Disables circular dependency detection.
+  /// Shuts off detection and clears any cycle history for this container.
   void disableCycleDetection() {
     _cycleDetector?.clear();
     observer.onDiagnostic(
@@ -157,12 +180,17 @@ mixin CycleDetectionMixin {
     _cycleDetector = null;
   }
 
-  /// RU: Проверяет, включено ли обнаружение циклических зависимостей.
-  /// ENG: Checks if circular dependency detection is enabled.
+  /// Returns true if detection is currently enabled.
   bool get isCycleDetectionEnabled => _cycleDetector != null;
 
-  /// RU: Выполняет действие с отслеживанием циклических зависимостей.
-  /// ENG: Executes action with circular dependency tracking.
+  /// Executes [action] while tracking for circular DI cycles for [dependencyType] and [named].
+  ///
+  /// Throws [CircularDependencyException] if a dependency cycle is detected.
+  ///
+  /// Example:
+  /// ```dart
+  /// withCycleDetection(String, 'api', () => resolveApi());
+  /// ```
   T withCycleDetection<T>(
     Type dependencyType,
     String? named,
@@ -180,14 +208,8 @@ mixin CycleDetectionMixin {
       final cycleStartIndex = _cycleDetector!._resolutionHistory.indexOf(dependencyKey);
       final cycle = _cycleDetector!._resolutionHistory.sublist(cycleStartIndex)
         ..add(dependencyKey);
-      observer.onCycleDetected(
-        cycle,
-      );
-      observer.onError(
-        'Cycle detected for $dependencyKey',
-        null,
-        null,
-      );
+      observer.onCycleDetected(cycle);
+      observer.onError('Cycle detected for $dependencyKey', null, null);
       throw CircularDependencyException(
         'Circular dependency detected for $dependencyKey',
         cycle,
@@ -208,8 +230,7 @@ mixin CycleDetectionMixin {
     }
   }
 
-  /// RU: Возвращает текущую цепочку разрешения зависимостей.
-  /// ENG: Returns current dependency resolution chain.
+  /// Gets the current active dependency resolution chain.
   List<String> get currentResolutionChain => 
       _cycleDetector?.currentResolutionChain ?? [];
 }

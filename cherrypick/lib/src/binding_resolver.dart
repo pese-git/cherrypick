@@ -13,41 +13,70 @@
 
 import 'dart:async';
 
+/// Represents a direct instance or an async instance ([T] or [Future<T>]).
+/// Used for both direct and async bindings.
+///
+/// Example:
+/// ```dart
+/// Instance<String> sync = "hello";
+/// Instance<MyApi> async = Future.value(MyApi());
+/// ```
 typedef Instance<T> = FutureOr<T>;
 
-/// RU: Синхронный или асинхронный провайдер без параметров, возвращающий [T] или [Future<T>].
-/// ENG: Synchronous or asynchronous provider without parameters, returning [T] or [Future<T>].
+/// Provider function type for synchronous or asynchronous, parameterless creation of [T].
+/// Can return [T] or [Future<T>].
+///
+/// Example:
+/// ```dart
+/// Provider<MyService> provider = () => MyService();
+/// Provider<Api> asyncProvider = () async => await Api.connect();
+/// ```
 typedef Provider<T> = FutureOr<T> Function();
 
-/// RU: Провайдер с динамическим параметром, возвращающий [T] или [Future<T>] в зависимости от реализации.
-/// ENG: Provider with dynamic parameter, returning [T] or [Future<T>] depending on implementation.
+/// Provider function type that accepts a dynamic parameter, for factory/parametrized injection.
+/// Returns [T] or [Future<T>].
+///
+/// Example:
+/// ```dart
+/// ProviderWithParams<User> provider = (params) => User(params["name"]);
+/// ```
 typedef ProviderWithParams<T> = FutureOr<T> Function(dynamic);
 
-/// RU: Абстрактный интерфейс для классов, которые разрешают зависимости типа [T].
-/// ENG: Abstract interface for classes that resolve dependencies of type [T].
+/// Abstract interface for dependency resolvers used by [Binding].
+/// Defines how to resolve instances of type [T].
+///
+/// You usually don't use this directly; it's used internally for advanced/low-level DI.
 abstract class BindingResolver<T> {
-  /// RU: Синхронное разрешение зависимости с параметром [params].
-  /// ENG: Synchronous resolution of the dependency with [params].
+  /// Synchronously resolves the dependency, optionally taking parameters (for factory cases).
+  /// Throws if implementation does not support sync resolution.
   T? resolveSync([dynamic params]);
 
-  /// RU: Асинхронное разрешение зависимости с параметром [params].
-  /// ENG: Asynchronous resolution of the dependency with [params].
+  /// Asynchronously resolves the dependency, optionally taking parameters (for factory cases).
+  /// If instance is already a [Future], returns it directly.
   Future<T>? resolveAsync([dynamic params]);
 
-  /// RU: Помечает текущий резолвер как синглтон — результат будет закеширован.
-  /// ENG: Marks this resolver as singleton — result will be cached.
+  /// Marks this resolver as singleton: instance(s) will be cached and reused inside the scope.
   void toSingleton();
 
+  /// Returns true if this resolver is marked as singleton.
   bool get isSingleton;
 }
 
-/// RU: Резолвер, оборачивающий конкретный экземпляр [T] (или Future<T>), без вызова провайдера.
-/// ENG: Resolver that wraps a concrete instance of [T] (or Future<T>), without provider invocation.
+/// Concrete resolver for direct instance ([T] or [Future<T>]). No provider is called.
+///
+/// Used for [Binding.toInstance].
+/// Supports both sync and async resolution; sync will throw if underlying instance is [Future].
+/// Examples:
+/// ```dart
+/// var resolver = InstanceResolver("hello");
+/// resolver.resolveSync(); // == "hello"
+/// var asyncResolver = InstanceResolver(Future.value(7));
+/// asyncResolver.resolveAsync(); // Future<int>
+/// ```
 class InstanceResolver<T> implements BindingResolver<T> {
   final Instance<T> _instance;
 
-  /// RU: Создаёт резолвер, оборачивающий значение [instance].
-  /// ENG: Creates a resolver that wraps the given [instance].
+  /// Wraps the given instance (sync or async) in a resolver.
   InstanceResolver(this._instance);
 
   @override
@@ -62,7 +91,6 @@ class InstanceResolver<T> implements BindingResolver<T> {
   @override
   Future<T> resolveAsync([_]) {
     if (_instance is Future<T>) return _instance;
-
     return Future.value(_instance);
   }
 
@@ -73,8 +101,23 @@ class InstanceResolver<T> implements BindingResolver<T> {
   bool get isSingleton => true;
 }
 
-/// RU: Резолвер, оборачивающий провайдер, с возможностью синглтон-кеширования.
-/// ENG: Resolver that wraps a provider, with optional singleton caching.
+/// Resolver for provider functions (sync/async/factory), with optional singleton caching.
+/// Used for [Binding.toProvide], [Binding.toProvideWithParams], [Binding.singleton].
+///
+/// Examples:
+/// ```dart
+/// // No param, sync:
+/// var r = ProviderResolver((_) => 5, withParams: false);
+/// r.resolveSync(); // == 5
+/// // With param:
+/// var rp = ProviderResolver((p) => p * 2, withParams: true);
+/// rp.resolveSync(2); // == 4
+/// // Singleton:
+/// r.toSingleton();
+/// // Async:
+/// var ra = ProviderResolver((_) async => await Future.value(10), withParams: false);
+/// await ra.resolveAsync(); // == 10
+/// ```
 class ProviderResolver<T> implements BindingResolver<T> {
   final ProviderWithParams<T> _provider;
   final bool _withParams;
@@ -82,8 +125,7 @@ class ProviderResolver<T> implements BindingResolver<T> {
   FutureOr<T>? _cache;
   bool _singleton = false;
 
-  /// RU: Создаёт резолвер из произвольной функции [raw], поддерживающей ноль или один параметр.
-  /// ENG: Creates a resolver from arbitrary function [raw], supporting zero or one parameter.
+  /// Creates a resolver from [provider], optionally accepting dynamic params.
   ProviderResolver(
     ProviderWithParams<T> provider, {
     required bool withParams,
@@ -93,16 +135,13 @@ class ProviderResolver<T> implements BindingResolver<T> {
   @override
   T resolveSync([dynamic params]) {
     _checkParams(params);
-
     final result = _cache ?? _provider(params);
-
     if (result is T) {
       if (_singleton) {
         _cache ??= result;
       }
       return result;
     }
-
     throw StateError(
       'Provider [$_provider] return Future<$T>. Use resolveAsync() instead.',
     );
@@ -111,14 +150,11 @@ class ProviderResolver<T> implements BindingResolver<T> {
   @override
   Future<T> resolveAsync([dynamic params]) {
     _checkParams(params);
-
     final result = _cache ?? _provider(params);
     final target = result is Future<T> ? result : Future<T>.value(result);
-
     if (_singleton) {
       _cache ??= target;
     }
-
     return target;
   }
 
@@ -130,8 +166,7 @@ class ProviderResolver<T> implements BindingResolver<T> {
   @override
   bool get isSingleton => _singleton;
 
-  /// RU: Проверяет, был ли передан параметр, если провайдер требует его.
-  /// ENG: Checks if parameter is passed when the provider expects it.
+  /// Throws if params required but not supplied.
   void _checkParams(dynamic params) {
     if (_withParams && params == null) {
       throw StateError(
