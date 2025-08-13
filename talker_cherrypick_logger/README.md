@@ -21,15 +21,14 @@ All CherryPick lifecycle events, instance creations, cache operations, module ac
 
 ### 1. Add dependencies
 
+Install the package **from [pub.dev](https://pub.dev/packages/talker_cherrypick_logger)**:
+
 In your `pubspec.yaml`:
 ```yaml
 dependencies:
   cherrypick: ^latest
   talker: ^latest
-  talker_cherrypick_logger:
-    git:
-      url: https://github.com/pese-dot-work/cherrypick.git
-      path: talker_cherrypick_logger
+  talker_cherrypick_logger: ^latest
 ```
 
 ### 2. Import the package
