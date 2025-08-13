@@ -15,7 +15,8 @@ void main() {
     test('onInstanceRequested logs info', () {
       observer.onInstanceRequested('A', String, scopeName: 'test');
       final log = talker.history.last;
-      expect(log.message, contains('[request][CherryPick] A — String (scope: test)'));
+      expect(log.message,
+          contains('[request][CherryPick] A — String (scope: test)'));
     });
 
     test('onCycleDetected logs warning', () {

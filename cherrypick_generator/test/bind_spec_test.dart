@@ -244,8 +244,7 @@ void main() {
         final result = bindSpec.generateBind(4);
         expect(
             result,
-            equals(
-                "    bind<ApiClient>()\n"
+            equals("    bind<ApiClient>()\n"
                 "        .toProvideAsync(() => createApiClient())\n"
                 "        .withName('mainApi')\n"
                 "        .singleton();"));

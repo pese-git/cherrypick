@@ -5,7 +5,7 @@ class CoreModule extends Module {
   final Talker _talker;
 
   CoreModule({required Talker talker}) : _talker = talker;
-  
+
   @override
   void builder(Scope currentScope) {
     bind<Talker>().toProvide(() => _talker).singleton();

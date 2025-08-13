@@ -21,7 +21,7 @@ import 'package:flutter/widgets.dart';
 /// Place `CherryPickProvider` at the top of your widget subtree to make a
 /// [Scope] (or its descendants) available via `CherryPickProvider.of(context)`.
 ///
-/// This is the recommended entry point for connecting CherryPick DI to your 
+/// This is the recommended entry point for connecting CherryPick DI to your
 /// Flutter app or feature area, enabling context-based scope management and
 /// DI resolution in child widgets.
 ///
@@ -36,7 +36,7 @@ import 'package:flutter/widgets.dart';
 ///     ),
 ///   );
 /// }
-/// 
+///
 /// // In any widget:
 /// final provider = CherryPickProvider.of(context);
 /// final scope = provider.openRootScope();

@@ -4,6 +4,7 @@
 abstract class ReportGenerator {
   /// Renders the given [results] as a formatted string (table, markdown, csv, etc).
   String render(List<Map<String, dynamic>> results);
+
   /// List of output columns/keys included in the export (or [] for auto/all).
   List<String> get keys;
 }

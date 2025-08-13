@@ -1,4 +1,5 @@
-import 'package:cherrypick/cherrypick.dart' show Disposable, Module, Scope, CherryPick;
+import 'package:cherrypick/cherrypick.dart'
+    show Disposable, Module, Scope, CherryPick;
 import 'dart:async';
 import 'package:test/test.dart';
 import '../mock_logger.dart';
@@ -18,7 +19,9 @@ class AsyncExampleDisposable implements Disposable {
 class AsyncExampleModule extends Module {
   @override
   void builder(Scope scope) {
-    bind<AsyncExampleDisposable>().toProvide(() => AsyncExampleDisposable()).singleton();
+    bind<AsyncExampleDisposable>()
+        .toProvide(() => AsyncExampleDisposable())
+        .singleton();
   }
 }
 
@@ -49,7 +52,9 @@ class CountingDisposable implements Disposable {
 class ModuleCountingDisposable extends Module {
   @override
   void builder(Scope scope) {
-    bind<CountingDisposable>().toProvide(() => CountingDisposable()).singleton();
+    bind<CountingDisposable>()
+        .toProvide(() => CountingDisposable())
+        .singleton();
   }
 }
 
@@ -97,10 +102,9 @@ class AsyncModule extends Module {
     bind<AsyncCreatedDisposable>()
         // ignore: deprecated_member_use_from_same_package
         .toProvideAsync(() async {
-          await Future.delayed(Duration(milliseconds: 10));
-          return AsyncCreatedDisposable();
-        })
-        .singleton();
+      await Future.delayed(Duration(milliseconds: 10));
+      return AsyncCreatedDisposable();
+    }).singleton();
   }
 }
 
@@ -119,7 +123,8 @@ void main() {
       final scope = Scope(null, observer: observer);
       expect(Scope(scope, observer: observer), isNotNull); // эквивалент
     });
-    test('closeSubScope removes subscope so next openSubScope returns new', () async {
+    test('closeSubScope removes subscope so next openSubScope returns new',
+        () async {
       final observer = MockObserver();
       final scope = Scope(null, observer: observer);
       final subScope = scope.openSubScope("child");
@@ -181,7 +186,8 @@ void main() {
     });
     test("After dropModules resolves fail", () {
       final observer = MockObserver();
-      final scope = Scope(null, observer: observer)..installModules([TestModule<int>(value: 5)]);
+      final scope = Scope(null, observer: observer)
+        ..installModules([TestModule<int>(value: 5)]);
       expect(scope.resolve<int>(), 5);
       scope.dropModules();
       expect(() => scope.resolve<int>(), throwsA(isA<StateError>()));
@@ -294,7 +300,8 @@ void main() {
       await scope.dispose();
       expect(t.disposed, isTrue);
     });
-    test('scope.disposeAsync calls dispose on all unique disposables', () async {
+    test('scope.disposeAsync calls dispose on all unique disposables',
+        () async {
       final scope = Scope(null, observer: MockObserver());
       scope.installModules([ModuleWithDisposable()]);
       final t1 = scope.resolve<TestDisposable>();
@@ -305,7 +312,8 @@ void main() {
       expect(t1.disposed, isTrue);
       expect(t2.disposed, isTrue);
     });
-    test('calling disposeAsync twice does not throw and not call twice', () async {
+    test('calling disposeAsync twice does not throw and not call twice',
+        () async {
       final scope = CherryPick.openRootScope();
       scope.installModules([ModuleWithDisposable()]);
       final t = scope.resolve<TestDisposable>();
@@ -313,7 +321,8 @@ void main() {
       await scope.dispose();
       expect(t.disposed, isTrue);
     });
-    test('Non-disposable dependency is ignored by scope.disposeAsync', () async {
+    test('Non-disposable dependency is ignored by scope.disposeAsync',
+        () async {
       final scope = CherryPick.openRootScope();
       scope.installModules([ModuleWithDisposable()]);
       final s = scope.resolve<String>();
@@ -327,7 +336,8 @@ void main() {
   group('Scope/subScope dispose edge cases', () {
     test('Dispose called in closed subScope only', () async {
       final root = CherryPick.openRootScope();
-      final sub = root.openSubScope('feature')..installModules([ModuleCountingDisposable()]);
+      final sub = root.openSubScope('feature')
+        ..installModules([ModuleCountingDisposable()]);
       final d = sub.resolve<CountingDisposable>();
       expect(d.disposeCount, 0);
 
@@ -339,7 +349,8 @@ void main() {
       expect(d.disposeCount, 1);
 
       // Повторное открытие subScope создает NEW instance (dispose на старый не вызовется снова)
-      final sub2 = root.openSubScope('feature')..installModules([ModuleCountingDisposable()]);
+      final sub2 = root.openSubScope('feature')
+        ..installModules([ModuleCountingDisposable()]);
       final d2 = sub2.resolve<CountingDisposable>();
       expect(identical(d, d2), isFalse);
       await root.closeSubScope('feature');
@@ -347,8 +358,14 @@ void main() {
     });
     test('Dispose for all nested subScopes on root disposeAsync', () async {
       final root = CherryPick.openRootScope();
-      root.openSubScope('a').openSubScope('b').installModules([ModuleCountingDisposable()]);
-      final d = root.openSubScope('a').openSubScope('b').resolve<CountingDisposable>();
+      root
+          .openSubScope('a')
+          .openSubScope('b')
+          .installModules([ModuleCountingDisposable()]);
+      final d = root
+          .openSubScope('a')
+          .openSubScope('b')
+          .resolve<CountingDisposable>();
       await root.dispose();
       expect(d.disposeCount, 1);
     });
@@ -357,7 +374,8 @@ void main() {
   // --------------------------------------------------------------------------
   group('Async disposable (Future test)', () {
     test('Async Disposable is awaited on disposeAsync', () async {
-      final scope = CherryPick.openRootScope()..installModules([AsyncExampleModule()]);
+      final scope = CherryPick.openRootScope()
+        ..installModules([AsyncExampleModule()]);
       final d = scope.resolve<AsyncExampleDisposable>();
       expect(d.disposed, false);
       await scope.dispose();

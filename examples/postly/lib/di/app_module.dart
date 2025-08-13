@@ -15,14 +15,16 @@ abstract class AppModule extends Module {
   @provide()
   @singleton()
   TalkerDioLoggerSettings talkerDioLoggerSettings() => TalkerDioLoggerSettings(
-      printRequestHeaders: true,
-      printResponseHeaders: true,
-      printResponseMessage: true,
-  );
+        printRequestHeaders: true,
+        printResponseHeaders: true,
+        printResponseMessage: true,
+      );
 
   @provide()
   @singleton()
-  TalkerDioLogger talkerDioLogger(Talker talker, TalkerDioLoggerSettings settings) => TalkerDioLogger(talker: talker, settings: settings);
+  TalkerDioLogger talkerDioLogger(
+          Talker talker, TalkerDioLoggerSettings settings) =>
+      TalkerDioLogger(talker: talker, settings: settings);
 
   @instance()
   int timeout() => 1000;

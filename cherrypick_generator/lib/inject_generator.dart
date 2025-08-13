@@ -248,7 +248,6 @@ class _ParsedInjectField {
   /// Name qualifier for named resolution, or null if not set.
   final String? namedValue;
 
-
   _ParsedInjectField({
     required this.fieldName,
     required this.coreType,

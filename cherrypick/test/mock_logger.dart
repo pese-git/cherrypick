@@ -15,9 +15,8 @@ class MockObserver implements CherryPickObserver {
   void onWarning(String message, {Object? details}) => warnings.add(message);
 
   @override
-  void onError(String message, Object? error, StackTrace? stackTrace) =>
-      errors.add(
-          '$message${error != null ? ' $error' : ''}${stackTrace != null ? '\n$stackTrace' : ''}');
+  void onError(String message, Object? error, StackTrace? stackTrace) => errors.add(
+      '$message${error != null ? ' $error' : ''}${stackTrace != null ? '\n$stackTrace' : ''}');
 
   @override
   void onCycleDetected(List<String> chain, {String? scopeName}) =>
@@ -30,9 +29,11 @@ class MockObserver implements CherryPickObserver {
   @override
   void onInstanceRequested(String name, Type type, {String? scopeName}) {}
   @override
-  void onInstanceCreated(String name, Type type, Object instance, {String? scopeName}) {}
+  void onInstanceCreated(String name, Type type, Object instance,
+      {String? scopeName}) {}
   @override
-  void onInstanceDisposed(String name, Type type, Object instance, {String? scopeName}) {}
+  void onInstanceDisposed(String name, Type type, Object instance,
+      {String? scopeName}) {}
   @override
   void onModulesInstalled(List<String> moduleNames, {String? scopeName}) {}
   @override

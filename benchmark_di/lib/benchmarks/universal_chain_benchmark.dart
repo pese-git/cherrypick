@@ -73,7 +73,8 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
         _childDi!.resolve<UniversalService>();
         break;
       case UniversalScenario.asyncChain:
-        throw UnsupportedError('asyncChain supported only in UniversalChainAsyncBenchmark');
+        throw UnsupportedError(
+            'asyncChain supported only in UniversalChainAsyncBenchmark');
     }
   }
 }

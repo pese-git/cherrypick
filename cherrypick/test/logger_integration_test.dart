@@ -12,6 +12,7 @@ class DummyModule extends Module {
 }
 
 class A {}
+
 class B {}
 
 class CyclicModule extends Module {
@@ -52,10 +53,13 @@ void main() {
       throwsA(isA<CircularDependencyException>()),
     );
     // Проверяем, что цикл зафиксирован либо в errors, либо в diagnostics либо cycles
-    final foundInErrors = observer.errors.any((m) => m.contains('cycle detected'));
-    final foundInDiagnostics = observer.diagnostics.any((m) => m.contains('cycle detected'));
+    final foundInErrors =
+        observer.errors.any((m) => m.contains('cycle detected'));
+    final foundInDiagnostics =
+        observer.diagnostics.any((m) => m.contains('cycle detected'));
     final foundCycleNotified = observer.cycles.isNotEmpty;
     expect(foundInErrors || foundInDiagnostics || foundCycleNotified, isTrue,
-      reason: 'Ожидаем хотя бы один лог о цикле! errors: ${observer.errors}\ndiag: ${observer.diagnostics}\ncycles: ${observer.cycles}');
+        reason:
+            'Ожидаем хотя бы один лог о цикле! errors: ${observer.errors}\ndiag: ${observer.diagnostics}\ncycles: ${observer.cycles}');
   });
 }

@@ -22,50 +22,57 @@ void main() {
     group('Global Cross-Scope Cycle Detection', () {
       test('should enable global cross-scope cycle detection', () {
         expect(CherryPick.isGlobalCrossScopeCycleDetectionEnabled, isFalse);
-        
+
         CherryPick.enableGlobalCrossScopeCycleDetection();
-        
+
         expect(CherryPick.isGlobalCrossScopeCycleDetectionEnabled, isTrue);
       });
 
       test('should disable global cross-scope cycle detection', () {
         CherryPick.enableGlobalCrossScopeCycleDetection();
         expect(CherryPick.isGlobalCrossScopeCycleDetectionEnabled, isTrue);
-        
+
         CherryPick.disableGlobalCrossScopeCycleDetection();
-        
+
         expect(CherryPick.isGlobalCrossScopeCycleDetectionEnabled, isFalse);
       });
 
-      test('should automatically enable global cycle detection for new root scope', () {
+      test(
+          'should automatically enable global cycle detection for new root scope',
+          () {
         CherryPick.enableGlobalCrossScopeCycleDetection();
-        
+
         final scope = CherryPick.openRootScope();
-        
+
         expect(scope.isGlobalCycleDetectionEnabled, isTrue);
       });
 
-      test('should automatically enable global cycle detection for existing root scope', () {
+      test(
+          'should automatically enable global cycle detection for existing root scope',
+          () {
         final scope = CherryPick.openRootScope();
         expect(scope.isGlobalCycleDetectionEnabled, isFalse);
-        
+
         CherryPick.enableGlobalCrossScopeCycleDetection();
-        
+
         expect(scope.isGlobalCycleDetectionEnabled, isTrue);
       });
     });
 
     group('Global Safe Scope Creation', () {
-      test('should create global safe root scope with both detections enabled', () {
+      test('should create global safe root scope with both detections enabled',
+          () {
         final scope = CherryPick.openGlobalSafeRootScope();
-        
+
         expect(scope.isCycleDetectionEnabled, isTrue);
         expect(scope.isGlobalCycleDetectionEnabled, isTrue);
       });
 
-      test('should create global safe sub-scope with both detections enabled', () {
-        final scope = CherryPick.openGlobalSafeScope(scopeName: 'feature.global');
-        
+      test('should create global safe sub-scope with both detections enabled',
+          () {
+        final scope =
+            CherryPick.openGlobalSafeScope(scopeName: 'feature.global');
+
         expect(scope.isCycleDetectionEnabled, isTrue);
         expect(scope.isGlobalCycleDetectionEnabled, isTrue);
       });
@@ -104,7 +111,7 @@ void main() {
       test('should provide detailed global resolution chain in exception', () {
         final scope = CherryPick.openGlobalSafeRootScope();
         scope.installModules([GlobalParentModule()]);
-        
+
         final childScope = scope.openSubScope('child');
         childScope.installModules([GlobalChildModule()]);
 
@@ -114,11 +121,11 @@ void main() {
         } catch (e) {
           expect(e, isA<CircularDependencyException>());
           final circularError = e as CircularDependencyException;
-          
+
           // Проверяем, что цепочка содержит информацию о скоупах
           expect(circularError.dependencyChain, isNotEmpty);
           expect(circularError.dependencyChain.length, greaterThan(1));
-          
+
           // Цепочка должна содержать оба сервиса
           final chainString = circularError.dependencyChain.join(' -> ');
           expect(chainString, contains('GlobalServiceA'));
@@ -144,11 +151,11 @@ void main() {
         CherryPick.enableGlobalCrossScopeCycleDetection();
         // ignore: unused_local_variable
         final scope = CherryPick.openGlobalSafeRootScope();
-        
+
         expect(CherryPick.getGlobalResolutionChain(), isEmpty);
-        
+
         CherryPick.clearGlobalCycleDetector();
-        
+
         // После очистки детектор должен быть сброшен
         expect(CherryPick.getGlobalResolutionChain(), isEmpty);
       });
@@ -157,10 +164,10 @@ void main() {
     group('Inheritance of Global Settings', () {
       test('should inherit global cycle detection in child scopes', () {
         CherryPick.enableGlobalCrossScopeCycleDetection();
-        
+
         final parentScope = CherryPick.openRootScope();
         final childScope = parentScope.openSubScope('child');
-        
+
         expect(parentScope.isGlobalCycleDetectionEnabled, isTrue);
         expect(childScope.isGlobalCycleDetectionEnabled, isTrue);
       });
@@ -168,9 +175,9 @@ void main() {
       test('should inherit both local and global cycle detection', () {
         CherryPick.enableGlobalCycleDetection();
         CherryPick.enableGlobalCrossScopeCycleDetection();
-        
+
         final scope = CherryPick.openScope(scopeName: 'feature.test');
-        
+
         expect(scope.isCycleDetectionEnabled, isTrue);
         expect(scope.isGlobalCycleDetectionEnabled, isTrue);
       });

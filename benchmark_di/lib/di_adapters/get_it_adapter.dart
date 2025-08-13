@@ -80,9 +80,11 @@ class GetItAdapter extends DIAdapter<GetIt> {
                 getIt.registerSingletonAsync<UniversalService>(
                   () async {
                     final prev = level > 1
-                        ? await getIt.getAsync<UniversalService>(instanceName: prevDepName)
+                        ? await getIt.getAsync<UniversalService>(
+                            instanceName: prevDepName)
                         : null;
-                    return UniversalServiceImpl(value: depName, dependency: prev);
+                    return UniversalServiceImpl(
+                        value: depName, dependency: prev);
                   },
                   instanceName: depName,
                 );
@@ -90,11 +92,16 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.register:
-            getIt.registerSingleton<UniversalService>(UniversalServiceImpl(value: 'reg', dependency: null));
+            getIt.registerSingleton<UniversalService>(
+                UniversalServiceImpl(value: 'reg', dependency: null));
             break;
           case UniversalScenario.named:
-            getIt.registerFactory<UniversalService>(() => UniversalServiceImpl(value: 'impl1'), instanceName: 'impl1');
-            getIt.registerFactory<UniversalService>(() => UniversalServiceImpl(value: 'impl2'), instanceName: 'impl2');
+            getIt.registerFactory<UniversalService>(
+                () => UniversalServiceImpl(value: 'impl1'),
+                instanceName: 'impl1');
+            getIt.registerFactory<UniversalService>(
+                () => UniversalServiceImpl(value: 'impl2'),
+                instanceName: 'impl2');
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {
@@ -107,8 +114,8 @@ class GetItAdapter extends DIAdapter<GetIt> {
                       UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
-                          ? getIt<UniversalService>(instanceName: prevDepName)
-                          : null,
+                            ? getIt<UniversalService>(instanceName: prevDepName)
+                            : null,
                       ),
                       instanceName: depName,
                     );
@@ -129,8 +136,9 @@ class GetItAdapter extends DIAdapter<GetIt> {
                       () async => UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
-                          ? await getIt.getAsync<UniversalService>(instanceName: prevDepName)
-                          : null,
+                            ? await getIt.getAsync<UniversalService>(
+                                instanceName: prevDepName)
+                            : null,
                       ),
                       instanceName: depName,
                     );
@@ -143,7 +151,8 @@ class GetItAdapter extends DIAdapter<GetIt> {
             // handled at benchmark level
             break;
         }
-        if (scenario == UniversalScenario.chain || scenario == UniversalScenario.override) {
+        if (scenario == UniversalScenario.chain ||
+            scenario == UniversalScenario.override) {
           final depName = '${chainCount}_$nestingDepth';
           getIt.registerSingleton<UniversalService>(
             getIt<UniversalService>(instanceName: depName),
