@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick_generator` - `v2.0.0-dev.0`](#cherrypick_generator---v200-dev0)
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.9`](#cherrypick---v300-dev9)
+ - [`cherrypick_annotations` - `v1.1.2-dev.0`](#cherrypick_annotations---v112-dev0)
+ - [`cherrypick_flutter` - `v1.1.3-dev.9`](#cherrypick_flutter---v113-dev9)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.0`](#talker_cherrypick_logger---v110-dev0)
+
+---
+
+#### `cherrypick_generator` - `v2.0.0-dev.0`
+
+ - **BREAKING** **DOCS**(generator): improve and unify English documentation and examples for all DI source files.
+
+#### `cherrypick` - `v3.0.0-dev.9`
+
+ - **DOCS**(readme): add talker_cherrypick_logger to Additional Modules section.
+ - **DOCS**(api): improve all DI core code documentation with English dartdoc and examples.
+
+#### `cherrypick_annotations` - `v1.1.2-dev.0`
+
+ - **DOCS**(annotations): unify and improve English DartDoc for all DI annotations.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.9`
+
+ - **DOCS**(provider): add detailed English API documentation for CherryPickProvider Flutter integration.
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.0`
+
+ - **FEAT**(logging): add talker_dio_logger and talker_bloc_logger integration, improve cherrypick logger structure, add UI log screen for DI and network/bloc debug.
+ - **DOCS**: add full English documentation and usage guide to README.md.
+ - **DOCS**: add detailed English documentation and usage examples for TalkerCherryPickObserver.
+
+
 ## 2025-08-12
 
 ### Changes

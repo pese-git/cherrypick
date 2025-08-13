@@ -1,6 +1,6 @@
 name: talker_cherrypick_logger
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 1.1.0-dev.0
 homepage: https://pese-git.github.io/cherrypick-site/
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
@@ -11,14 +11,14 @@ topics:
   - state
   - logging
   - log
-
+  
 environment:
   sdk: ">=3.5.2 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
   talker: ^4.9.3
-  cherrypick: ^3.0.0-dev.8
+  cherrypick: ^3.0.0-dev.9
 
 
 dev_dependencies:

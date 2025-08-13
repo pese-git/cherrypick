@@ -1,3 +1,8 @@
+## 3.0.0-dev.9
+
+ - **DOCS**(readme): add talker_cherrypick_logger to Additional Modules section.
+ - **DOCS**(api): improve all DI core code documentation with English dartdoc and examples.
+
 ## 3.0.0-dev.8
 
  - **REFACTOR**(tests): replace MockLogger with MockObserver in scope tests to align with updated observer API.

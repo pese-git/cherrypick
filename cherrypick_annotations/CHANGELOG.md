@@ -1,3 +1,7 @@
+## 1.1.2-dev.0
+
+ - **DOCS**(annotations): unify and improve English DartDoc for all DI annotations.
+
 ## 1.1.1
 
  - **FIX**(license): correct urls.

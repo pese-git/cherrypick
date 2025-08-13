@@ -1,3 +1,7 @@
+## 1.1.3-dev.9
+
+ - **DOCS**(provider): add detailed English API documentation for CherryPickProvider Flutter integration.
+
 ## 1.1.3-dev.8
 
  - Update a dependency to the latest release.

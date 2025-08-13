@@ -1,3 +1,9 @@
+## 2.0.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **DOCS**(generator): improve and unify English documentation and examples for all DI source files.
+
 ## 1.1.1
 
  - **FIX**(license): correct urls.
