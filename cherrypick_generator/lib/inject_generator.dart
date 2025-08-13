@@ -20,28 +20,85 @@ import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 
-/// InjectGenerator generates a mixin for a class marked with @injectable()
-/// and injects all fields annotated with @inject(), using CherryPick DI.
+/// CherryPick DI field injector generator for codegen.
 ///
-/// For Future<T> fields it calls .resolveAsync<T>(),
-/// otherwise .resolve<T>() is used. Scope and named qualifiers are supported.
+/// Analyzes all Dart classes marked with `@injectable()` and generates a mixin (for example, `_$ProfileScreen`)
+/// which contains the `_inject` method. This method will assign all fields annotated with `@inject()`
+/// using the CherryPick DI container. Extra annotation qualifiers such as `@named` and `@scope` are respected
+/// for each field. Nullable fields and Future/injectable async dependencies are also supported automatically.
 ///
 /// ---
 ///
-/// InjectGenerator генерирует миксин для класса с аннотацией @injectable()
-/// и внедряет все поля, помеченные @inject(), используя DI-фреймворк CherryPick.
+/// ### Example usage in a project:
 ///
-/// Для Future<T> полей вызывается .resolveAsync<T>(),
-/// для остальных — .resolve<T>(). Поддерживаются scope и named qualifier.
+/// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 ///
+/// @injectable()
+/// class MyScreen with _$MyScreen {
+///   @inject()
+///   late final Logger logger;
+///
+///   @inject()
+///   @named('test')
+///   late final HttpClient client;
+///
+///   @inject()
+///   Future<Analytics>? analytics;
+/// }
+/// ```
+///
+/// After running build_runner, this mixin will be auto-generated:
+///
+/// ```dart
+/// mixin _$MyScreen {
+///   void _inject(MyScreen instance) {
+///     instance.logger = CherryPick.openRootScope().resolve<Logger>();
+///     instance.client = CherryPick.openRootScope().resolve<HttpClient>(named: 'test');
+///     instance.analytics = CherryPick.openRootScope().tryResolveAsync<Analytics>(); // nullable async inject
+///   }
+/// }
+/// ```
+///
+/// You may use the mixin (e.g., `myScreen._inject(myScreen)`) or expose your own public helper for instance field injection.
+///
+/// **Supported scenarios:**
+/// - Ordinary injectable fields: `resolve<T>()`.
+/// - Named qualifiers: `resolve<T>(named: ...)`.
+/// - Scoping: `CherryPick.openScope(scopeName: ...).resolve<T>()`.
+/// - Nullable/incomplete fields: `tryResolve`/`tryResolveAsync`.
+/// - Async dependencies: `Future<T>`/`resolveAsync<T>()`.
+///
+/// See also:
+///   * @inject
+///   * @injectable
 class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   const InjectGenerator();
 
-  /// The main entry point for code generation.
+  /// Main entry point for CherryPick field injection code generation.
   ///
-  /// Checks class validity, collects injectable fields, and produces injection code.
+  /// - Only triggers for classes marked with `@injectable()`.
+  /// - Throws an error if used on non-class elements.
+  /// - Scans all fields marked with `@inject()` and gathers qualifiers (if any).
+  /// - Generates Dart code for a mixin that injects all dependencies into the target class instance.
   ///
-  /// Основная точка входа генератора. Проверяет класс, собирает инъектируемые поля и создает код внедрения зависимостей.
+  /// Returns the Dart code as a String defining the new mixin.
+  ///
+  /// Example input (user code):
+  /// ```dart
+  /// @injectable()
+  /// class UserBloc with _$UserBloc {
+  ///   @inject() late final AuthRepository authRepository;
+  /// }
+  /// ```
+  /// Example output (generated):
+  /// ```dart
+  /// mixin _$UserBloc {
+  ///   void _inject(UserBloc instance) {
+  ///     instance.authRepository = CherryPick.openRootScope().resolve<AuthRepository>();
+  ///   }
+  /// }
+  /// ```
   @override
   FutureOr<String> generateForAnnotatedElement(
     Element element,
@@ -63,8 +120,7 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
       ..writeln('mixin $mixinName {')
       ..writeln('  void _inject($className instance) {');
 
-    // Collect and process all @inject fields.
-    // Собираем и обрабатываем все поля с @inject.
+    // Collect and process all @inject fields
     final injectFields =
         classElement.fields.where(_isInjectField).map(_parseInjectField);
 
@@ -79,20 +135,20 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     return buffer.toString();
   }
 
-  /// Checks if a field has the @inject annotation.
+  /// Returns true if a field is annotated with `@inject`.
   ///
-  /// Проверяет, отмечено ли поле аннотацией @inject.
+  /// Used to detect which fields should be processed for injection.
   static bool _isInjectField(FieldElement field) {
     return field.metadata.any(
       (m) => m.computeConstantValue()?.type?.getDisplayString() == 'inject',
     );
   }
 
-  /// Parses the field for scope/named qualifiers and determines its type.
-  /// Returns a [_ParsedInjectField] describing injection information.
+  /// Parses `@inject()` field and extracts all injection metadata
+  /// (core type, qualifiers, scope, nullability, etc).
   ///
-  /// Разбирает поле на наличие модификаторов scope/named и выясняет его тип.
-  /// Возвращает [_ParsedInjectField] с информацией о внедрении.
+  /// Converts Dart field declaration and all parameterizing injection-related
+  /// annotations into a [_ParsedInjectField] which is used for codegen.
   static _ParsedInjectField _parseInjectField(FieldElement field) {
     String? scopeName;
     String? namedValue;
@@ -120,8 +176,7 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
       isFuture = false;
     }
 
-    // ***
-    // Добавим определение nullable для типа (например PostRepository? или Future<PostRepository?>)
+    // Determine nullability for field types like T? or Future<T?>
     bool isNullable = dartType.nullabilitySuffix ==
             NullabilitySuffix.question ||
         (dartType is ParameterizedType &&
@@ -139,13 +194,17 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     );
   }
 
-  /// Generates a line of code that performs the dependency injection for a field.
-  /// Handles resolve/resolveAsync, scoping, and named qualifiers.
+  /// Generates Dart code for a single dependency-injected field based on its metadata.
   ///
-  /// Генерирует строку кода, которая внедряет зависимость для поля.
-  /// Учитывает resolve/resolveAsync, scoping и named qualifier.
+  /// This code will resolve the field from the CherryPick DI container and assign it to the class instance.
+  /// Correctly dispatches to resolve, tryResolve, resolveAsync, or tryResolveAsync methods,
+  /// and applies container scoping or named resolution where required.
+  ///
+  /// Returns literal Dart code as string (1 line).
+  ///
+  /// Example output:
+  ///   `instance.logger = CherryPick.openRootScope().resolve<Logger>();`
   String _generateInjectionLine(_ParsedInjectField field) {
-    // Используем tryResolve для nullable, иначе resolve
     final resolveMethod = field.isFuture
         ? (field.isNullable
             ? 'tryResolveAsync<${field.coreType}>'
@@ -166,29 +225,29 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   }
 }
 
-/// Data structure representing all information required to generate
-/// injection code for a field.
+/// Internal structure: describes all required information for generating the injection
+/// assignment for a given field.
 ///
-/// Структура данных, содержащая всю информацию,
-/// необходимую для генерации кода внедрения для поля.
+/// Not exported. Used as a DTO in the generator for each field.
 class _ParsedInjectField {
-  /// The name of the field / Имя поля.
+  /// The name of the field to be injected.
   final String fieldName;
 
-  /// The base type name (T or Future<T>) / Базовый тип (T или тип из Future<T>).
+  /// The Dart type to resolve (e.g. `Logger` from `Logger` or `Future<Logger>`).
   final String coreType;
 
-  /// True if the field type is Future<T>; false otherwise
-  /// Истина, если поле — Future<T>, иначе — ложь.
+  /// True if the field is an async dependency (Future<...>), otherwise false.
   final bool isFuture;
 
-  /// Optional scope annotation argument / Опциональное имя scope.
+  /// True if the field accepts null (T?), otherwise false.
+  final bool isNullable;
+
+  /// The scoping for DI resolution, or null to use root scope.
   final String? scopeName;
 
-  /// Optional named annotation argument / Опциональное имя named.
+  /// Name qualifier for named resolution, or null if not set.
   final String? namedValue;
 
-  final bool isNullable;
 
   _ParsedInjectField({
     required this.fieldName,
@@ -200,8 +259,8 @@ class _ParsedInjectField {
   });
 }
 
-/// Builder factory. Used by build_runner.
+/// Factory for creating the build_runner builder for DI field injection.
 ///
-/// Фабрика билдера. Используется build_runner.
+/// Add this builder in your build.yaml if you're invoking CherryPick generators manually.
 Builder injectBuilder(BuilderOptions options) =>
     PartBuilder([InjectGenerator()], '.inject.cherrypick.g.dart');

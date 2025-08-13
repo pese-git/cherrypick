@@ -14,30 +14,32 @@
 import 'package:analyzer/dart/element/element.dart';
 
 /// ---------------------------------------------------------------------------
-/// MetadataUtils -- utilities for analyzing method and parameter annotations.
+/// MetadataUtils
 ///
-/// ENGLISH
-/// Provides static utility methods to analyze Dart annotations on methods or
-/// parameters. For instance, helps to find if an element is annotated with
-/// `@named()`, `@singleton()`, or other meta-annotations used in this DI framework.
+/// Static utilities for querying and extracting information from
+/// Dart annotations ([ElementAnnotation]) in the context of code generation,
+/// such as checking for the presence of specific DI-related annotations.
+/// Designed to be used internally by code generation and validation routines.
 ///
-/// RUSSIAN
-/// Утилиты для разбора аннотаций методов и параметров.
-/// Позволяют находить наличие аннотаций, например, @named() и @singleton(),
-/// у методов и параметров. Используется для анализа исходного кода при генерации.
+/// # Example usage
+/// ```dart
+/// if (MetadataUtils.anyMeta(method.metadata, 'singleton')) {
+///   // The method is annotated with @singleton
+/// }
+/// final name = MetadataUtils.getNamedValue(field.metadata);
+/// if (name != null) print('@named value: $name');
+/// ```
 /// ---------------------------------------------------------------------------
 class MetadataUtils {
-  /// -------------------------------------------------------------------------
-  /// anyMeta
+  /// Checks whether any annotation in [meta] matches the [typeName]
+  /// (type name is compared in a case-insensitive manner and can be partial).
   ///
-  /// ENGLISH
-  /// Checks if any annotation in the list has a type name that contains
-  /// [typeName] (case insensitive).
+  /// Returns true if an annotation (such as @singleton, @provide, @named) is found.
   ///
-  /// RUSSIAN
-  /// Проверяет: есть ли среди аннотаций метка, имя которой содержит [typeName]
-  /// (регистр не учитывается).
-  /// -------------------------------------------------------------------------
+  /// Example:
+  /// ```dart
+  /// bool isSingleton = MetadataUtils.anyMeta(myMethod.metadata, 'singleton');
+  /// ```
   static bool anyMeta(List<ElementAnnotation> meta, String typeName) {
     return meta.any((m) =>
         m
@@ -49,17 +51,15 @@ class MetadataUtils {
         false);
   }
 
-  /// -------------------------------------------------------------------------
-  /// getNamedValue
+  /// Extracts the string value from a `@named('value')` annotation if present in [meta].
   ///
-  /// ENGLISH
-  /// Retrieves the value from a `@named('value')` annotation if present.
-  /// Returns the string value or null if not found.
+  /// Returns the named value or `null` if not annotated.
   ///
-  /// RUSSIAN
-  /// Находит значение из аннотации @named('значение').
-  /// Возвращает строку значения, если аннотация присутствует; иначе null.
-  /// -------------------------------------------------------------------------
+  /// Example:
+  /// ```dart
+  /// // For: @named('dev') ApiClient provideApi() ...
+  /// final named = MetadataUtils.getNamedValue(method.metadata); // 'dev'
+  /// ```
   static String? getNamedValue(List<ElementAnnotation> meta) {
     for (final m in meta) {
       final cv = m.computeConstantValue();

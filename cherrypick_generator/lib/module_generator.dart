@@ -19,75 +19,89 @@ import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 import 'src/generated_class.dart';
 
 /// ---------------------------------------------------------------------------
-/// ModuleGenerator for code generation of dependency-injected modules.
+/// CherryPick Module Generator — Codegen for DI modules
 ///
-/// ENGLISH
-/// This generator scans for Dart classes annotated with `@module()` and
-/// automatically generates boilerplate code for dependency injection
-/// (DI) based on the public methods in those classes. Each method can be
-/// annotated to describe how an object should be provided to the DI container.
-/// The generated code registers those methods as bindings. This automates the
-/// creation of factories, singletons, and named instances, reducing repetitive
-/// manual code.
+/// This generator scans Dart classes annotated with `@module()` and generates
+/// boilerplate for dependency injection registration automatically. Each public
+/// method in such classes can be annotated to describe how an object should be
+/// bound to the DI container (singleton, factory, named, with parameters, etc).
 ///
-/// RUSSIAN
-/// Генератор зависимостей для DI-контейнера на основе аннотаций.
-/// Данный генератор автоматически создаёт код для внедрения зависимостей (DI)
-/// на основе аннотаций в вашем исходном коде. Когда вы отмечаете класс
-/// аннотацией `@module()`, этот генератор обработает все его публичные методы
-/// и автоматически сгенерирует класс с биндингами (регистрациями зависимостей)
-/// для DI-контейнера. Это избавляет от написания однообразного шаблонного кода.
+/// The generated code collects all such bind methods and produces a Dart
+/// companion *module registration class* with a `.bindAll()` method, which you
+/// can use from your DI root to automatically register those dependencies.
+///
+/// ## Example
+/// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
+/// @module()
+/// abstract class AppModule {
+///   @singleton()
+///   Logger logger() => Logger();
+///
+///   @provide()
+///   ApiService api(Logger logger) => ApiService(logger);
+///
+///   @named('dev')
+///   FakeService fake() => FakeService();
+/// }
+/// ```
+///
+/// After codegen, you will get (simplified):
+/// ```dart
+/// class _\$AppModuleCherrypickModule extend AppModule {
+///   static void bindAll(CherryPickScope scope, AppModule module) {
+///     scope.addSingleton<Logger>(() => module.logger());
+///     scope.addFactory<ApiService>(() => module.api(scope.resolve<Logger>()));
+///     scope.addFactory<FakeService>(() => module.fake(), named: 'dev');
+///   }
+/// }
+/// ```
+///
+/// Use it e.g. in your bootstrap:
+/// ```dart
+/// final scope = CherryPick.openRootScope()..intallModules([_\$AppModuleCherrypickModule()]);
+/// ```
+///
+/// Features supported:
+/// - Singleton, factory, named, parametric, and async providers
+/// - Eliminates all boilerplate for DI registration
+/// - Works with abstract classes and real classes
+/// - Error if @module() is applied to a non-class
+///
+/// See also: [@singleton], [@provide], [@named], [@module]
 /// ---------------------------------------------------------------------------
 
 class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
-  /// -------------------------------------------------------------------------
-  /// ENGLISH
-  /// Generates the Dart source for a class marked with the `@module()` annotation.
-  /// - [element]: the original Dart class element.
-  /// - [annotation]: the annotation parameters (not usually used here).
-  /// - [buildStep]: the current build step info.
+  /// Generates Dart source for a class marked with the `@module()` annotation.
   ///
-  /// RUSSIAN
-  /// Генерирует исходный код для класса-модуля с аннотацией `@module()`.
-  /// [element] — исходный класс, помеченный аннотацией.
-  /// [annotation] — значения параметров аннотации.
-  /// [buildStep] — информация о текущем шаге генерации.
-  /// -------------------------------------------------------------------------
+  /// Throws [InvalidGenerationSourceError] if used on anything except a class.
+  ///
+  /// See file-level docs for usage and generated output example.
   @override
   String generateForAnnotatedElement(
     Element element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    // Only classes are supported for @module() annotation
-    // Обрабатываются только классы (другие элементы — ошибка)
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
-        '@module() can only be applied to classes. / @module() может быть применён только к классам.',
+        '@module() can only be applied to classes.',
         element: element,
       );
     }
 
     final classElement = element;
-
-    // Build a representation of the generated bindings based on class methods /
-    // Создаёт объект, описывающий, какие биндинги нужно сгенерировать на основании методов класса
     final generatedClass = GeneratedClass.fromClassElement(classElement);
-
-    // Generate the resulting Dart code / Генерирует итоговый Dart-код
     return generatedClass.generate();
   }
 }
 
 /// ---------------------------------------------------------------------------
-/// ENGLISH
-/// Entry point for build_runner. Returns a Builder used to generate code for
-/// every file with a @module() annotation.
+/// Codegen builder entry point: register this builder in build.yaml or your package.
 ///
-/// RUSSIAN
-/// Точка входа для генератора build_runner.
-/// Возвращает Builder, используемый build_runner для генерации кода для всех
-/// файлов, где встречается @module().
+/// Used by build_runner. Generates .module.cherrypick.g.dart files for each
+/// source file with an annotated @module() class.
 /// ---------------------------------------------------------------------------
 Builder moduleBuilder(BuilderOptions options) =>
     PartBuilder([ModuleGenerator()], '.module.cherrypick.g.dart');

@@ -19,62 +19,63 @@ import 'exceptions.dart';
 import 'type_parser.dart';
 import 'annotation_validator.dart';
 
+/// Enum representing the binding annotation applied to a module method.
 enum BindingType {
+  /// Direct instance returned from the method (@instance).
   instance,
+  /// Provider/factory function (@provide).
   provide;
 }
 
 /// ---------------------------------------------------------------------------
-/// BindSpec -- describes a binding specification generated for a dependency.
+/// BindSpec
 ///
-/// ENGLISH
-/// Represents all the data necessary to generate a DI binding for a single
-/// method in a module class. Each BindSpec corresponds to one public method
-/// and contains information about its type, provider method, lifecycle (singleton),
-/// parameters (with their annotations), binding strategy (instance/provide),
-/// asynchronous mode, and named keys. It is responsible for generating the
-/// correct Dart code to register this binding with the DI container, in both
-/// sync and async cases, with and without named or runtime arguments.
+/// Describes a DI container binding as generated from a single public factory,
+/// instance, or provider method of a module (annotated with @instance or @provide).
 ///
-/// RUSSIAN
-/// Описывает параметры для создания одного биндинга зависимости (binding spec).
-/// Каждый биндинг соответствует одному публичному методу класса-модуля и
-/// содержит всю информацию для генерации кода регистрации этого биндинга в
-/// DI-контейнере: тип возвращаемой зависимости, имя метода, параметры, аннотации
-/// (@singleton, @named, @instance, @provide), асинхронность, признак runtime
-/// аргументов и др. Генерирует правильный Dart-код для регистрации биндера.
+/// Includes all annotation-driven parameters required to generate valid DI
+/// registration Dart code in CherryPick:
+/// - Return type
+/// - Provider method name
+/// - Singleton flag
+/// - Named identifier (from @named)
+/// - List of resolved or runtime (@params) parameters
+/// - Binding mode (instance/provide)
+/// - Async and parametric variants
+///
+/// ## Example usage
+/// ```dart
+/// // Suppose @provide() Api api(@named('test') Client client)
+/// final bindSpec = BindSpec.fromMethod(methodElement);
+/// print(bindSpec.generateBind(2)); //   bind<Api>().toProvide(() => api(currentScope.resolve<Client>(named: 'test')));
+/// ```
 /// ---------------------------------------------------------------------------
 class BindSpec {
   /// The type this binding provides (e.g. SomeService)
-  /// Тип, который предоставляет биндинг (например, SomeService)
   final String returnType;
 
-  /// Method name that implements the binding
-  /// Имя метода, который реализует биндинг
+  /// Binding provider/factory method name
   final String methodName;
 
-  /// Optional name for named dependency (from @named)
-  /// Необязательное имя, для именованной зависимости (используется с @named)
+  /// Named identifier for DI resolution (null if unnamed)
   final String? named;
 
-  /// Whether the dependency is a singleton (@singleton annotation)
-  /// Является ли зависимость синглтоном (имеется ли аннотация @singleton)
+  /// If true, binding is registered as singleton in DI
   final bool isSingleton;
 
-  /// List of method parameters to inject dependencies with
-  /// Список параметров, которые требуются методу для внедрения зависимостей
+  /// Provider/factory method parameters (in order)
   final List<BindParameterSpec> parameters;
 
-  /// Binding type: 'instance' or 'provide' (@instance or @provide)
-  final BindingType bindingType; // 'instance' | 'provide'
+  /// Instance vs provider mode, from annotation choice
+  final BindingType bindingType;
 
-  /// True if the method is asynchronous and uses instance binding (Future)
+  /// Async flag for .toInstanceAsync()
   final bool isAsyncInstance;
 
-  /// True if the method is asynchronous and uses provide binding (Future)
+  /// Async flag for .toProvideAsync()
   final bool isAsyncProvide;
 
-  /// True if the binding method accepts runtime "params" argument (@params)
+  /// True if a @params runtime parameter is present
   final bool hasParams;
 
   BindSpec({
@@ -89,20 +90,12 @@ class BindSpec {
     required this.hasParams,
   });
 
-  /// -------------------------------------------------------------------------
-  /// generateBind
+  /// Generates a Dart code line for binding registration.
   ///
-  /// ENGLISH
-  /// Generates a line of Dart code registering the binding with the DI framework.
-  /// Produces something like:
-  ///   bind<Type>().toProvide(() => method(args)).withName('name').singleton();
-  /// Indent parameter allows formatted multiline output.
+  /// Example (single-line):
+  ///   bind<Api>().toProvide(() => provideApi(currentScope.resolve<Client>(named: 'test'))).withName('prod').singleton();
   ///
-  /// RUSSIAN
-  /// Формирует dart-код для биндинга, например:
-  ///   bind<Type>().toProvide(() => method(args)).withName('name').singleton();
-  /// Параметр [indent] задаёт отступ для красивого форматирования кода.
-  /// -------------------------------------------------------------------------
+  /// The [indent] argument sets the space indentation for pretty-printing.
   String generateBind(int indent) {
     final indentStr = ' ' * indent;
     final provide = _generateProvideClause(indent);
@@ -151,7 +144,7 @@ class BindSpec {
     return _generatePlainProvideClause(indent);
   }
 
-  /// EN / RU: Supports runtime parameters (@params).
+  /// Generates code when using runtime parameters (@params).
   String _generateWithParamsProvideClause(int indent) {
     // Safe variable name for parameters.
     const paramVar = 'args';
@@ -178,7 +171,7 @@ class BindSpec {
     }
   }
 
-  /// EN / RU: Supports only injected dependencies, not runtime (@params).
+  /// Generates code when only resolved (not runtime) arguments used.
   String _generatePlainProvideClause(int indent) {
     final argsStr = parameters.map((p) => p.generateArg()).join(', ');
 
@@ -241,16 +234,17 @@ class BindSpec {
   /// -------------------------------------------------------------------------
   /// fromMethod
   ///
-  /// ENGLISH
-  /// Creates a BindSpec from a module class method by analyzing its return type,
-  /// annotations, list of parameters (with their own annotations), and async-ness.
-  /// Throws if a method does not have the required @instance() or @provide().
+  /// Constructs a [BindSpec] from an analyzer [MethodElement].
   ///
-  /// RUSSIAN
-  /// Создаёт спецификацию биндинга (BindSpec) из метода класса-модуля, анализируя
-  /// возвращаемый тип, аннотации, параметры (и их аннотации), а также факт
-  /// асинхронности. Если нет @instance или @provide — кидает ошибку.
-  /// -------------------------------------------------------------------------
+  /// Validates and parses all type annotations, method/parameter DI hints,
+  /// and derives async and parametric flags as needed.
+  ///
+  /// ## Example
+  /// ```dart
+  /// final bindSpec = BindSpec.fromMethod(methodElement);
+  /// print(bindSpec.returnType); // e.g., 'Logger'
+  /// ```
+  /// Throws [AnnotationValidationException] or [CodeGenerationException] if invalid.
   static BindSpec fromMethod(MethodElement method) {
     try {
       // Validate method annotations
