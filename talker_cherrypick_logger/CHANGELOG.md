@@ -1,3 +1,7 @@
+## 1.1.0-dev.4
+
+ - **DOCS**(readme): update install instructions to use pub.dev as default method and remove obsolete git example.
+
 ## 1.1.0-dev.3
 
 ## 1.1.0-dev.2
