@@ -1,6 +1,6 @@
 name: talker_cherrypick_logger
 description: A Talker logger integration for CherryPick DI to observe and log DI events and errors.
-version: 1.1.0-dev.2
+version: 1.1.0-dev.3
 homepage: https://pese-git.github.io/cherrypick-site/
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick

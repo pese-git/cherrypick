@@ -15,6 +15,25 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.3`](#talker_cherrypick_logger---v110-dev3)
+
+---
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.3`
+
+
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`talker_cherrypick_logger` - `v1.1.0-dev.2`](#talker_cherrypick_logger---v110-dev2)
 
 ---
