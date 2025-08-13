@@ -69,26 +69,32 @@ class TalkerCherryPickObserver implements CherryPickObserver {
 
   /// Called when a new instance is created.
   @override
-  void onInstanceCreated(String name, Type type, Object instance, {String? scopeName}) {
-    talker.info('[create][CherryPick] $name — $type => $instance (scope: $scopeName)');
+  void onInstanceCreated(String name, Type type, Object instance,
+      {String? scopeName}) {
+    talker.info(
+        '[create][CherryPick] $name — $type => $instance (scope: $scopeName)');
   }
 
   /// Called when an instance is disposed.
   @override
-  void onInstanceDisposed(String name, Type type, Object instance, {String? scopeName}) {
-    talker.info('[dispose][CherryPick] $name — $type => $instance (scope: $scopeName)');
+  void onInstanceDisposed(String name, Type type, Object instance,
+      {String? scopeName}) {
+    talker.info(
+        '[dispose][CherryPick] $name — $type => $instance (scope: $scopeName)');
   }
 
   /// Called when modules are installed.
   @override
   void onModulesInstalled(List<String> modules, {String? scopeName}) {
-    talker.info('[modules installed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
+    talker.info(
+        '[modules installed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
   }
 
   /// Called when modules are removed.
   @override
   void onModulesRemoved(List<String> modules, {String? scopeName}) {
-    talker.info('[modules removed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
+    talker.info(
+        '[modules removed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
   }
 
   /// Called when a DI scope is opened.
@@ -106,7 +112,8 @@ class TalkerCherryPickObserver implements CherryPickObserver {
   /// Called if the DI container detects a cycle in the dependency graph.
   @override
   void onCycleDetected(List<String> chain, {String? scopeName}) {
-    talker.warning('[cycle][CherryPick] Detected: ${chain.join(' -> ')}${scopeName != null ? ' (scope: $scopeName)' : ''}');
+    talker.warning(
+        '[cycle][CherryPick] Detected: ${chain.join(' -> ')}${scopeName != null ? ' (scope: $scopeName)' : ''}');
   }
 
   /// Called when an instance is found in the cache.
@@ -136,6 +143,7 @@ class TalkerCherryPickObserver implements CherryPickObserver {
   /// Called for error events with optional stack trace.
   @override
   void onError(String message, Object? error, StackTrace? stackTrace) {
-    talker.handle(error ?? '[CherryPick] $message', stackTrace, '[error][CherryPick] $message');
+    talker.handle(error ?? '[CherryPick] $message', stackTrace,
+        '[error][CherryPick] $message');
   }
 }

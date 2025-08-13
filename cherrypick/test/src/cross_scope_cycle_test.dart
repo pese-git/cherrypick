@@ -30,7 +30,7 @@ void main() {
       final rootScope = CherryPick.openSafeRootScope();
       final level1Scope = rootScope.openSubScope('level1');
       final level2Scope = level1Scope.openSubScope('level2');
-      
+
       level1Scope.enableCycleDetection();
       level2Scope.enableCycleDetection();
 
@@ -46,14 +46,16 @@ void main() {
       );
     });
 
-    test('current implementation limitation - may not detect cross-scope cycles', () {
+    test(
+        'current implementation limitation - may not detect cross-scope cycles',
+        () {
       // Этот тест демонстрирует ограничение текущей реализации
       final parentScope = CherryPick.openRootScope();
       parentScope.enableCycleDetection();
-      
+
       final childScope = parentScope.openSubScope('child');
       // НЕ включаем cycle detection для дочернего скоупа
-      
+
       parentScope.installModules([ParentScopeModule()]);
       childScope.installModules([ChildScopeModule()]);
 

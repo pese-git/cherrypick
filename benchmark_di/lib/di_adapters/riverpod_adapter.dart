@@ -20,7 +20,9 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
         _parent = parent;
 
   @override
-  void setupDependencies(void Function(Map<String, rp.ProviderBase<Object?>> container) registration) {
+  void setupDependencies(
+      void Function(Map<String, rp.ProviderBase<Object?>> container)
+          registration) {
     _container ??= _parent == null
         ? rp.ProviderContainer()
         : rp.ProviderContainer(parent: _parent);
@@ -76,7 +78,8 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
   }
 
   @override
-  Registration<Map<String, rp.ProviderBase<Object?>>> universalRegistration<S extends Enum>({
+  Registration<Map<String, rp.ProviderBase<Object?>>>
+      universalRegistration<S extends Enum>({
     required S scenario,
     required int chainCount,
     required int nestingDepth,
@@ -86,25 +89,34 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
       return (providers) {
         switch (scenario) {
           case UniversalScenario.register:
-            providers['UniversalService'] = rp.Provider<UniversalService>((ref) => UniversalServiceImpl(value: 'reg', dependency: null));
+            providers['UniversalService'] = rp.Provider<UniversalService>(
+                (ref) => UniversalServiceImpl(value: 'reg', dependency: null));
             break;
           case UniversalScenario.named:
-            providers['impl1'] = rp.Provider<UniversalService>((ref) => UniversalServiceImpl(value: 'impl1'));
-            providers['impl2'] = rp.Provider<UniversalService>((ref) => UniversalServiceImpl(value: 'impl2'));
+            providers['impl1'] = rp.Provider<UniversalService>(
+                (ref) => UniversalServiceImpl(value: 'impl1'));
+            providers['impl2'] = rp.Provider<UniversalService>(
+                (ref) => UniversalServiceImpl(value: 'impl2'));
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {
               for (int level = 1; level <= nestingDepth; level++) {
                 final prevDepName = '${chain}_${level - 1}';
                 final depName = '${chain}_$level';
-                providers[depName] = rp.Provider<UniversalService>((ref) => UniversalServiceImpl(
-                  value: depName,
-                  dependency: level > 1 ? ref.watch(providers[prevDepName] as rp.ProviderBase<UniversalService>) : null,
-                ));
+                providers[depName] =
+                    rp.Provider<UniversalService>((ref) => UniversalServiceImpl(
+                          value: depName,
+                          dependency: level > 1
+                              ? ref.watch(providers[prevDepName]
+                                  as rp.ProviderBase<UniversalService>)
+                              : null,
+                        ));
               }
             }
             final depName = '${chainCount}_$nestingDepth';
-            providers['UniversalService'] = rp.Provider<UniversalService>((ref) => ref.watch(providers[depName] as rp.ProviderBase<UniversalService>));
+            providers['UniversalService'] = rp.Provider<UniversalService>(
+                (ref) => ref.watch(
+                    providers[depName] as rp.ProviderBase<UniversalService>));
             break;
           case UniversalScenario.override:
             // handled at benchmark level
@@ -114,24 +126,31 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
               for (int level = 1; level <= nestingDepth; level++) {
                 final prevDepName = '${chain}_${level - 1}';
                 final depName = '${chain}_$level';
-                providers[depName] = rp.FutureProvider<UniversalService>((ref) async {
+                providers[depName] =
+                    rp.FutureProvider<UniversalService>((ref) async {
                   return UniversalServiceImpl(
                     value: depName,
                     dependency: level > 1
-                        ? await ref.watch((providers[prevDepName] as rp.FutureProvider<UniversalService>).future) as UniversalService?
+                        ? await ref.watch((providers[prevDepName]
+                                as rp.FutureProvider<UniversalService>)
+                            .future) as UniversalService?
                         : null,
                   );
                 });
               }
             }
             final depName = '${chainCount}_$nestingDepth';
-            providers['UniversalService'] = rp.FutureProvider<UniversalService>((ref) async {
-              return await ref.watch((providers[depName] as rp.FutureProvider<UniversalService>).future);
+            providers['UniversalService'] =
+                rp.FutureProvider<UniversalService>((ref) async {
+              return await ref.watch(
+                  (providers[depName] as rp.FutureProvider<UniversalService>)
+                      .future);
             });
             break;
         }
       };
     }
-    throw UnsupportedError('Scenario $scenario not supported by RiverpodAdapter');
+    throw UnsupportedError(
+        'Scenario $scenario not supported by RiverpodAdapter');
   }
 }

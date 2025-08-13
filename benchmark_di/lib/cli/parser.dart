@@ -8,14 +8,19 @@ import 'package:benchmark_di/scenarios/universal_scenario.dart';
 enum UniversalBenchmark {
   /// Simple singleton registration benchmark
   registerSingleton,
+
   /// Chain of singleton dependencies
   chainSingleton,
+
   /// Chain using factories
   chainFactory,
+
   /// Async chain resolution
   chainAsync,
+
   /// Named registration benchmark
   named,
+
   /// Override/child-scope benchmark
   override,
 }
@@ -65,23 +70,32 @@ T parseEnum<T>(String value, List<T> values, T defaultValue) {
 }
 
 /// Parses comma-separated integer list from [s].
-List<int> parseIntList(String s) =>
-    s.split(',').map((e) => int.tryParse(e.trim()) ?? 0).where((x) => x > 0).toList();
+List<int> parseIntList(String s) => s
+    .split(',')
+    .map((e) => int.tryParse(e.trim()) ?? 0)
+    .where((x) => x > 0)
+    .toList();
 
 /// CLI config describing what and how to benchmark.
 class BenchmarkCliConfig {
   /// Benchmarks enabled to run (scenarios).
   final List<UniversalBenchmark> benchesToRun;
+
   /// List of chain counts (parallel, per test).
   final List<int> chainCounts;
+
   /// List of nesting depths (max chain length, per test).
   final List<int> nestDepths;
+
   /// How many times to repeat each trial.
   final int repeats;
+
   /// How many times to warm-up before measuring.
   final int warmups;
+
   /// Output report format.
   final String format;
+
   /// Name of DI implementation ("cherrypick" or "getit")
   final String di;
   BenchmarkCliConfig({
@@ -105,7 +119,9 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('repeat', abbr: 'r', defaultsTo: '2')
     ..addOption('warmup', abbr: 'w', defaultsTo: '1')
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
-    ..addOption('di', defaultsTo: 'cherrypick', help: 'DI implementation: cherrypick, getit or riverpod')
+    ..addOption('di',
+        defaultsTo: 'cherrypick',
+        help: 'DI implementation: cherrypick, getit or riverpod')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
   final result = parser.parse(args);
   if (result['help'] == true) {

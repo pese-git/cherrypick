@@ -23,6 +23,7 @@ import 'annotation_validator.dart';
 enum BindingType {
   /// Direct instance returned from the method (@instance).
   instance,
+
   /// Provider/factory function (@provide).
   provide;
 }

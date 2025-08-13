@@ -14,7 +14,6 @@
 import 'dart:collection';
 import 'package:cherrypick/cherrypick.dart';
 
-
 /// GlobalCycleDetector detects and prevents circular dependencies across an entire DI scope hierarchy.
 ///
 /// This is particularly important for modular/feature-based applications
@@ -45,13 +44,16 @@ class GlobalCycleDetector {
   final List<String> _globalResolutionHistory = [];
 
   // Map of active detectors for subscopes (rarely used directly)
-  final Map<String, CycleDetector> _scopeDetectors = HashMap<String, CycleDetector>();
+  final Map<String, CycleDetector> _scopeDetectors =
+      HashMap<String, CycleDetector>();
 
-  GlobalCycleDetector._internal({required CherryPickObserver observer}): _observer = observer;
+  GlobalCycleDetector._internal({required CherryPickObserver observer})
+      : _observer = observer;
 
   /// Returns the singleton global detector instance, initializing it if needed.
   static GlobalCycleDetector get instance {
-    _instance ??= GlobalCycleDetector._internal(observer: CherryPick.globalObserver);
+    _instance ??=
+        GlobalCycleDetector._internal(observer: CherryPick.globalObserver);
     return _instance!;
   }
 
@@ -70,9 +72,11 @@ class GlobalCycleDetector {
 
     if (_globalResolutionStack.contains(dependencyKey)) {
       final cycleStartIndex = _globalResolutionHistory.indexOf(dependencyKey);
-      final cycle = _globalResolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
+      final cycle = _globalResolutionHistory.sublist(cycleStartIndex)
+        ..add(dependencyKey);
       _observer.onCycleDetected(cycle, scopeName: scopeId);
-      _observer.onError('Global circular dependency detected for $dependencyKey', null, null);
+      _observer.onError(
+          'Global circular dependency detected for $dependencyKey', null, null);
       throw CircularDependencyException(
         'Global circular dependency detected for $dependencyKey',
         cycle,
@@ -88,7 +92,8 @@ class GlobalCycleDetector {
     final dependencyKey = _createDependencyKeyFromType(T, named, scopeId);
     _globalResolutionStack.remove(dependencyKey);
 
-    if (_globalResolutionHistory.isNotEmpty && _globalResolutionHistory.last == dependencyKey) {
+    if (_globalResolutionHistory.isNotEmpty &&
+        _globalResolutionHistory.last == dependencyKey) {
       _globalResolutionHistory.removeLast();
     }
   }
@@ -101,13 +106,16 @@ class GlobalCycleDetector {
     String? scopeId,
     T Function() action,
   ) {
-    final dependencyKey = _createDependencyKeyFromType(dependencyType, named, scopeId);
+    final dependencyKey =
+        _createDependencyKeyFromType(dependencyType, named, scopeId);
 
     if (_globalResolutionStack.contains(dependencyKey)) {
       final cycleStartIndex = _globalResolutionHistory.indexOf(dependencyKey);
-      final cycle = _globalResolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
+      final cycle = _globalResolutionHistory.sublist(cycleStartIndex)
+        ..add(dependencyKey);
       _observer.onCycleDetected(cycle, scopeName: scopeId);
-      _observer.onError('Global circular dependency detected for $dependencyKey', null, null);
+      _observer.onError(
+          'Global circular dependency detected for $dependencyKey', null, null);
       throw CircularDependencyException(
         'Global circular dependency detected for $dependencyKey',
         cycle,
@@ -121,7 +129,8 @@ class GlobalCycleDetector {
       return action();
     } finally {
       _globalResolutionStack.remove(dependencyKey);
-      if (_globalResolutionHistory.isNotEmpty && _globalResolutionHistory.last == dependencyKey) {
+      if (_globalResolutionHistory.isNotEmpty &&
+          _globalResolutionHistory.last == dependencyKey) {
         _globalResolutionHistory.removeLast();
       }
     }
@@ -129,7 +138,8 @@ class GlobalCycleDetector {
 
   /// Get per-scope detector (not usually needed by consumers).
   CycleDetector getScopeDetector(String scopeId) {
-    return _scopeDetectors.putIfAbsent(scopeId, () => CycleDetector(observer: CherryPick.globalObserver));
+    return _scopeDetectors.putIfAbsent(
+        scopeId, () => CycleDetector(observer: CherryPick.globalObserver));
   }
 
   /// Remove detector for a given scope.
@@ -144,7 +154,8 @@ class GlobalCycleDetector {
   }
 
   /// Get current global dependency resolution chain (for debugging or diagnostics).
-  List<String> get globalResolutionChain => List.unmodifiable(_globalResolutionHistory);
+  List<String> get globalResolutionChain =>
+      List.unmodifiable(_globalResolutionHistory);
 
   /// Clears all global and per-scope state in this detector.
   void clear() {
@@ -157,7 +168,8 @@ class GlobalCycleDetector {
   void _detectorClear(detector) => detector.clear();
 
   /// Creates a unique dependency key string including scope and name (for diagnostics/cycle checks).
-  String _createDependencyKeyFromType(Type type, String? named, String? scopeId) {
+  String _createDependencyKeyFromType(
+      Type type, String? named, String? scopeId) {
     final typeName = type.toString();
     final namePrefix = named != null ? '@$named' : '';
     final scopePrefix = scopeId != null ? '[$scopeId]' : '';

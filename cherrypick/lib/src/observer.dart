@@ -49,7 +49,8 @@ abstract class CherryPickObserver {
   /// ```dart
   /// observer.onInstanceCreated('MyService', MyService, instance, scopeName: 'root');
   /// ```
-  void onInstanceCreated(String name, Type type, Object instance, {String? scopeName});
+  void onInstanceCreated(String name, Type type, Object instance,
+      {String? scopeName});
 
   /// Called when an instance is disposed (removed from cache and/or finalized).
   ///
@@ -57,7 +58,8 @@ abstract class CherryPickObserver {
   /// ```dart
   /// observer.onInstanceDisposed('MyService', MyService, instance, scopeName: 'root');
   /// ```
-  void onInstanceDisposed(String name, Type type, Object instance, {String? scopeName});
+  void onInstanceDisposed(String name, Type type, Object instance,
+      {String? scopeName});
 
   // === Module events ===
   /// Called when modules are installed into the container.
@@ -157,19 +159,23 @@ class PrintCherryPickObserver implements CherryPickObserver {
       print('[request][CherryPick] $name — $type (scope: $scopeName)');
 
   @override
-  void onInstanceCreated(String name, Type type, Object instance, {String? scopeName}) =>
-      print('[create][CherryPick] $name — $type => $instance (scope: $scopeName)');
+  void onInstanceCreated(String name, Type type, Object instance,
+          {String? scopeName}) =>
+      print(
+          '[create][CherryPick] $name — $type => $instance (scope: $scopeName)');
 
   @override
-  void onInstanceDisposed(String name, Type type, Object instance, {String? scopeName}) =>
-      print('[dispose][CherryPick] $name — $type => $instance (scope: $scopeName)');
+  void onInstanceDisposed(String name, Type type, Object instance,
+          {String? scopeName}) =>
+      print(
+          '[dispose][CherryPick] $name — $type => $instance (scope: $scopeName)');
 
   @override
-  void onModulesInstalled(List<String> modules, {String? scopeName}) =>
-      print('[modules installed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
+  void onModulesInstalled(List<String> modules, {String? scopeName}) => print(
+      '[modules installed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
   @override
-  void onModulesRemoved(List<String> modules, {String? scopeName}) =>
-      print('[modules removed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
+  void onModulesRemoved(List<String> modules, {String? scopeName}) => print(
+      '[modules removed][CherryPick] ${modules.join(', ')} (scope: $scopeName)');
 
   @override
   void onScopeOpened(String name) => print('[scope opened][CherryPick] $name');
@@ -178,8 +184,8 @@ class PrintCherryPickObserver implements CherryPickObserver {
   void onScopeClosed(String name) => print('[scope closed][CherryPick] $name');
 
   @override
-  void onCycleDetected(List<String> chain, {String? scopeName}) =>
-      print('[cycle][CherryPick] Detected: ${chain.join(' -> ')}${scopeName != null ? ' (scope: $scopeName)' : ''}');
+  void onCycleDetected(List<String> chain, {String? scopeName}) => print(
+      '[cycle][CherryPick] Detected: ${chain.join(' -> ')}${scopeName != null ? ' (scope: $scopeName)' : ''}');
 
   @override
   void onCacheHit(String name, Type type, {String? scopeName}) =>
@@ -210,9 +216,11 @@ class SilentCherryPickObserver implements CherryPickObserver {
   @override
   void onInstanceRequested(String name, Type type, {String? scopeName}) {}
   @override
-  void onInstanceCreated(String name, Type type, Object instance, {String? scopeName}) {}
+  void onInstanceCreated(String name, Type type, Object instance,
+      {String? scopeName}) {}
   @override
-  void onInstanceDisposed(String name, Type type, Object instance, {String? scopeName}) {}
+  void onInstanceDisposed(String name, Type type, Object instance,
+      {String? scopeName}) {}
   @override
   void onModulesInstalled(List<String> modules, {String? scopeName}) {}
   @override

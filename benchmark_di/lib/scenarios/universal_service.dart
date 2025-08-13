@@ -1,4 +1,3 @@
-
 /// Base interface for any universal service in the benchmarks.
 ///
 /// Represents an object in the dependency chain with an identifiable value
@@ -6,6 +5,7 @@
 abstract class UniversalService {
   /// String ID for this service instance (e.g. chain/level info).
   final String value;
+
   /// Optional reference to dependency service in the chain.
   final UniversalService? dependency;
   UniversalService({required this.value, this.dependency});

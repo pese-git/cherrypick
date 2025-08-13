@@ -16,7 +16,6 @@ import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/observer.dart';
 import 'package:meta/meta.dart';
 
-
 Scope? _rootScope;
 
 /// Global logger for all [Scope]s managed by [CherryPick].
@@ -80,7 +79,8 @@ class CherryPick {
     if (_globalCycleDetectionEnabled && !_rootScope!.isCycleDetectionEnabled) {
       _rootScope!.enableCycleDetection();
     }
-    if (_globalCrossScopeCycleDetectionEnabled && !_rootScope!.isGlobalCycleDetectionEnabled) {
+    if (_globalCrossScopeCycleDetectionEnabled &&
+        !_rootScope!.isGlobalCycleDetectionEnabled) {
       _rootScope!.enableGlobalCycleDetection();
     }
     return _rootScope!;
@@ -96,7 +96,8 @@ class CherryPick {
   /// ```
   static Future<void> closeRootScope() async {
     if (_rootScope != null) {
-      await _rootScope!.dispose(); // Автоматический вызов dispose для rootScope!
+      await _rootScope!
+          .dispose(); // Автоматический вызов dispose для rootScope!
       _rootScope = null;
     }
   }
@@ -141,13 +142,15 @@ class CherryPick {
   /// ```dart
   /// CherryPick.enableCycleDetectionForScope(scopeName: 'api.feature');
   /// ```
-  static void enableCycleDetectionForScope({String scopeName = '', String separator = '.'}) {
+  static void enableCycleDetectionForScope(
+      {String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     scope.enableCycleDetection();
   }
 
   /// Disables cycle detection for a given scope. See [enableCycleDetectionForScope].
-  static void disableCycleDetectionForScope({String scopeName = '', String separator = '.'}) {
+  static void disableCycleDetectionForScope(
+      {String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     scope.disableCycleDetection();
   }
@@ -158,7 +161,8 @@ class CherryPick {
   /// ```dart
   /// CherryPick.isCycleDetectionEnabledForScope(scopeName: 'feature.api');
   /// ```
-  static bool isCycleDetectionEnabledForScope({String scopeName = '', String separator = '.'}) {
+  static bool isCycleDetectionEnabledForScope(
+      {String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     return scope.isCycleDetectionEnabled;
   }
@@ -171,7 +175,8 @@ class CherryPick {
   /// ```dart
   /// print(CherryPick.getCurrentResolutionChain(scopeName: 'feature.api'));
   /// ```
-  static List<String> getCurrentResolutionChain({String scopeName = '', String separator = '.'}) {
+  static List<String> getCurrentResolutionChain(
+      {String scopeName = '', String separator = '.'}) {
     final scope = _getScope(scopeName, separator);
     return scope.currentResolutionChain;
   }
@@ -229,14 +234,13 @@ class CherryPick {
     if (nameParts.isEmpty) {
       throw Exception('Can not open sub scope because scopeName can not split');
     }
-    final scope = nameParts.fold(
-      openRootScope(),
-      (Scope previous, String element) => previous.openSubScope(element)
-    );
+    final scope = nameParts.fold(openRootScope(),
+        (Scope previous, String element) => previous.openSubScope(element));
     if (_globalCycleDetectionEnabled && !scope.isCycleDetectionEnabled) {
       scope.enableCycleDetection();
     }
-    if (_globalCrossScopeCycleDetectionEnabled && !scope.isGlobalCycleDetectionEnabled) {
+    if (_globalCrossScopeCycleDetectionEnabled &&
+        !scope.isGlobalCycleDetectionEnabled) {
       scope.enableGlobalCycleDetection();
     }
     return scope;
@@ -252,21 +256,21 @@ class CherryPick {
   /// CherryPick.closeScope(scopeName: 'network.super.api');
   /// ```
   @experimental
-  static Future<void> closeScope({String scopeName = '', String separator = '.'}) async {
+  static Future<void> closeScope(
+      {String scopeName = '', String separator = '.'}) async {
     if (scopeName.isEmpty) {
       await closeRootScope();
       return;
     }
     final nameParts = scopeName.split(separator);
     if (nameParts.isEmpty) {
-      throw Exception('Can not close sub scope because scopeName can not split');
+      throw Exception(
+          'Can not close sub scope because scopeName can not split');
     }
     if (nameParts.length > 1) {
       final lastPart = nameParts.removeLast();
-      final scope = nameParts.fold(
-        openRootScope(),
-        (Scope previous, String element) => previous.openSubScope(element)
-      );
+      final scope = nameParts.fold(openRootScope(),
+          (Scope previous, String element) => previous.openSubScope(element));
       await scope.closeSubScope(lastPart);
     } else {
       await openRootScope().closeSubScope(nameParts.first);
@@ -316,7 +320,8 @@ class CherryPick {
   ///   print('Global cross-scope detection is ON');
   /// }
   /// ```
-  static bool get isGlobalCrossScopeCycleDetectionEnabled => _globalCrossScopeCycleDetectionEnabled;
+  static bool get isGlobalCrossScopeCycleDetectionEnabled =>
+      _globalCrossScopeCycleDetectionEnabled;
 
   /// Returns the current global dependency resolution chain (across all scopes).
   ///
@@ -367,7 +372,8 @@ class CherryPick {
   /// ```dart
   /// final featureScope = CherryPick.openGlobalSafeScope(scopeName: 'featureA.api');
   /// ```
-  static Scope openGlobalSafeScope({String scopeName = '', String separator = '.'}) {
+  static Scope openGlobalSafeScope(
+      {String scopeName = '', String separator = '.'}) {
     final scope = openScope(scopeName: scopeName, separator: separator);
     scope.enableCycleDetection();
     scope.enableGlobalCycleDetection();

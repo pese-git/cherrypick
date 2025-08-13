@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
-
 import 'domain/repository/post_repository.dart';
 import 'presentation/bloc/post_bloc.dart';
 import 'router/app_router.dart';
@@ -14,9 +13,11 @@ part 'app.inject.cherrypick.g.dart';
 class TalkerProvider extends InheritedWidget {
   final Talker talker;
   const TalkerProvider({required this.talker, required super.child, super.key});
-  static Talker of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TalkerProvider>()!.talker;
+  static Talker of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<TalkerProvider>()!.talker;
   @override
-  bool updateShouldNotify(TalkerProvider oldWidget) => oldWidget.talker != talker;
+  bool updateShouldNotify(TalkerProvider oldWidget) =>
+      oldWidget.talker != talker;
 }
 
 @injectable()

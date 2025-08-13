@@ -68,7 +68,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   final Map<String, Scope> _scopeMap = HashMap();
 
-  Scope(this._parentScope, {required CherryPickObserver observer}) : _observer = observer {
+  Scope(this._parentScope, {required CherryPickObserver observer})
+      : _observer = observer {
     setScopeId(_generateScopeId());
     observer.onScopeOpened(scopeId ?? 'NO_ID');
     observer.onDiagnostic(
@@ -86,7 +87,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   // индекс для мгновенного поиска binding’ов
   final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
-
 
   /// Generates a unique identifier string for this scope instance.
   ///
@@ -280,7 +280,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     return withCycleDetection<T>(T, named, () {
       var resolved = _tryResolveInternal<T>(named: named, params: params);
       if (resolved != null) {
-        observer.onInstanceCreated(T.toString(), T, resolved, scopeName: scopeId);
+        observer.onInstanceCreated(T.toString(), T, resolved,
+            scopeName: scopeId);
         observer.onDiagnostic(
           'Successfully resolved: $T',
           details: {
@@ -360,10 +361,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     T result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T>>(T, named, () async {
-        return await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
+        return await _resolveAsyncWithLocalDetection<T>(
+            named: named, params: params);
       });
     } else {
-      result = await _resolveAsyncWithLocalDetection<T>(named: named, params: params);
+      result = await _resolveAsyncWithLocalDetection<T>(
+          named: named, params: params);
     }
     _trackDisposable(result);
     return result;
@@ -371,11 +374,14 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   /// Resolves [T] asynchronously using local cycle detector. Throws if not found.
   /// Internal implementation for async [resolveAsync].
-  Future<T> _resolveAsyncWithLocalDetection<T>({String? named, dynamic params}) async {
+  Future<T> _resolveAsyncWithLocalDetection<T>(
+      {String? named, dynamic params}) async {
     return withCycleDetection<Future<T>>(T, named, () async {
-      var resolved = await _tryResolveAsyncInternal<T>(named: named, params: params);
+      var resolved =
+          await _tryResolveAsyncInternal<T>(named: named, params: params);
       if (resolved != null) {
-        observer.onInstanceCreated(T.toString(), T, resolved, scopeName: scopeId);
+        observer.onInstanceCreated(T.toString(), T, resolved,
+            scopeName: scopeId);
         observer.onDiagnostic(
           'Successfully async resolved: $T',
           details: {
@@ -410,10 +416,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T?>>(T, named, () async {
-        return await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
+        return await _tryResolveAsyncWithLocalDetection<T>(
+            named: named, params: params);
       });
     } else {
-      result = await _tryResolveAsyncWithLocalDetection<T>(named: named, params: params);
+      result = await _tryResolveAsyncWithLocalDetection<T>(
+          named: named, params: params);
     }
     if (result != null) _trackDisposable(result);
     return result;
@@ -421,7 +429,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   /// Attempts to resolve [T] asynchronously using local cycle detector. Returns null if missing.
   /// Internal implementation for async [tryResolveAsync].
-  Future<T?> _tryResolveAsyncWithLocalDetection<T>({String? named, dynamic params}) async {
+  Future<T?> _tryResolveAsyncWithLocalDetection<T>(
+      {String? named, dynamic params}) async {
     if (isCycleDetectionEnabled) {
       return withCycleDetection<Future<T?>>(T, named, () async {
         return await _tryResolveAsyncInternal<T>(named: named, params: params);
@@ -432,7 +441,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
-  Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) async {
+  Future<T?> _tryResolveAsyncInternal<T>(
+      {String? named, dynamic params}) async {
     final resolver = _findBindingResolver<T>(named);
     // 1 - Try from own modules; 2 - Fallback to parent
     return resolver?.resolveAsync(params) ??

@@ -7,10 +7,13 @@ import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
 class BenchmarkResult {
   /// List of timings for each run (in microseconds).
   final List<num> timings;
+
   /// Difference in memory (RSS, in KB) after running.
   final int memoryDiffKb;
+
   /// Difference between peak RSS and initial RSS (in KB).
   final int deltaPeakKb;
+
   /// Peak RSS memory observed (in KB).
   final int peakRssKb;
   BenchmarkResult({
@@ -19,6 +22,7 @@ class BenchmarkResult {
     required this.deltaPeakKb,
     required this.peakRssKb,
   });
+
   /// Computes a BenchmarkResult instance from run timings and memory data.
   factory BenchmarkResult.collect({
     required List<num> timings,
@@ -64,7 +68,8 @@ class BenchmarkRunner {
       rssValues.add(ProcessInfo.currentRss);
       benchmark.teardown();
     }
-    return BenchmarkResult.collect(timings: timings, rssValues: rssValues, memBefore: memBefore);
+    return BenchmarkResult.collect(
+        timings: timings, rssValues: rssValues, memBefore: memBefore);
   }
 
   /// Runs an asynchronous benchmark ([UniversalChainAsyncBenchmark]) for a given number of [warmups] and [repeats].
@@ -91,6 +96,7 @@ class BenchmarkRunner {
       rssValues.add(ProcessInfo.currentRss);
       await benchmark.teardown();
     }
-    return BenchmarkResult.collect(timings: timings, rssValues: rssValues, memBefore: memBefore);
+    return BenchmarkResult.collect(
+        timings: timings, rssValues: rssValues, memBefore: memBefore);
   }
 }

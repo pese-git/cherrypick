@@ -16,13 +16,13 @@ import 'package:cherrypick/src/binding.dart';
 import 'package:cherrypick/src/scope.dart';
 
 /// Represents a DI module—a reusable group of dependency bindings.
-/// 
+///
 /// Extend [Module] to declaratively group related [Binding] definitions,
 /// then install your module(s) into a [Scope] for dependency resolution.
-/// 
+///
 /// Modules make it easier to organize your DI configuration for features, layers,
 /// infrastructure, or integration, and support modular app architecture.
-/// 
+///
 /// Usage example:
 /// ```dart
 /// class AppModule extends Module {
@@ -33,12 +33,12 @@ import 'package:cherrypick/src/scope.dart';
 ///     bind<Config>().toInstance(Config.dev());
 ///   }
 /// }
-/// 
+///
 /// // Installing the module into the root DI scope:
 /// final rootScope = CherryPick.openRootScope();
 /// rootScope.installModules([AppModule()]);
 /// ```
-/// 
+///
 /// Combine several modules and submodules to implement scalable architectures.
 ///
 abstract class Module {

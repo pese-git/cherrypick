@@ -77,7 +77,8 @@ class CycleDetector {
     );
     if (_resolutionStack.contains(dependencyKey)) {
       final cycleStartIndex = _resolutionHistory.indexOf(dependencyKey);
-      final cycle = _resolutionHistory.sublist(cycleStartIndex)..add(dependencyKey);
+      final cycle = _resolutionHistory.sublist(cycleStartIndex)
+        ..add(dependencyKey);
       _observer.onCycleDetected(cycle);
       _observer.onError('Cycle detected for $dependencyKey', null, null);
       throw CircularDependencyException(
@@ -99,7 +100,8 @@ class CycleDetector {
     );
     _resolutionStack.remove(dependencyKey);
     // Only remove from history if it's the last one
-    if (_resolutionHistory.isNotEmpty && _resolutionHistory.last == dependencyKey) {
+    if (_resolutionHistory.isNotEmpty &&
+        _resolutionHistory.last == dependencyKey) {
       _resolutionHistory.removeLast();
     }
   }
@@ -124,7 +126,8 @@ class CycleDetector {
   }
 
   /// Gets the current dependency resolution chain (for diagnostics or debugging).
-  List<String> get currentResolutionChain => List.unmodifiable(_resolutionHistory);
+  List<String> get currentResolutionChain =>
+      List.unmodifiable(_resolutionHistory);
 
   /// Returns a unique string key for type [T] (+name).
   String _createDependencyKey<T>(String? named) {
@@ -200,12 +203,13 @@ mixin CycleDetectionMixin {
       return action();
     }
 
-    final dependencyKey = named != null 
-        ? '${dependencyType.toString()}@$named' 
+    final dependencyKey = named != null
+        ? '${dependencyType.toString()}@$named'
         : dependencyType.toString();
 
     if (_cycleDetector!._resolutionStack.contains(dependencyKey)) {
-      final cycleStartIndex = _cycleDetector!._resolutionHistory.indexOf(dependencyKey);
+      final cycleStartIndex =
+          _cycleDetector!._resolutionHistory.indexOf(dependencyKey);
       final cycle = _cycleDetector!._resolutionHistory.sublist(cycleStartIndex)
         ..add(dependencyKey);
       observer.onCycleDetected(cycle);
@@ -223,7 +227,7 @@ mixin CycleDetectionMixin {
       return action();
     } finally {
       _cycleDetector!._resolutionStack.remove(dependencyKey);
-      if (_cycleDetector!._resolutionHistory.isNotEmpty && 
+      if (_cycleDetector!._resolutionHistory.isNotEmpty &&
           _cycleDetector!._resolutionHistory.last == dependencyKey) {
         _cycleDetector!._resolutionHistory.removeLast();
       }
@@ -231,6 +235,6 @@ mixin CycleDetectionMixin {
   }
 
   /// Gets the current active dependency resolution chain.
-  List<String> get currentResolutionChain => 
+  List<String> get currentResolutionChain =>
       _cycleDetector?.currentResolutionChain ?? [];
 }

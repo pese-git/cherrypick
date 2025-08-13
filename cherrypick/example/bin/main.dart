@@ -47,19 +47,19 @@ class FeatureModule extends Module {
 
 Future<void> main() async {
   try {
-  final scope = CherryPick.openRootScope().installModules([AppModule()]);
+    final scope = CherryPick.openRootScope().installModules([AppModule()]);
 
     final subScope = scope
         .openSubScope("featureScope")
         .installModules([FeatureModule(isMock: true)]);
 
-  // Asynchronous instance resolution
-  final dataBloc = await subScope.resolveAsync<DataBloc>();
-  dataBloc.data.listen(
-    (d) => print('Received data: $d'),
-    onError: (e) => print('Error: $e'),
-    onDone: () => print('DONE'),
-  );
+    // Asynchronous instance resolution
+    final dataBloc = await subScope.resolveAsync<DataBloc>();
+    dataBloc.data.listen(
+      (d) => print('Received data: $d'),
+      onError: (e) => print('Error: $e'),
+      onDone: () => print('DONE'),
+    );
 
     await dataBloc.fetchData();
   } catch (e) {

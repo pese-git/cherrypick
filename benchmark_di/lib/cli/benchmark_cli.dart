@@ -36,8 +36,11 @@ class BenchmarkCliRunner {
           if (config.di == 'getit') {
             final di = GetItAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<GetIt>(di,
-                chainCount: c, nestingDepth: d, mode: mode,
+              final benchAsync = UniversalChainAsyncBenchmark<GetIt>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
               );
               benchResult = await BenchmarkRunner.runAsync(
                 benchmark: benchAsync,
@@ -45,8 +48,12 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark<GetIt>(di,
-                chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
+              final benchSync = UniversalChainBenchmark<GetIt>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+                scenario: scenario,
               );
               benchResult = await BenchmarkRunner.runSync(
                 benchmark: benchSync,
@@ -57,8 +64,12 @@ class BenchmarkCliRunner {
           } else if (config.di == 'riverpod') {
             final di = RiverpodAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<Map<String, rp.ProviderBase<Object?>>>(di,
-                chainCount: c, nestingDepth: d, mode: mode,
+              final benchAsync = UniversalChainAsyncBenchmark<
+                  Map<String, rp.ProviderBase<Object?>>>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
               );
               benchResult = await BenchmarkRunner.runAsync(
                 benchmark: benchAsync,
@@ -66,8 +77,13 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark<Map<String, rp.ProviderBase<Object?>>>(di,
-                chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
+              final benchSync = UniversalChainBenchmark<
+                  Map<String, rp.ProviderBase<Object?>>>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+                scenario: scenario,
               );
               benchResult = await BenchmarkRunner.runSync(
                 benchmark: benchSync,
@@ -78,8 +94,11 @@ class BenchmarkCliRunner {
           } else {
             final di = CherrypickDIAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<Scope>(di,
-                chainCount: c, nestingDepth: d, mode: mode,
+              final benchAsync = UniversalChainAsyncBenchmark<Scope>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
               );
               benchResult = await BenchmarkRunner.runAsync(
                 benchmark: benchAsync,
@@ -87,8 +106,12 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark<Scope>(di,
-                chainCount: c, nestingDepth: d, mode: mode, scenario: scenario,
+              final benchSync = UniversalChainBenchmark<Scope>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+                scenario: scenario,
               );
               benchResult = await BenchmarkRunner.runSync(
                 benchmark: benchSync,
@@ -103,7 +126,11 @@ class BenchmarkCliRunner {
           var median = timings[timings.length ~/ 2];
           var minVal = timings.first;
           var maxVal = timings.last;
-          var stddev = timings.isEmpty ? 0 : sqrt(timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) / timings.length);
+          var stddev = timings.isEmpty
+              ? 0
+              : sqrt(
+                  timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) /
+                      timings.length);
           results.add({
             'benchmark': 'Universal_$bench',
             'chainCount': c,
@@ -128,6 +155,7 @@ class BenchmarkCliRunner {
       'json': JsonReport(),
       'markdown': MarkdownReport(),
     };
-    print(reportGenerators[config.format]?.render(results) ?? PrettyReport().render(results));
+    print(reportGenerators[config.format]?.render(results) ??
+        PrettyReport().render(results));
   }
 }
