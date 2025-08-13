@@ -707,11 +707,11 @@ Yes! Even if none of your services currently implement `Disposable`, always use 
 
 CherryPick provides a set of official add-on modules for advanced use cases and specific platforms:
 
-| Module name | Description | Documentation |
-|-------------|-------------|---------------|
-| [**cherrypick_annotations**](https://pub.dev/packages/cherrypick_annotations) | Dart annotations for concise DI definitions and code generation. | [README](../cherrypick_annotations/README.md) |
-| [**cherrypick_generator**](https://pub.dev/packages/cherrypick_generator) | Code generator to produce DI bindings based on annotations. | [README](../cherrypick_generator/README.md) |
-| [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Flutter integration: DI provider widgets and helpers for Flutter. | [README](../cherrypick_flutter/README.md) |
+| Module name | Description |
+|-------------|-------------|
+| [**cherrypick_annotations**](https://pub.dev/packages/cherrypick_annotations) | Dart annotations for concise DI definitions and code generation. |
+| [**cherrypick_generator**](https://pub.dev/packages/cherrypick_generator) | Code generator to produce DI bindings based on annotations. |
+| [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Flutter integration: DI provider widgets and helpers for Flutter. |
 
 ---
 
