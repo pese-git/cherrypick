@@ -1,3 +1,7 @@
+## 1.1.0-dev.2
+
+ - Bump "talker_cherrypick_logger" to `1.1.0-dev.2`.
+
 ## 1.1.0-dev.0
 
  - **FEAT**(logging): add talker_dio_logger and talker_bloc_logger integration, improve cherrypick logger structure, add UI log screen for DI and network/bloc debug.

@@ -11,6 +11,27 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.2`](#talker_cherrypick_logger---v110-dev2)
+
+---
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.2`
+
+ - Bump "talker_cherrypick_logger" to `1.1.0-dev.2`.
+
+
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`cherrypick_generator` - `v2.0.0-dev.0`](#cherrypick_generator---v200-dev0)
 
 Packages with other changes:
