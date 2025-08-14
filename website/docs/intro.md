@@ -2,46 +2,40 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# CherryPick — Dependency Injection for Dart & Flutter
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Welcome to the documentation for **CherryPick**, a lightweight and flexible dependency injection library for Dart and Flutter.
 
-## Getting Started
+---
 
-Get started by **creating a new site**.
+## About CherryPick
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+CherryPick is a modular DI (Dependency Injection) toolkit designed for:
+- Clean architecture
+- Lightweight and intuitive API
+- Powerful hierarchical scopes
+- Fast synchronous & asynchronous injections
+- Code generation and annotation-based configuration
 
-### What you'll need
+Whether you build backend or Flutter apps, CherryPick will help you maintain clear and testable project structure with minimal boilerplate.
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+## Quick Links
 
-## Generate a new site
+- [Key Features](key-features.md)
+- [Getting Started](getting-started.md)
+- [Core Concepts](core-concepts/binding.md)
+- [Advanced Features](advanced-features/hierarchical-subscopes.md)
+- [Using Annotations](using-annotations.md)
+- [FAQ](faq.md)
+- [Example Application](example-application.md)
+- [GitHub Repository](https://github.com/pese-git/cherrypick)
 
-Generate a new Docusaurus site using the **classic template**.
+## Installation
 
-The classic template will automatically be added to your project after you run the command:
+See [Installation](installation.md) for instructions on adding CherryPick to your Dart/Flutter project.
 
-```bash
-npm init docusaurus@latest my-website classic
-```
+---
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+CherryPick is open-source. Contributions and questions are welcome!
 
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+---

@@ -11,32 +11,29 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Modular & Hierarchical',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        CherryPick supports modular DI bindings and true hierarchical scopes. Build scalable apps by composing advanced dependency trees with clean separation of concerns.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Sync & Async DI, Zero Boilerplate',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Register synchronous or asynchronous providers, named and singleton dependencies, and enjoy null-safe, testable resolution. Annotation-based code generation removes all manual “wiring”.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'For Dart & Flutter',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Use CherryPick in backend, CLI, server or Flutter widget trees equally well. Deep Flutter integration for provider injection, async scope lifecycles, and easy testing.
       </>
     ),
   },
