@@ -90,6 +90,10 @@ const config: Config = {
           label: 'Docs',
         },
         {
+          type: 'localeDropdown',
+          position: 'right',
+        },
+        {
           href: 'https://github.com/pese-git/cherrypick',
           label: 'GitHub',
           position: 'right',

@@ -68,4 +68,4 @@ try {
 }
 ```
 
-**Подробнее:** смотрите [cycle_detection.ru.md](doc/cycle_detection.ru.md)
+<!-- **Подробнее:** смотрите [cycle_detection.ru.md](doc/cycle_detection.ru.md) -->

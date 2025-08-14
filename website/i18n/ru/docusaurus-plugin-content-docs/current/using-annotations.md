@@ -96,7 +96,9 @@ abstract class AppModule {
 
 ## Ссылки
 
+<!--
 - [Подробнее про аннотации (en)](doc/annotations_en.md)
 - [cherrypick_annotations/README.md](../cherrypick_annotations/README.md)
 - [cherrypick_generator/README.md](../cherrypick_generator/README.md)
 - Полный пример: [`examples/postly`](../examples/postly)
+-->

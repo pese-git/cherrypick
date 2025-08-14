@@ -125,7 +125,9 @@ abstract class AppModule {
 
 ## References
 
+<!--
 - [Full annotation reference (en)](doc/annotations_en.md)
 - [cherrypick_annotations/README.md](../cherrypick_annotations/README.md)
 - [cherrypick_generator/README.md](../cherrypick_generator/README.md)
 - See the [`examples/postly`](../examples/postly) for a full working DI+annotations app.
+-->

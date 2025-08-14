@@ -25,7 +25,8 @@ void main() {
 
 ### Example: Advanced Logging with Talker
 
-For richer logging, analytics, or UI overlays, use an advanced observer such as [talker_cherrypick_logger](../talker_cherrypick_logger):
+For richer logging, analytics, or UI overlays, use an advanced observer such as [talker_cherrypick_logger](https://pub.dev/packages/talker_cherrypick_logger):
+<!-- For richer logging, analytics, or UI overlays, use an advanced observer such as [talker_cherrypick_logger](../talker_cherrypick_logger): -->
 
 ```dart
 import 'package:cherrypick/cherrypick.dart';

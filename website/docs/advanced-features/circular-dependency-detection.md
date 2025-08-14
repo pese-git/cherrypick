@@ -68,4 +68,4 @@ try {
 }
 ```
 
-**More details:** See [cycle_detection.en.md](doc/cycle_detection.en.md)
+<!-- **More details:** See [cycle_detection.en.md](doc/cycle_detection.en.md) -->

@@ -26,7 +26,8 @@ void main() {
 
 ### Пример: расширенное логирование через Talker
 
-Для более гибкого логирования или UI-оверлеев можно использовать observer наподобие [talker_cherrypick_logger](../talker_cherrypick_logger):
+Для более гибкого логирования или UI-оверлеев можно использовать observer наподобие [talker_cherrypick_logger](https://pub.dev/packages/talker_cherrypick_logger):
+<!-- Для более гибкого логирования или UI-оверлеев можно использовать observer наподобие [talker_cherrypick_logger](../talker_cherrypick_logger): -->
 
 ```dart
 import 'package:cherrypick/cherrypick.dart';
