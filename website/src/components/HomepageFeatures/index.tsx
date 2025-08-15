@@ -1,40 +1,41 @@
 import type {ReactNode} from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
+import Translate from '@docusaurus/Translate';
 import styles from './styles.module.css';
 
 type FeatureItem = {
-  title: string;
+  title: ReactNode;
   Svg: React.ComponentType<React.ComponentProps<'svg'>>;
   description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Modular & Hierarchical',
+    title: <Translate id="feature.modular">Modular & Hierarchical</Translate>,
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
-      <>
-        CherryPick supports modular DI bindings and true hierarchical scopes. Build scalable apps by composing advanced dependency trees with clean separation of concerns.
-      </>
+      <Translate id="feature.modular.desc">
+        CherryPick supports modular DI bindings and true hierarchical scopes. Build scalable apps by composing advanced dependency trees with clear separation of concerns.
+      </Translate>
     ),
   },
   {
-    title: 'Sync & Async DI, Zero Boilerplate',
+    title: <Translate id="feature.syncAsync">Sync & Async DI, Zero Boilerplate</Translate>,
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
-      <>
+      <Translate id="feature.syncAsync.desc">
         Register synchronous or asynchronous providers, named and singleton dependencies, and enjoy null-safe, testable resolution. Annotation-based code generation removes all manual “wiring”.
-      </>
+      </Translate>
     ),
   },
   {
-    title: 'For Dart & Flutter',
+    title: <Translate id="feature.dartFlutter">For Dart & Flutter</Translate>,
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
-      <>
+      <Translate id="feature.dartFlutter.desc">
         Use CherryPick in backend, CLI, server or Flutter widget trees equally well. Deep Flutter integration for provider injection, async scope lifecycles, and easy testing.
-      </>
+      </Translate>
     ),
   },
 ];
