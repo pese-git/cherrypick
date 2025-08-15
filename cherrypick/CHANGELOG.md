@@ -1,3 +1,7 @@
+## 3.0.0-dev.10
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
 ## 3.0.0-dev.9
 
  - **DOCS**(readme): add talker_cherrypick_logger to Additional Modules section.

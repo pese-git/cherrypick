@@ -1,3 +1,7 @@
+## 1.1.2-dev.1
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
 ## 1.1.2-dev.0
 
  - **DOCS**(annotations): unify and improve English DartDoc for all DI annotations.

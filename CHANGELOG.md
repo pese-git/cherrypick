@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-08-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.10`](#cherrypick---v300-dev10)
+ - [`cherrypick_annotations` - `v1.1.2-dev.1`](#cherrypick_annotations---v112-dev1)
+ - [`cherrypick_flutter` - `v1.1.3-dev.10`](#cherrypick_flutter---v113-dev10)
+ - [`cherrypick_generator` - `v2.0.0-dev.1`](#cherrypick_generator---v200-dev1)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.5`](#talker_cherrypick_logger---v110-dev5)
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.10`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `cherrypick_annotations` - `v1.1.2-dev.1`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.10`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `cherrypick_generator` - `v2.0.0-dev.1`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.5`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+
 ## 2025-08-13
 
 ### Changes

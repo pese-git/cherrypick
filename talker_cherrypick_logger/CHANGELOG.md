@@ -1,3 +1,7 @@
+## 1.1.0-dev.5
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
 ## 1.1.0-dev.4
 
  - **DOCS**(readme): update install instructions to use pub.dev as default method and remove obsolete git example.

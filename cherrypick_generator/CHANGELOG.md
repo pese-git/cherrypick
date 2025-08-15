@@ -1,3 +1,7 @@
+## 2.0.0-dev.1
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
 ## 2.0.0-dev.0
 
 > Note: This release has breaking changes.

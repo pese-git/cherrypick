@@ -1,3 +1,7 @@
+## 1.1.3-dev.10
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
 ## 1.1.3-dev.9
 
  - **DOCS**(provider): add detailed English API documentation for CherryPickProvider Flutter integration.
