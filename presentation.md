@@ -111,7 +111,7 @@ try {
 
 ---
 
-### Декларативный DI: аннотации и генерация кода
+## Декларативный DI: аннотации и генерация кода
 
 - Описывайте зависимости с помощью аннотаций
 - Автоматически генерируется модуль DI и mixin для автоподстановки зависимостей
@@ -128,7 +128,6 @@ abstract class AppModule {
 
 ---
 
-## Просто  
 ### Field injection: минимум кода — максимум удобства
 
 ```dart
@@ -190,10 +189,13 @@ await CherryPick.closeRootScope(); // дождётся завершения asyn
 
 ---
 
-## Вопросы?
-
-- • Try CherryPick — [github.com/pese-git/cherrypick](https://github.com/pese-git/cherrypick)
-- • Документация и примеры — https://cherrypick-di.dev
-- • Готов помочь — пишите, пробуйте, внедряйте!
+## Спасибо за внимание
 
 ---
+
+## Вопросы?
+
+- Try CherryPick — [github.com/pese-git/cherrypick](https://github.com/pese-git/cherrypick)
+- Документация и примеры — [https://cherrypick-di.dev](https://cherrypick-di.dev)
+- Готов помочь — пишите, пробуйте, внедряйте!
+
