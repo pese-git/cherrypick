@@ -12,6 +12,7 @@ dependencies:
   args: ^2.7.0
   get_it: ^8.2.0
   riverpod: ^2.6.1
+  kiwi: ^5.0.1
 
 dev_dependencies:
   lints: ^5.0.0

@@ -16,6 +16,8 @@ import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
 import 'package:benchmark_di/di_adapters/cherrypick_adapter.dart';
 import 'package:benchmark_di/di_adapters/get_it_adapter.dart';
 import 'package:benchmark_di/di_adapters/riverpod_adapter.dart';
+import 'package:benchmark_di/di_adapters/kiwi_adapter.dart';
+import 'package:kiwi/kiwi.dart';
 
 /// Command-line interface (CLI) runner for benchmarks.
 ///
@@ -61,11 +63,40 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             }
+          } else if (config.di == 'kiwi') {
+            final di = KiwiAdapter();
+            if (scenario == UniversalScenario.asyncChain) {
+              // UnsupportedError будет выброшен адаптером, но если дойдёт — вызывать async benchmark
+              final benchAsync = UniversalChainAsyncBenchmark<KiwiContainer>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+              );
+              benchResult = await BenchmarkRunner.runAsync(
+                benchmark: benchAsync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            } else {
+              final benchSync = UniversalChainBenchmark<KiwiContainer>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+                scenario: scenario,
+              );
+              benchResult = await BenchmarkRunner.runSync(
+                benchmark: benchSync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            }
           } else if (config.di == 'riverpod') {
             final di = RiverpodAdapter();
             if (scenario == UniversalScenario.asyncChain) {
               final benchAsync = UniversalChainAsyncBenchmark<
-                  Map<String, rp.ProviderBase<Object?>>>(
+                  Map<String, rp.ProviderBase<Object?>>> (
                 di,
                 chainCount: c,
                 nestingDepth: d,
@@ -78,7 +109,7 @@ class BenchmarkCliRunner {
               );
             } else {
               final benchSync = UniversalChainBenchmark<
-                  Map<String, rp.ProviderBase<Object?>>>(
+                  Map<String, rp.ProviderBase<Object?>>> (
                 di,
                 chainCount: c,
                 nestingDepth: d,
