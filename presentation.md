@@ -126,6 +126,13 @@ abstract class AppModule {
 }
 ```
 
+Регистрация модуля
+
+```dart
+final scope = openRootScope()
+  ..installModules([$AppModule()]);
+```
+
 ---
 
 ### Field injection: минимум кода — максимум удобства
@@ -135,6 +142,10 @@ abstract class AppModule {
 class MyScreen with _$MyScreen {
   @inject()
   late final Repo repo;
+
+  MyScreen() {
+    injectFields();
+  }
 }
 ```
 
