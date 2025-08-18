@@ -2,6 +2,11 @@
 marp: true
 ---
 
+<!--
+backgroundImage: url('./doc/assets/image.png')
+backgroundSize: cover
+-->
+
 # CherryPick 3.x  
 ### Быстро. Безопасно. Просто.
 
@@ -9,6 +14,9 @@ marp: true
 Автор: Сергей Пенковский
 
 ---
+<!--
+backgroundImage: none
+-->
 
 ## Что такое CherryPick?
 
@@ -199,6 +207,11 @@ await CherryPick.closeRootScope(); // дождётся завершения asyn
 - Максимально простой и декларативный код
 
 ---
+
+<!--
+backgroundImage: url('./doc/assets/image.png')
+backgroundSize: cover
+-->
 
 ## Спасибо за внимание
 
