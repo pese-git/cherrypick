@@ -1,4 +1,11 @@
-# Comparative DI Benchmark Report: cherrypick vs get_it vs riverpod
+# Comparative DI Benchmark Report: cherrypick vs get_it vs riverpod vs kiwi
+
+## Benchmark Parameters
+
+- chainCount = 100
+- nestingDepth = 100
+- repeat = 5
+- warmup = 2
 
 ## Benchmark Scenarios
 
@@ -11,41 +18,33 @@
 
 ---
 
-## Comparative Table: chainCount=10, nestingDepth=10 (Mean, PeakRSS)
+## Comparative Table: chainCount=100, nestingDepth=100, repeat=5, warmup=2 (Mean time, µs)
 
-| Scenario           | cherrypick Mean (us) | cherrypick PeakRSS | get_it Mean (us) | get_it PeakRSS | riverpod Mean (us) | riverpod PeakRSS |
-|--------------------|---------------------:|-------------------:|-----------------:|---------------:|-------------------:|-----------------:|
-| RegisterSingleton  | 13.00                | 273104             | 8.40             | 261872         | 9.80               | 268512           |
-| ChainSingleton     | 13.80                | 271072             | 2.00             | 262000         | 33.60              | 268784           |
-| ChainFactory       | 5.00                 | 299216             | 4.00             | 297136         | 22.80              | 271296           |
-| AsyncChain         | 28.60                | 290640             | 24.60            | 342976         | 78.20              | 285920           |
-| Named              | 2.20                 | 297008             | 0.20             | 449824         | 6.20               | 281136           |
-| Override           | 7.00                 | 297024             | 0.00             | 449824         | 30.20              | 281152           |
-
-## Maximum Load: chainCount=100, nestingDepth=100 (Mean, PeakRSS)
-
-| Scenario           | cherrypick Mean (us) | cherrypick PeakRSS | get_it Mean (us) | get_it PeakRSS | riverpod Mean (us) | riverpod PeakRSS |
-|--------------------|---------------------:|-------------------:|-----------------:|---------------:|-------------------:|-----------------:|
-| RegisterSingleton  | 4.00                 | 271072             | 1.00             | 262000         | 2.00               | 268688           |
-| ChainSingleton     | 76.60                | 303312             | 2.00             | 297136         | 221.80             | 270784           |
-| ChainFactory       | 80.00                | 293952             | 39.20            | 342720         | 195.80             | 308640           |
-| AsyncChain         | 251.40               | 297008             | 18.20            | 450640         | 748.80             | 285968           |
-| Named              | 2.20                 | 297008             | 0.00             | 449824         | 1.00               | 281136           |
-| Override           | 104.80               | 301632             | 2.20             | 477344         | 120.80             | 294752           |
+| Scenario         | cherrypick | get_it | riverpod | kiwi |
+|------------------|------------|--------|----------|------|
+| chainSingleton   | 47.6       | 13.0   | 389.6    | 46.8 |
+| chainFactory     | 93.6       | 68.4   | 678.4    | 40.8 |
+| register         | 67.4       | 10.2   | 242.2    | 56.2 |
+| named            | 14.2       | 10.6   | 10.4     | 8.2  |
+| override         | 42.2       | 11.2   | 302.8    | 44.6 |
+| chainAsync       | 519.4      | 38.0   | 886.6    | –    |
 
 ---
 
 ## Analysis
 
-- **get_it** is the absolute leader in all scenarios, especially under deep/nested chains and async.
-- **cherrypick** is highly competitive and much faster than riverpod on any complex graph.
-- **riverpod** is only suitable for small/simple DI graphs due to major slowdowns with depth, async, or override.
+- **get_it** and **kiwi** are the fastest in most sync scenarios; cherrypick is solid, riverpod is much slower for deep chains.
+- **Async scenarios**: Only cherrypick, get_it and riverpod are supported; get_it is much faster. Kiwi does not support async.
+- **Named** lookups are fast in all DI.
+- **Riverpod** loses on deeply nested/async chains.
+- **Memory/peak usage** varies, but mean_us is the main comparison (see raw results for memory).
 
 ### Recommendations
-- Use **get_it** for performance-critical and deeply nested graphs.
-- Use **cherrypick** for scalable/testable apps if a small speed loss is acceptable.
-- Use **riverpod** only if you rely on Flutter integration and your DI chains are simple.
+- Use **get_it** or **kiwi** for maximum sync performance and simplicity.
+- Use **cherrypick** for robust, scalable and testable setups — with a small latency cost.
+- Use **riverpod** only for Flutter apps where integration is paramount and chains are simple.
 
 ---
 
-_Last updated: August 8, 2025._
+_Last updated: August 19, 2025._
+_Please see scenario source for details._
