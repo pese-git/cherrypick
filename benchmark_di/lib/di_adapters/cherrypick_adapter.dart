@@ -184,9 +184,9 @@ class CherrypickDIAdapter extends DIAdapter<Scope> {
       _scope!.resolveAsync<T>(named: named);
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     if (!_isSubScope) {
-      CherryPick.closeRootScope();
+      await CherryPick.closeRootScope();
       _scope = null;
     }
     // SubScope teardown не требуется
