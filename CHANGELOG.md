@@ -15,6 +15,37 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick` - `v3.0.0-dev.12`](#cherrypick---v300-dev12)
+ - [`cherrypick_flutter` - `v1.1.3-dev.12`](#cherrypick_flutter---v113-dev12)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.7`](#talker_cherrypick_logger---v110-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.12`
+ - `talker_cherrypick_logger` - `v1.1.0-dev.7`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.12`
+
+ - **FIX**(scope): prevent concurrent modification in dispose().
+ - **FIX**(binding): fix unterminated string literal and syntax issues in binding.dart.
+
+
+## 2025-08-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick` - `v3.0.0-dev.11`](#cherrypick---v300-dev11)
  - [`cherrypick_flutter` - `v1.1.3-dev.11`](#cherrypick_flutter---v113-dev11)
  - [`talker_cherrypick_logger` - `v1.1.0-dev.6`](#talker_cherrypick_logger---v110-dev6)

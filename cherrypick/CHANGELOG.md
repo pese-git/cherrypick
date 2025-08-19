@@ -1,3 +1,8 @@
+## 3.0.0-dev.12
+
+ - **FIX**(scope): prevent concurrent modification in dispose().
+ - **FIX**(binding): fix unterminated string literal and syntax issues in binding.dart.
+
 ## 3.0.0-dev.11
 
  - **FIX**(scope): prevent concurrent modification in dispose().
