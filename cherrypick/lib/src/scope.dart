@@ -486,16 +486,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// await myScope.dispose();
   /// ```
   Future<void> dispose() async {
-    // First dispose children scopes
-    for (final subScope in _scopeMap.values) {
+    // Create copies to avoid concurrent modification
+    final scopesCopy = Map<String, Scope>.from(_scopeMap);
+    for (final subScope in scopesCopy.values) {
       await subScope.dispose();
     }
     _scopeMap.clear();
-    // Then dispose own disposables
-    for (final d in _disposables) {
-      try {
-        await d.dispose();
-      } catch (_) {}
+
+    final disposablesCopy = Set<Disposable>.from(_disposables);
+    for (final d in disposablesCopy) {
+      await d.dispose();
     }
     _disposables.clear();
   }
