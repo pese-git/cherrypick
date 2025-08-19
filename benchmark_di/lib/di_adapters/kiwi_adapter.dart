@@ -7,6 +7,7 @@ import 'di_adapter.dart';
 /// DIAdapter-для KiwiContainer с поддержкой universal benchmark сценариев.
 class KiwiAdapter extends DIAdapter<KiwiContainer> {
   late KiwiContainer _container;
+  // ignore: unused_field
   final bool _isSubScope;
 
   KiwiAdapter({KiwiContainer? container, bool isSubScope = false})
