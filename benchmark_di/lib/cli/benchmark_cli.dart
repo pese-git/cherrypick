@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:benchmark_di/cli/report/markdown_report.dart';
+import 'package:benchmark_di/di_adapters/yx_scope_adapter.dart';
+import 'package:benchmark_di/di_adapters/yx_scope_universal_container.dart';
 import 'package:benchmark_di/scenarios/universal_scenario.dart';
 import 'package:cherrypick/cherrypick.dart';
 import 'package:get_it/get_it.dart';
@@ -110,6 +112,34 @@ class BenchmarkCliRunner {
             } else {
               final benchSync = UniversalChainBenchmark<
                   Map<String, rp.ProviderBase<Object?>>> (
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+                scenario: scenario,
+              );
+              benchResult = await BenchmarkRunner.runSync(
+                benchmark: benchSync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            }
+          } else if (config.di == 'yx_scope') {
+            final di = YxScopeAdapter();
+            if (scenario == UniversalScenario.asyncChain) {
+              final benchAsync = UniversalChainAsyncBenchmark<UniversalYxScopeContainer>(
+                di,
+                chainCount: c,
+                nestingDepth: d,
+                mode: mode,
+              );
+              benchResult = await BenchmarkRunner.runAsync(
+                benchmark: benchAsync,
+                warmups: config.warmups,
+                repeats: config.repeats,
+              );
+            } else {
+              final benchSync = UniversalChainBenchmark<UniversalYxScopeContainer>(
                 di,
                 chainCount: c,
                 nestingDepth: d,
