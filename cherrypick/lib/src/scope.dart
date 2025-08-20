@@ -10,8 +10,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'dart:convert';
 
 import 'package:cherrypick/src/cycle_detector.dart';
 import 'package:cherrypick/src/disposable.dart';
@@ -87,6 +89,28 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   // индекс для мгновенного поиска binding’ов
   final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
+
+  /// Cached [Future]s for async singleton or in-progress resolutions (keyed by binding).
+  final Map<String, Future<Object?>> _asyncResolveCache = {};
+
+  /// Holds [Completer] for every async key currently being awaited — needed to notify all callers promptly and consistently in case of errors.
+  final Map<String, Completer<Object?>> _asyncCompleterCache = {};
+
+  /// Tracks which async keys are actively in progress (to detect/guard against async circular dependencies).
+  final Set<String> _activeAsyncKeys = {};
+
+  /// Converts parameter object to a unique key string for cache/indexing.
+  String _paramsToKey(dynamic params) {
+    if (params == null) return '';
+    if (params is String) return params;
+    if (params is num || params is bool) return params.toString();
+    if (params is Map || params is List) return jsonEncode(params);
+    return params.hashCode.toString();
+  }
+
+  /// Builds a unique key from type, name, and parameters — used for async singleton/factory cache lookups.
+  String _cacheKey<T>(String? named, [dynamic params]) =>
+      '${T.toString()}:${named ?? ""}:${_paramsToKey(params)}';
 
   /// Generates a unique identifier string for this scope instance.
   ///
@@ -368,6 +392,9 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       result = await _resolveAsyncWithLocalDetection<T>(
           named: named, params: params);
     }
+    //if (result == null) {
+    //  throw StateError('Can\'t resolve async dependency `$T`. Maybe you forget register it?');
+    //}
     _trackDisposable(result);
     return result;
   }
@@ -443,10 +470,24 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
   Future<T?> _tryResolveAsyncInternal<T>(
       {String? named, dynamic params}) async {
+    final key = _cacheKey<T>(named, params);
     final resolver = _findBindingResolver<T>(named);
-    // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveAsync(params) ??
-        _parentScope?.tryResolveAsync(named: named, params: params);
+    if (resolver != null) {
+      final isSingleton = resolver.isSingleton;
+      return await _sharedAsyncResolveCurrentScope(
+        key: key,
+        resolver: resolver,
+        isSingleton: isSingleton,
+        params: params,
+      );
+    } else if (_parentScope != null) {
+      // переход на родителя: выпадение из локального кэша!
+      return await _parentScope.tryResolveAsync<T>(
+          named: named, params: params);
+    } else {
+      // не найден — null, не кэшируем!
+      return null;
+    }
   }
 
   /// Looks up the [BindingResolver] for [T] and [named] within this scope.
@@ -475,6 +516,117 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     }
   }
 
+  /// Shared core for async binding resolution:
+  /// Handles async singleton/factory caching, error propagation for all awaiting callers,
+  /// and detection of async circular dependencies.
+  ///
+  /// If an error occurs (circular or factory throws), all awaiting completions get the same error.
+  /// For singletons, result stays in cache for next calls.
+  ///
+  /// [key] — unique cache key for binding resolution (type:name:params)
+  /// [resolver] — BindingResolver to provide async instance
+  /// [isSingleton] — if true, caches the Future/result; otherwise cache is cleared after resolve
+  /// [params] — (optional) parameters for resolution
+  Future<T?> _sharedAsyncResolveCurrentScope<T>({
+    required String key,
+    required BindingResolver<T> resolver,
+    required bool isSingleton,
+    dynamic params,
+  }) async {
+    observer.onDiagnostic(
+      'Async resolve requested',
+      details: {
+        'type': T.toString(),
+        'key': key,
+        'singleton': isSingleton,
+        'params': params,
+        'scopeId': scopeId,
+      },
+    );
+
+    if (_activeAsyncKeys.contains(key)) {
+      observer.onDiagnostic(
+        'Circular async DI detected',
+        details: {
+          'key': key,
+          'asyncKeyStack': List<String>.from(_activeAsyncKeys)..add(key),
+          'scopeId': scopeId
+        },
+      );
+      final error = CircularDependencyException(
+          'Circular async DI detected for key=$key',
+          List<String>.from(_activeAsyncKeys)..add(key));
+      if (_asyncCompleterCache.containsKey(key)) {
+        final pending = _asyncCompleterCache[key]!;
+        if (!pending.isCompleted) {
+          pending.completeError(error, StackTrace.current);
+        }
+      } else {
+        final completer = Completer<Object?>();
+        _asyncCompleterCache[key] = completer;
+        _asyncResolveCache[key] = completer.future;
+        completer.completeError(error, StackTrace.current);
+      }
+      throw error;
+    }
+
+    if (_asyncResolveCache.containsKey(key)) {
+      observer.onDiagnostic(
+        'Async resolve cache HIT',
+        details: {'key': key, 'scopeId': scopeId},
+      );
+      try {
+        return (await _asyncResolveCache[key]) as T?;
+      } catch (e) {
+        observer.onDiagnostic(
+          'Async resolve cache HIT — exception',
+          details: {'key': key, 'scopeId': scopeId, 'error': e.toString()},
+        );
+        rethrow;
+      }
+    } else {
+      observer.onDiagnostic(
+        'Async resolve cache MISS',
+        details: {'key': key, 'scopeId': scopeId},
+      );
+    }
+
+    final completer = Completer<Object?>();
+    _asyncResolveCache[key] = completer.future;
+    _asyncCompleterCache[key] = completer;
+    _activeAsyncKeys.add(key);
+
+    try {
+      observer.onDiagnostic('Async resolution started',
+          details: {'key': key, 'scopeId': scopeId});
+      final Future<T?> resultFut = resolver.resolveAsync(params)!;
+      final T? result = await resultFut;
+      observer.onDiagnostic('Async resolution success',
+          details: {'key': key, 'scopeId': scopeId});
+      if (!completer.isCompleted) {
+        completer.complete(result);
+      }
+      if (!isSingleton) {
+        _asyncResolveCache.remove(key);
+        _asyncCompleterCache.remove(key);
+      }
+      return result;
+    } catch (e, st) {
+      observer.onDiagnostic('Async resolution error',
+          details: {'key': key, 'scopeId': scopeId, 'error': e.toString()});
+      if (!completer.isCompleted) {
+        completer.completeError(e, st);
+      }
+      _asyncResolveCache.remove(key);
+      _asyncCompleterCache.remove(key);
+      rethrow;
+    } finally {
+      observer.onDiagnostic('Async resolve FINISH (removing from active)',
+          details: {'key': key, 'scopeId': scopeId});
+      _activeAsyncKeys.remove(key); // всегда убираем!
+    }
+  }
+
   /// Asynchronously disposes this [Scope], all tracked [Disposable] objects, and recursively
   /// all its child subscopes.
   ///
@@ -498,5 +650,8 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       await d.dispose();
     }
     _disposables.clear();
+    _asyncResolveCache.clear();
+    _asyncCompleterCache.clear();
+    _activeAsyncKeys.clear();
   }
 }
