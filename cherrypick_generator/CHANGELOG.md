@@ -1,3 +1,7 @@
+## 2.0.0-dev.2
+
+ - Update a dependency to the latest release.
+
 ## 2.0.0-dev.1
 
  - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.

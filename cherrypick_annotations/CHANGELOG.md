@@ -1,3 +1,7 @@
+## 1.1.2-dev.2
+
+ - **DOCS**(annotations): improve API documentation and usage example.
+
 ## 1.1.2-dev.1
 
  - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
