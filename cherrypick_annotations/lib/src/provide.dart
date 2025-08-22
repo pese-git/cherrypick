@@ -39,6 +39,6 @@ import 'package:meta/meta.dart';
 /// See also: [@singleton], [@instance], [@params], [@named]
 @experimental
 final class provide {
-  /// Creates a [provide] annotation.
+  /// Creates a [provide] annotation for marking provider methods/classes in DI modules.
   const provide();
 }

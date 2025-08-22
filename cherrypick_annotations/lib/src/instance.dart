@@ -45,5 +45,6 @@ import 'package:meta/meta.dart';
 /// See also: [@singleton]
 @experimental
 final class instance {
+  /// Creates an [instance] annotation for classes or providers.
   const instance();
 }

@@ -38,5 +38,6 @@ import 'package:meta/meta.dart';
 /// ```
 @experimental
 final class inject {
+  /// Creates an [inject] annotation for field injection.
   const inject();
 }

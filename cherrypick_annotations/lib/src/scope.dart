@@ -49,5 +49,7 @@ import 'package:meta/meta.dart';
 final class scope {
   /// The name/key of the DI scope from which to resolve this dependency.
   final String? name;
+
+  /// Creates a [scope] annotation specifying which DI scope to use for the dependency resolution.
   const scope(this.name);
 }

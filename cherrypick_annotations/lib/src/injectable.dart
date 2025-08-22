@@ -39,5 +39,6 @@ import 'package:meta/meta.dart';
 /// After running the generator, the mixin (`_\$ProfileScreen`) will be available to help auto-inject all [@inject] fields in your widget/service/controller.
 @experimental
 final class injectable {
+  /// Creates an [injectable] annotation for classes.
   const injectable();
 }
