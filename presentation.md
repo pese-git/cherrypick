@@ -71,7 +71,7 @@ backgroundImage: none
 
 ```dart
 // 1. Для текущего scope (локальная проверка)
-final scope = CherryPick.openRootScope(); // или
+final scope = CherryPick.openRootScope();
 scope.enableCycleDetection();
 ```
 
