@@ -10,8 +10,8 @@ backgroundSize: cover
 # CherryPick 3.x  
 ### Быстро. Безопасно. Просто.
 
-Современный DI-фраемворк для Dart и Flutter  
-Автор: Сергей Пенковский
+Современный DI-framework для Dart и Flutter  
+Автор: Сергей Пеньковский
 
 ---
 <!--
