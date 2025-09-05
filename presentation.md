@@ -32,16 +32,19 @@ backgroundImage: none
 - Интеграция с Talker для наглядного логирования DI-событий
 - Защита от циклических зависимостей на уровне ядра
 - Полностью декларативное описание DI через аннотации и генерацию кода
+- Автоматическая очистка ресурсов
 
 ---
 
 ## Быстро
 
+* Мгновенное разрешение зависимостей
+
 ---
 
 ### Мгновенное разрешение зависимостей
 
-- Операция resolve<T> теперь O(1) вместо перебора
+- Операция resolve<T> теперь выполняется за O(1)
 - Используется Map-индексация всех биндингов в каждом скоупе (в среднем ускорение в 10x+ на крупных графах)
 - Производительность не зависит от размера приложения
 
@@ -61,7 +64,7 @@ backgroundImage: none
 
 ---
 
-### Как включить проверку циклов (локально)
+#### Как включить проверку циклов (локально)
 
 
 - Для защиты только внутри одного scope:
@@ -78,12 +81,12 @@ scope.enableCycleDetection();
 // 2. Для всей иерархии скоупов (глобальная проверка)
 CherryPick.enableGlobalCycleDetection();
 CherryPick.enableGlobalCrossScopeCycleDetection();
-final rootScope = CherryPick.openGlobalSafeRootScope();
+final rootScope = CherryPick.openRootScope();
 ```
 
 ---
 
-### Пример обработки ошибки
+#### Пример обработки ошибки
 
 При обнаружении цикла будет выброшено исключение с подробной трассировкой:
 
@@ -107,7 +110,7 @@ try {
   final talkerLogger = TalkerCherryPickObserver(talker);
   CherryPick.setGlobalObserver(talkerLogger);
 ```
-- Логи сразу видны в консоли, UI или экспортируются  
+- Логи сразу видны в консоли, UI 
 - Удобно для отладки и аудита
 
 ---
@@ -119,17 +122,18 @@ try {
 
 ---
 
-## Декларативный DI: аннотации и генерация кода
+### Декларативный DI: аннотации и генерация кода
 
 - Описывайте зависимости с помощью аннотаций
 - Автоматически генерируется модуль DI и mixin для автоподстановки зависимостей
 
 ```dart
 @module()
-abstract class AppModule {
-  @singleton
+abstract class AppModule extends Module {
+  @provide()
+  @singleton()
   Api api() => Api();
-  @provide
+  @provide()
   Repo repo(Api api) => Repo(api);
 }
 ```
@@ -147,17 +151,17 @@ final scope = openRootScope()
 
 ```dart
 @injectable()
-class MyScreen with _$MyScreen {
+class MyScreen  extends StatelessWidget with _$MyScreen {
   @inject()
   late final Repo repo;
 
   MyScreen() {
-    injectFields();
+    _inject(this);
   }
 }
 ```
 
-- После генерации mixin и вызова `screen.injectFields()` — зависимости готовы
+- После генерации mixin и вызова `screen._inject()` — зависимости готовы
 - Сильная типизация, никаких ручных вызовов resolve
 
 ---
@@ -194,8 +198,6 @@ await CherryPick.closeRootScope(); // дождётся завершения asyn
 |Гибко|✅|✅|
 |Кратко|✅|❌|
 |Безопасно|✅|❌ (легко ошибиться)|
-|Масштабируемо|✅|❌|
-|Трассировки и логи|✅|❌|
 
 ---
 
@@ -220,6 +222,6 @@ backgroundSize: cover
 ## Вопросы?
 
 - Try CherryPick — [github.com/pese-git/cherrypick](https://github.com/pese-git/cherrypick)
-- Документация и примеры — [https://cherrypick-di.dev](https://cherrypick-di.dev)
+- Документация и примеры — [https://cherrypick-di.netlify.app/](https://cherrypick-di.netlify.app/)
 - Готов помочь — пишите, пробуйте, внедряйте!
 
