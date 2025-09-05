@@ -221,7 +221,8 @@ backgroundSize: cover
 
 ## Вопросы?
 
-- Try CherryPick — [github.com/pese-git/cherrypick](https://github.com/pese-git/cherrypick)
-- Документация и примеры — [https://cherrypick-di.netlify.app/](https://cherrypick-di.netlify.app/)
+- Try CherryPick - [https://pub.dev/packages/cherrypick](https://pub.dev/packages/cherrypick)
+- Contributing — [https://github.com/pese-git/cherrypick](https://github.com/pese-git/cherrypick)
+- Документация и примеры — [https://cherrypick-di.netlify.app](https://cherrypick-di.netlify.app/)
 - Готов помочь — пишите, пробуйте, внедряйте!
 
