@@ -783,6 +783,14 @@ CherryPick provides a set of official add-on modules for advanced use cases and 
 
 ---
 
+## Contributors
+
+- [Sergey Penkovsky](https://github.com/pese-git)
+- [Klim Yaroshevich](https://github.com/KlimYarosh)
+- [Alexey Popkov](https://github.com/AlexeyYuPopkov)
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please open issues or submit pull requests on [GitHub](https://github.com/pese-git/cherrypick).
