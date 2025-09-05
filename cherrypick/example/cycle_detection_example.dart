@@ -141,6 +141,8 @@ void main() {
   // Example 2: Without circular dependency detection (dangerous!)
   print('2. Same code without circular dependency detection:');
   try {
+    CherryPick.disableGlobalCrossScopeCycleDetection();
+    CherryPick.disableGlobalCycleDetection();
     final scope = CherryPick.openRootScope();
     // НЕ включаем обнаружение циклических зависимостей
 

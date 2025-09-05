@@ -14,6 +14,14 @@ class MyService implements Disposable {
   void doSomething() => print('Doing something...');
 }
 
+/// Пример модуля CherryPick
+class ModuleImpl extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<MyService>().toProvide(() => MyService()).singleton();
+  }
+}
+
 void main() {
   final scope = CherryPick.openRootScope();
 
@@ -29,12 +37,4 @@ void main() {
   // Освобождаем все ресурсы
   scope.dispose();
   print('Service wasDisposed = ${service.wasDisposed}'); // true
-}
-
-/// Пример модуля CherryPick
-class ModuleImpl extends Module {
-  @override
-  void builder(Scope scope) {
-    bind<MyService>().toProvide(() => MyService()).singleton();
-  }
 }
