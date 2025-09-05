@@ -98,6 +98,14 @@ try {
 }
 ```
 
+```bash
+=== Circular Dependency Detection Example ===
+
+1. Attempt to create a scope with circular dependencies:
+❌ Circular dependency detected: CircularDependencyException: Circular dependency detected for UserService
+Dependency chain: UserService -> OrderService -> UserService
+```
+
 ---
 
 ### Интеграция с Talker и расширенное логирование
@@ -111,7 +119,15 @@ try {
   CherryPick.setGlobalObserver(talkerLogger);
 ```
 - Логи сразу видны в консоли, UI 
-- Удобно для отладки и аудита
+
+```bash
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+│ [info] | 9:41:33 89ms | [scope opened][CherryPick] scope_1757054493089_7072
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+│ [verbose] | 9:41:33 90ms | [diagnostic][CherryPick] Scope created: scope_1757054493089_7072 {type: Scope, name: scope_1757054493089_7072, description: scope created}
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+```
 
 ---
 
