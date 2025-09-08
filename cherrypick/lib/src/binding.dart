@@ -191,6 +191,7 @@ class Binding<T> {
   /// }
   /// ```
   /// This restriction only applies to [toInstance] bindings.
+  // ignore: deprecated_member_use_from_same_package
   /// With [toProvide]/[toProvideAsync] you may freely use `scope.resolve<T>()` in the builder or provider function.
   Binding<T> toInstance(Instance<T> value) {
     _resolver = InstanceResolver<T>(value);
