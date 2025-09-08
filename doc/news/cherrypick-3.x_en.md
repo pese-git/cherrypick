@@ -162,7 +162,7 @@ class MyScreen extends StatelessWidget with _$MyScreen {
 }
 ```
 
-This way you can choose a convenient style: either **purely programmatic** or **declarative with annotations**.
+This way you can choose an approach in development: **programmatic (imperative) with explicit dependency registration** or **declarative through annotations**.
 
 
 ## Who Might Find CherryPick Useful?
