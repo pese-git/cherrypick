@@ -3,8 +3,8 @@ description: |
   Source code generator for the cherrypick dependency injection system. Processes annotations to generate binding and module code for Dart & Flutter projects.
 
 version: 3.0.0-dev.0
-homepage: https://cherrypick-di.dev/
-documentation: https://cherrypick-di.dev/docs/intro
+homepage: https://cherrypick-di.netlify.app
+documentation: https://cherrypick-di.netlify.app/docs/intro
 repository: https://github.com/pese-git/cherrypick/cherrypick_generator
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 topics:
