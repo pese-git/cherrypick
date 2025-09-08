@@ -258,6 +258,13 @@ class Binding<T> {
   /// ```
   ///
   /// Use this pattern only if you want a master singleton. If you expect a new instance per params, **do not** use `.singleton()` on parameterized providers.
+  ///
+  /// ℹ️ **Note about `.singleton()` and `.toInstance()`:**
+  ///
+  /// Calling `.singleton()` after `.toInstance()` does **not** change the binding’s behavior:
+  /// the object passed with `toInstance()` is already a single, constant instance that will always be returned for every resolve.
+  /// There is no need to use `.singleton()` with `toInstance()`. This call has no effect.
+  /// `.singleton()` is only meaningful with providers (`toProvide`, `toProvideAsync`, etc), to ensure only one instance is created by the factory.
   Binding<T> singleton() {
     _resolver?.toSingleton();
     return this;

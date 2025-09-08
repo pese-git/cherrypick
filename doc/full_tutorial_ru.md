@@ -44,6 +44,7 @@ final setupFuture = loadEnvironment();
 bind<Environment>().toInstanceAsync(setupFuture);
 ```
 
+
 > ⚠️ **Важное примечание по использованию toInstance в Module**
 >
 > Если вы регистрируете цепочку зависимостей через `toInstance` внутри метода `builder` вашего `Module`, нельзя в это же время вызывать `scope.resolve<T>()` для только что объявленного типа.
@@ -85,6 +86,7 @@ bind<Environment>().toInstanceAsync(setupFuture);
 > **Примечание:** Это ограничение касается только `toInstance`. Для провайдеров (`toProvide`/`toProvideAsync`) и других стратегий вы можете использовать `scope.resolve<T>()` внутри builder без ограничений.
 
 
+
 - **toProvide** — обычная синхронная фабрика.
 - **toProvideAsync** — асинхронная фабрика (например, если нужно дожидаться Future).
 - **toProvideWithParams / toProvideAsyncWithParams** — фабрики с параметрами.
@@ -107,6 +109,15 @@ final api = scope.resolve<ApiClient>(named: 'mock');
 
 - `.singleton()` — один инстанс на всё время жизни Scope.
 - По умолчанию каждый resolve создаёт новый объект.
+
+> ℹ️ **Примечание о `.singleton()` и `.toInstance()`:**
+>
+> Вызов `.singleton()` после `.toInstance()` не изменяет поведения биндинга: объект, переданный через `toInstance()`, и так всегда будет "единственным" (single instance), возвращаемым при каждом resolve.
+>
+> Применять `.singleton()` к уже существующему объекту нет необходимости — этот вызов ничего не меняет.
+>
+> `.singleton()` нужен только для провайдеров (например, `toProvide`/`toProvideAsync`), чтобы зафиксировать единственный экземпляр, создаваемый фабрикой.
+
 
 ### Параметрические биндинги
 

@@ -185,6 +185,15 @@ void builder(Scope scope) {
   > Use this pattern only when you want a “master” singleton. If you expect a new instance per params, **do not** use `.singleton()` on parameterized providers.
 
 
+> ℹ️ **Note about `.singleton()` and `.toInstance()`:**
+>
+> Calling `.singleton()` after `.toInstance()` does **not** change the binding’s behavior: the object passed with `toInstance()` is already a single, constant instance that will be always returned for every resolve.
+>
+> It is not necessary to use `.singleton()` with an existing object—this call has no effect.
+>
+> `.singleton()` is only meaningful with providers (such as `toProvide`/`toProvideAsync`), to ensure only one instance is created by the factory.
+
+
 ### Module
 
 A **Module** is a logical collection point for bindings, designed for grouping and initializing related dependencies. Implement the `builder` method to define how dependencies should be bound within the scope.

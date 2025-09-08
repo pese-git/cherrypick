@@ -107,6 +107,14 @@ final api = scope.resolve<ApiClient>(named: 'mock');
 - `.singleton()` — single instance per Scope lifetime
 - By default, every resolve creates a new object
 
+> ℹ️ **Note about `.singleton()` and `.toInstance()`:**
+>
+> Calling `.singleton()` after `.toInstance()` does **not** change the binding’s behavior: the object passed with `toInstance()` is already a single, constant instance that will be always returned for every resolve.
+>
+> It is not necessary to use `.singleton()` with an existing object—this call has no effect.
+>
+> `.singleton()` is only meaningful with providers (such as `toProvide`/`toProvideAsync`), to ensure only one instance is created by the factory.
+
 ### Parameterized bindings
 
 Allows you to create dependencies with runtime parameters, e.g., a service for a user with a given ID:
