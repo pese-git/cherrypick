@@ -1,3 +1,7 @@
+[![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+
+---
+
 # CherryPick Workspace
 
 CherryPick Workspace is a modular, open-source dependency injection ecosystem for Dart and Flutter, designed to offer lightweight, flexible, and scalable DI suitable for both backend and frontend (Flutter) development. This monorepo contains the main DI runtime library, annotation helpers, code generation for modular bindings, and seamless Flutter integration.
