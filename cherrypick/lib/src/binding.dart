@@ -241,6 +241,23 @@ class Binding<T> {
   /// ```dart
   /// bind<Api>().toProvide(() => MyApi()).singleton();
   /// ```
+  ///
+  /// ---
+  ///
+  /// ⚠️ **Special note: Behavior with parametric providers (`toProvideWithParams`/`toProvideAsyncWithParams`):**
+  ///
+  /// If you declare a binding using `.toProvideWithParams(...)` (or its async variant) and then chain `.singleton()`, only the **very first** `resolve<T>(params: ...)` will use its parameters;
+  /// every subsequent call (regardless of params) will return the same (cached) instance.
+  ///
+  /// Example:
+  /// ```dart
+  /// bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
+  /// final a = scope.resolve<Service>(params: 1); // creates Service(1)
+  /// final b = scope.resolve<Service>(params: 2); // returns Service(1)
+  /// print(identical(a, b)); // true
+  /// ```
+  ///
+  /// Use this pattern only if you want a master singleton. If you expect a new instance per params, **do not** use `.singleton()` on parameterized providers.
   Binding<T> singleton() {
     _resolver?.toSingleton();
     return this;

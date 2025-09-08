@@ -118,6 +118,26 @@ bind<UserService>().toProvideWithParams((userId) => UserService(userId));
 final userService = scope.resolve<UserService>(params: '123');
 ```
 
+> ⚠️ **Special note on using `.singleton()` after `toProvideWithParams` or `toProvideAsyncWithParams`:**
+>
+> If you declare a binding using `.toProvideWithParams((params) => ...)` (or its async variant) and then call `.singleton()`, the DI container will create and cache **only one instance** on the first `resolve` call—with the initial parameters. All subsequent calls to `resolve<T>(params: ...)` will return that same (cached) instance, **regardless of the new parameters**.
+>
+> **Example:**
+> ```dart
+> bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
+>
+> final a = scope.resolve<Service>(params: 1); // Creates Service(1)
+> final b = scope.resolve<Service>(params: 2); // Returns Service(1)
+> print(identical(a, b)); // true
+> ```
+>
+> In other words:  
+> - The provider function receives parameters only on its first call,
+> - After that, no matter what parameters are passed, the same instance is always returned.
+>
+> **Recommendation:**  
+> Use `.singleton()` with parameterized providers only if you are sure all parameters should always be identical, or you intentionally want a “master” instance. Otherwise, omit `.singleton()` to ensure a new object is constructed for every unique `params` value.
+
 ---
 
 ## Scope management: dependency hierarchy

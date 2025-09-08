@@ -169,6 +169,22 @@ void builder(Scope scope) {
 >
 > **Note:** This limitation applies **only** to `toInstance`. With `toProvide`/`toProvideAsync` and similar providers, you can safely use `scope.resolve<T>()` inside the builder.
 
+
+  > ⚠️ **Special note regarding `.singleton()` with `toProvideWithParams()` / `toProvideAsyncWithParams()`:**
+  >
+  > If you declare a binding using `.toProvideWithParams(...)` (or its async variant) and then chain `.singleton()`, only the **very first** `resolve<T>(params: ...)` will use its parameters; every subsequent call (regardless of params) will return the same (cached) instance.
+  >
+  > **Example:**
+  > ```dart
+  > bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
+  > final a = scope.resolve<Service>(params: 1); // creates Service(1)
+  > final b = scope.resolve<Service>(params: 2); // returns Service(1)
+  > print(identical(a, b)); // true
+  > ```
+  >
+  > Use this pattern only when you want a “master” singleton. If you expect a new instance per params, **do not** use `.singleton()` on parameterized providers.
+
+
 ### Module
 
 A **Module** is a logical collection point for bindings, designed for grouping and initializing related dependencies. Implement the `builder` method to define how dependencies should be bound within the scope.
