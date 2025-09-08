@@ -1,3 +1,7 @@
+## 3.0.0-dev.0
+
+ - chore(cherrypick_annotations): sync version with cherrypick 3.0.0-dev.0
+
 ## 1.1.2-dev.2
 
  - **DOCS**(annotations): improve API documentation and usage example.

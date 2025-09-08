@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_annotations` - `v3.0.0-dev.0`](#cherrypick_annotations---v300-dev0)
+
+---
+
+#### `cherrypick_annotations` - `v3.0.0-dev.0`
+
+ - chore(cherrypick_annotations): sync version with cherrypick 3.0.0-dev.0
+
+
 ## 2025-08-22
 
 ### Changes

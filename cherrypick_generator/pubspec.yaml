@@ -19,7 +19,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  cherrypick_annotations: ^1.1.2-dev.2
+  cherrypick_annotations: ^3.0.0-dev.0
   analyzer: ^7.0.0
   dart_style: ^3.0.0
   build: ^2.4.1
