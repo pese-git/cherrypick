@@ -1,3 +1,7 @@
+[![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+
+---
+
 # CherryPick
 
 `cherrypick` is a flexible and lightweight dependency injection library for Dart and Flutter.

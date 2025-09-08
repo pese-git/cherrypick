@@ -1,3 +1,7 @@
+[![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+
+---
+
 # talker_cherrypick_logger
 
 An integration package that allows you to log [CherryPick](https://github.com/pese-dot-work/cherrypick) Dependency Injection (DI) container events using the [Talker](https://pub.dev/packages/talker) logging system.  

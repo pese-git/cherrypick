@@ -1,3 +1,7 @@
+[![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+
+---
+
 # cherrypick_annotations
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)

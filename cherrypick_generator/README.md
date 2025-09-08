@@ -1,3 +1,7 @@
+[![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+
+---
+
 # Cherrypick Generator
 
 **Cherrypick Generator** is a Dart code generation library for automating dependency injection (DI) boilerplate. It processes classes and fields annotated with [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations) and generates registration code for services, modules, and field injection for classes marked as `@injectable`. It supports advanced DI features such as scopes, named bindings, parameters, and asynchronous dependencies.

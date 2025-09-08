@@ -1,3 +1,7 @@
+[![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+
+---
+
 # CherryPick Flutter
 
 `cherrypick_flutter` offers a Flutter integration to access and manage dependency injection scopes using the `CherryPickProvider`. This setup facilitates accessing the root scope directly from the widget tree, providing a straightforward mechanism for dependences management within Flutter applications.
