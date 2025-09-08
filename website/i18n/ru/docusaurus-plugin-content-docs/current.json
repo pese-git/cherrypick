@@ -1,0 +1,14 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Core Concepts": {
+    "message": "Core Concepts",
+    "description": "The label for category Core Concepts in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Advanced Features": {
+    "message": "Advanced Features",
+    "description": "The label for category Advanced Features in sidebar tutorialSidebar"
+  }
+}
