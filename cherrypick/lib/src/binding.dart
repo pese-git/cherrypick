@@ -160,6 +160,38 @@ class Binding<T> {
   /// ```dart
   /// bind<Api>().toInstance(ApiMock());
   /// ```
+  ///
+  /// **Important limitation:**
+  /// If you register several dependencies via [toInstance] inside a [`Module.builder`],
+  /// do _not_ use `scope.resolve<T>()` to get objects that are also being registered during the _same_ builder execution.
+  /// All [toInstance] bindings are applied sequentially, and at the point of registration,
+  /// earlier objects are not yet available for resolve.
+  ///
+  /// **Correct:**
+  /// ```dart
+  /// void builder(Scope scope) {
+  ///   final a = A();
+  ///   final b = B(a);
+  ///   bind<A>().toInstance(a);
+  ///   bind<B>().toInstance(b);
+  /// }
+  /// ```
+  /// **Wrong:**
+  /// ```dart
+  /// void builder(Scope scope) {
+  ///   bind<A>().toInstance(A());
+  ///   bind<B>().toInstance(B(scope.resolve<A>())); // Error! A is not available yet.
+  /// }
+  /// ```
+  /// **Wrong:**
+  /// ```dart
+  /// void builder(Scope scope) {
+  ///   bind<A>().toProvide(() => A());
+  ///   bind<B>().toInstance(B(scope.resolve<A>())); // Error! A is not available yet.
+  /// }
+  /// ```
+  /// This restriction only applies to [toInstance] bindings.
+  /// With [toProvide]/[toProvideAsync] you may freely use `scope.resolve<T>()` in the builder or provider function.
   Binding<T> toInstance(Instance<T> value) {
     _resolver = InstanceResolver<T>(value);
     return this;
