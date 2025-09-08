@@ -11,7 +11,8 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
   late UniversalYxScopeContainer _scope;
 
   @override
-  void setupDependencies(void Function(UniversalYxScopeContainer container) registration) {
+  void setupDependencies(
+      void Function(UniversalYxScopeContainer container) registration) {
     _scope = UniversalYxScopeContainer();
     registration(_scope);
   }
@@ -45,7 +46,8 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
   }
 
   @override
-  Registration<UniversalYxScopeContainer> universalRegistration<S extends Enum>({
+  Registration<UniversalYxScopeContainer>
+      universalRegistration<S extends Enum>({
     required S scenario,
     required int chainCount,
     required int nestingDepth,
@@ -112,7 +114,8 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
             // handled at benchmark level
             break;
         }
-        if (scenario == UniversalScenario.chain || scenario == UniversalScenario.override) {
+        if (scenario == UniversalScenario.chain ||
+            scenario == UniversalScenario.override) {
           final depName = '${chainCount}_$nestingDepth';
           final lastDep = scope.dep<UniversalService>(
             () => scope.depFor<UniversalService>(name: depName).get,
@@ -121,6 +124,7 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
         }
       };
     }
-    throw UnsupportedError('Scenario $scenario not supported by YxScopeAdapter');
+    throw UnsupportedError(
+        'Scenario $scenario not supported by YxScopeAdapter');
   }
 }

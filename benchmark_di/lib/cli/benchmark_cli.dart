@@ -98,7 +98,7 @@ class BenchmarkCliRunner {
             final di = RiverpodAdapter();
             if (scenario == UniversalScenario.asyncChain) {
               final benchAsync = UniversalChainAsyncBenchmark<
-                  Map<String, rp.ProviderBase<Object?>>> (
+                  Map<String, rp.ProviderBase<Object?>>>(
                 di,
                 chainCount: c,
                 nestingDepth: d,
@@ -111,7 +111,7 @@ class BenchmarkCliRunner {
               );
             } else {
               final benchSync = UniversalChainBenchmark<
-                  Map<String, rp.ProviderBase<Object?>>> (
+                  Map<String, rp.ProviderBase<Object?>>>(
                 di,
                 chainCount: c,
                 nestingDepth: d,
@@ -127,7 +127,8 @@ class BenchmarkCliRunner {
           } else if (config.di == 'yx_scope') {
             final di = YxScopeAdapter();
             if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<UniversalYxScopeContainer>(
+              final benchAsync =
+                  UniversalChainAsyncBenchmark<UniversalYxScopeContainer>(
                 di,
                 chainCount: c,
                 nestingDepth: d,
@@ -139,7 +140,8 @@ class BenchmarkCliRunner {
                 repeats: config.repeats,
               );
             } else {
-              final benchSync = UniversalChainBenchmark<UniversalYxScopeContainer>(
+              final benchSync =
+                  UniversalChainBenchmark<UniversalYxScopeContainer>(
                 di,
                 chainCount: c,
                 nestingDepth: d,

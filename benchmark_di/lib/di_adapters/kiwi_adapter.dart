@@ -20,77 +20,80 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
     registration(_container);
   }
 
-@override
-Registration<KiwiContainer> universalRegistration<S extends Enum>({
-  required S scenario,
-  required int chainCount,
-  required int nestingDepth,
-  required UniversalBindingMode bindingMode,
-}) {
-  if (scenario is UniversalScenario) {
-    if (scenario == UniversalScenario.asyncChain ||
-        bindingMode == UniversalBindingMode.asyncStrategy) {
-      throw UnsupportedError('Kiwi does not support async dependencies or async binding scenarios.');
-    }
-    return (container) {
-      switch (scenario) {
-        case UniversalScenario.asyncChain:
-          break;
-        case UniversalScenario.register:
-          container.registerSingleton<UniversalService>(
-            (c) => UniversalServiceImpl(value: 'reg', dependency: null),
-          );
-          break;
-        case UniversalScenario.named:
-          container.registerFactory<UniversalService>(
-            (c) => UniversalServiceImpl(value: 'impl1'), name: 'impl1');
-          container.registerFactory<UniversalService>(
-            (c) => UniversalServiceImpl(value: 'impl2'), name: 'impl2');
-          break;
-        case UniversalScenario.chain:
-          for (int chain = 1; chain <= chainCount; chain++) {
-            for (int level = 1; level <= nestingDepth; level++) {
-              final prevDepName = '${chain}_${level - 1}';
-              final depName = '${chain}_$level';
-              switch (bindingMode) {
-                case UniversalBindingMode.singletonStrategy:
-                  container.registerSingleton<UniversalService>(
-                    (c) => UniversalServiceImpl(
-                      value: depName,
-                      dependency: level > 1
-                        ? c.resolve<UniversalService>(prevDepName)
-                        : null),
-                    name: depName);
-                  break;
-                case UniversalBindingMode.factoryStrategy:
-                  container.registerFactory<UniversalService>(
-                    (c) => UniversalServiceImpl(
-                      value: depName,
-                      dependency: level > 1
-                        ? c.resolve<UniversalService>(prevDepName)
-                        : null),
-                    name: depName);
-                  break;
-                case UniversalBindingMode.asyncStrategy:
-                  // Не поддерживается
-                  break;
+  @override
+  Registration<KiwiContainer> universalRegistration<S extends Enum>({
+    required S scenario,
+    required int chainCount,
+    required int nestingDepth,
+    required UniversalBindingMode bindingMode,
+  }) {
+    if (scenario is UniversalScenario) {
+      if (scenario == UniversalScenario.asyncChain ||
+          bindingMode == UniversalBindingMode.asyncStrategy) {
+        throw UnsupportedError(
+            'Kiwi does not support async dependencies or async binding scenarios.');
+      }
+      return (container) {
+        switch (scenario) {
+          case UniversalScenario.asyncChain:
+            break;
+          case UniversalScenario.register:
+            container.registerSingleton<UniversalService>(
+              (c) => UniversalServiceImpl(value: 'reg', dependency: null),
+            );
+            break;
+          case UniversalScenario.named:
+            container.registerFactory<UniversalService>(
+                (c) => UniversalServiceImpl(value: 'impl1'),
+                name: 'impl1');
+            container.registerFactory<UniversalService>(
+                (c) => UniversalServiceImpl(value: 'impl2'),
+                name: 'impl2');
+            break;
+          case UniversalScenario.chain:
+            for (int chain = 1; chain <= chainCount; chain++) {
+              for (int level = 1; level <= nestingDepth; level++) {
+                final prevDepName = '${chain}_${level - 1}';
+                final depName = '${chain}_$level';
+                switch (bindingMode) {
+                  case UniversalBindingMode.singletonStrategy:
+                    container.registerSingleton<UniversalService>(
+                        (c) => UniversalServiceImpl(
+                            value: depName,
+                            dependency: level > 1
+                                ? c.resolve<UniversalService>(prevDepName)
+                                : null),
+                        name: depName);
+                    break;
+                  case UniversalBindingMode.factoryStrategy:
+                    container.registerFactory<UniversalService>(
+                        (c) => UniversalServiceImpl(
+                            value: depName,
+                            dependency: level > 1
+                                ? c.resolve<UniversalService>(prevDepName)
+                                : null),
+                        name: depName);
+                    break;
+                  case UniversalBindingMode.asyncStrategy:
+                    // Не поддерживается
+                    break;
+                }
               }
             }
-          }
-          final depName = '${chainCount}_$nestingDepth';
-          container.registerSingleton<UniversalService>(
-            (c) => c.resolve<UniversalService>(depName));
-          break;
-        case UniversalScenario.override:
-          final depName = '${chainCount}_$nestingDepth';
-          container.registerSingleton<UniversalService>(
-            (c) => c.resolve<UniversalService>(depName));
-          break;
-      }
-    };
+            final depName = '${chainCount}_$nestingDepth';
+            container.registerSingleton<UniversalService>(
+                (c) => c.resolve<UniversalService>(depName));
+            break;
+          case UniversalScenario.override:
+            final depName = '${chainCount}_$nestingDepth';
+            container.registerSingleton<UniversalService>(
+                (c) => c.resolve<UniversalService>(depName));
+            break;
+        }
+      };
+    }
+    throw UnsupportedError('Scenario $scenario not supported by KiwiAdapter');
   }
-  throw UnsupportedError('Scenario $scenario not supported by KiwiAdapter');
-}
 
   @override
   T resolve<T extends Object>({String? named}) {
