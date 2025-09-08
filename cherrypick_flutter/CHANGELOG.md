@@ -1,3 +1,7 @@
+## 3.0.0-dev.0
+
+ - chore(cherrypick_flutter): sync version with cherrypick 3.0.0-dev.12
+
 ## 1.1.3-dev.12
 
  - Update a dependency to the latest release.
