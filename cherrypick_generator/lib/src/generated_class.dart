@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,45 +12,48 @@
 //
 
 import 'package:analyzer/dart/element/element.dart';
-
 import 'bind_spec.dart';
 
 /// ---------------------------------------------------------------------------
-/// GeneratedClass -- represents the result of processing a single module class.
+/// GeneratedClass
 ///
-/// ENGLISH
-/// Encapsulates all the information produced from analyzing a DI module class:
-/// - The original class name,
-/// - Its generated class name (e.g., `$SomeModule`),
-/// - The collection of bindings (BindSpec) for all implemented provider methods.
+/// Represents a processed DI module class with all its binding methods analyzed.
+/// Stores:
+///   - The original class name,
+///   - The generated implementation class name (with $ prefix),
+///   - The list of all BindSpec for the module methods,
+///   - The source file name for reference or directive generation.
 ///
-/// Also provides code generation functionality, allowing to generate the source
-/// code for the derived DI module class, including all binding registrations.
+/// Provides static and instance methods to construct from a ClassElement
+/// and generate Dart source code for the resulting DI registration class.
 ///
-/// RUSSIAN
-/// Описывает результат обработки одного класса-модуля DI:
-/// - Имя оригинального класса,
-/// - Имя генерируемого класса (например, `$SomeModule`),
-/// - Список всех бидингов (BindSpec) — по публичным методам модуля.
-///
-/// Также содержит функцию генерации исходного кода для этого класса и
-/// регистрации всех зависимостей через bind(...).
+/// ## Example usage
+/// ```dart
+/// final gen = GeneratedClass.fromClassElement(myModuleClassElement);
+/// print(gen.generate());
+/// /*
+/// Produces:
+/// final class $MyModule extends MyModule {
+///   @override
+///   void builder(Scope currentScope) {
+///     bind<Service>().toProvide(() => provideService(currentScope.resolve<Dep>()));
+///     ...
+///   }
+/// }
+/// */
+/// ```
 /// ---------------------------------------------------------------------------
 class GeneratedClass {
-  /// The name of the original module class.
-  /// Имя исходного класса-модуля
+  /// Name of the original Dart module class.
   final String className;
 
-  /// The name of the generated class (e.g., $SomeModule).
-  /// Имя генерируемого класса (например, $SomeModule)
+  /// Name of the generated class, e.g. `$MyModule`
   final String generatedClassName;
 
-  /// List of all discovered bindings for the class.
-  /// Список всех обнаруженных биндингов
+  /// Binding specs for all provider/factory methods in the class.
   final List<BindSpec> binds;
 
-  /// Source file name for the part directive
-  /// Имя исходного файла для part директивы
+  /// Source filename of the module class (for code references).
   final String sourceFile;
 
   GeneratedClass(
@@ -63,16 +66,15 @@ class GeneratedClass {
   /// -------------------------------------------------------------------------
   /// fromClassElement
   ///
-  /// ENGLISH
-  /// Static factory: creates a GeneratedClass from a Dart ClassElement (AST representation).
-  /// Discovers all non-abstract methods, builds BindSpec for each, and computes the
-  /// generated class name by prefixing `$`.
+  /// Creates a [GeneratedClass] by analyzing a Dart [ClassElement].
+  /// Collects all public non-abstract methods, creates a [BindSpec] for each,
+  /// and infers the generated class name using a `$` prefix.
   ///
-  /// RUSSIAN
-  /// Строит объект класса по элементу AST (ClassElement): имя класса,
-  /// сгенерированное имя, список BindSpec по всем не абстрактным методам.
-  /// Имя ген-класса строится с префиксом `$`.
-  /// -------------------------------------------------------------------------
+  /// ## Example usage
+  /// ```dart
+  /// final gen = GeneratedClass.fromClassElement(classElement);
+  /// print(gen.generatedClassName); // e.g. $AppModule
+  /// ```
   static GeneratedClass fromClassElement(ClassElement element) {
     final className = element.displayName;
     // Generated class name with '$' prefix (standard for generated Dart code).
@@ -91,16 +93,19 @@ class GeneratedClass {
   /// -------------------------------------------------------------------------
   /// generate
   ///
-  /// ENGLISH
-  /// Generates Dart source code for the DI module class. The generated class
-  /// inherits from the original, overrides the 'builder' method, and registers
-  /// all bindings in the DI scope.
+  /// Generates the Dart source code for the DI registration class.
+  /// The generated class extends the original module, and the `builder` method
+  /// registers all bindings (dependencies) into the DI scope.
   ///
-  /// RUSSIAN
-  /// Генерирует исходный Dart-код для класса-модуля DI.
-  /// Новая версия класса наследует оригинальный, переопределяет builder(Scope),
-  /// и регистрирует все зависимости через методы bind<Type>()...
-  /// -------------------------------------------------------------------------
+  /// ## Example output
+  /// ```dart
+  /// final class $UserModule extends UserModule {
+  ///   @override
+  ///   void builder(Scope currentScope) {
+  ///     bind<Service>().toProvide(() => provideService(currentScope.resolve<Dep>()));
+  ///   }
+  /// }
+  /// ```
   String generate() {
     final buffer = StringBuffer()
       ..writeln('final class $generatedClassName extends $className {')
@@ -108,7 +113,6 @@ class GeneratedClass {
       ..writeln('  void builder(Scope currentScope) {');
 
     // For each binding, generate bind<Type>() code string.
-    // Для каждого биндинга — генерируем строку bind<Type>()...
     for (final bind in binds) {
       buffer.writeln(bind.generateBind(4));
     }

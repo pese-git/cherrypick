@@ -44,6 +44,46 @@ final setupFuture = loadEnvironment();
 bind<Environment>().toInstanceAsync(setupFuture);
 ```
 
+> ⚠️ **Important note about using toInstance in Module**
+>
+> If you register a chain of dependencies via `toInstance` inside the `builder` method of your `Module`, you must NOT call `scope.resolve<T>()` for a type that you have just bound—at this moment.
+>
+> CherryPick initializes all bindings inside `builder` sequentially: at the time of a new binding, not all other dependencies are registered yet in the DI container. If you try to use `scope.resolve<T>()` for an object you have just added in the same `builder`, it will result in an error (`Can't resolve dependency ...`).
+>
+> **Correct way:**  
+> Manually construct the entire object chain before registering:
+>
+> ```dart
+> void builder(Scope scope) {
+>   final a = A();
+>   final b = B(a);
+>   final c = C(b);
+>   bind<A>().toInstance(a);
+>   bind<B>().toInstance(b);
+>   bind<C>().toInstance(c);
+> }
+> ```
+>
+> **Incorrect:**
+> ```dart
+> void builder(Scope scope) {
+>   bind<A>().toInstance(A());
+>   // Error! At this point, A is not registered yet.
+>   bind<B>().toInstance(B(scope.resolve<A>()));
+> }
+> ```
+>
+> **Incorrect:**
+> ```dart
+> void builder(Scope scope) {
+>   bind<A>().toProvide(() => A());
+>   // Error! At this point, A is not registered yet.
+>   bind<B>().toInstance(B(scope.resolve<A>()));
+> }
+> ```
+>
+> **Note:** This limitation applies only to `toInstance`. For providers (`toProvide`/`toProvideAsync`) and other strategies, you can freely use `scope.resolve<T>()` inside `builder`.
+
 - **toProvide** — regular sync factory
 - **toProvideAsync** — async factory (if you need to await a Future)
 - **toProvideWithParams / toProvideAsyncWithParams** — factories with runtime parameters
@@ -67,6 +107,14 @@ final api = scope.resolve<ApiClient>(named: 'mock');
 - `.singleton()` — single instance per Scope lifetime
 - By default, every resolve creates a new object
 
+> ℹ️ **Note about `.singleton()` and `.toInstance()`:**
+>
+> Calling `.singleton()` after `.toInstance()` does **not** change the binding’s behavior: the object passed with `toInstance()` is already a single, constant instance that will be always returned for every resolve.
+>
+> It is not necessary to use `.singleton()` with an existing object—this call has no effect.
+>
+> `.singleton()` is only meaningful with providers (such as `toProvide`/`toProvideAsync`), to ensure only one instance is created by the factory.
+
 ### Parameterized bindings
 
 Allows you to create dependencies with runtime parameters, e.g., a service for a user with a given ID:
@@ -77,6 +125,26 @@ bind<UserService>().toProvideWithParams((userId) => UserService(userId));
 // Resolve:
 final userService = scope.resolve<UserService>(params: '123');
 ```
+
+> ⚠️ **Special note on using `.singleton()` after `toProvideWithParams` or `toProvideAsyncWithParams`:**
+>
+> If you declare a binding using `.toProvideWithParams((params) => ...)` (or its async variant) and then call `.singleton()`, the DI container will create and cache **only one instance** on the first `resolve` call—with the initial parameters. All subsequent calls to `resolve<T>(params: ...)` will return that same (cached) instance, **regardless of the new parameters**.
+>
+> **Example:**
+> ```dart
+> bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
+>
+> final a = scope.resolve<Service>(params: 1); // Creates Service(1)
+> final b = scope.resolve<Service>(params: 2); // Returns Service(1)
+> print(identical(a, b)); // true
+> ```
+>
+> In other words:  
+> - The provider function receives parameters only on its first call,
+> - After that, no matter what parameters are passed, the same instance is always returned.
+>
+> **Recommendation:**  
+> Use `.singleton()` with parameterized providers only if you are sure all parameters should always be identical, or you intentionally want a “master” instance. Otherwise, omit `.singleton()` to ensure a new object is constructed for every unique `params` value.
 
 ---
 
@@ -176,6 +244,49 @@ final service = scope.tryResolve<OptionalService>(); // returns null if not exis
 ```
 
 ---
+
+### Fast Dependency Lookup (Performance Improvement)
+
+> **Performance Note:**  
+> **Starting from version 3.0.0**, CherryPick uses a Map-based resolver index for dependency lookup. This means calls to `resolve<T>()`, `tryResolve<T>()` and similar methods are now O(1) operations, regardless of the number of modules or bindings within your scope. Previously it would iterate over all modules and bindings, which could reduce performance as your project grew. This optimization is internal and does not affect the public API or usage patterns, but significantly improves resolution speed for larger applications.
+
+---
+
+
+## Automatic resource management: Disposable and dispose
+
+CherryPick makes it easy to clean up resources for your singleton services and other objects registered in DI.  
+If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was resolved via DI.  
+This ensures safe and graceful resource management (including any async resource cleanup: streams, DB connections, sockets, etc.).
+
+### Example
+
+```dart
+class LoggingService implements Disposable {
+  @override
+  FutureOr<void> dispose() async {
+    // Close files, streams, and perform async cleanup here.
+    print('LoggingService disposed!');
+  }
+}
+
+Future<void> main() async {
+  final scope = openRootScope();
+  scope.installModules([
+    _LoggingModule(),
+  ]);
+  final logger = scope.resolve<LoggingService>();
+  // Use logger...
+  await scope.dispose(); // prints: LoggingService disposed!
+}
+
+class _LoggingModule extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<LoggingService>().toProvide(() => LoggingService()).singleton();
+  }
+}
+```
 
 ## Dependency injection with annotations & code generation
 
@@ -305,7 +416,7 @@ final config = await scope.resolveAsync<RemoteConfig>();
 
 [`cherrypick_flutter`](https://pub.dev/packages/cherrypick_flutter) is the integration package for CherryPick DI in Flutter. It provides a convenient `CherryPickProvider` widget which sits in your widget tree and gives access to the root DI scope (and subscopes) from context.
 
-### Features
+## Features
 
 - **Global DI Scope Access:**  
   Use `CherryPickProvider` to access rootScope and subscopes anywhere in the widget tree.
@@ -347,6 +458,26 @@ class MyApp extends StatelessWidget {
 - Here, `CherryPickProvider` wraps the app and gives DI scope access via context.
 - You can create subscopes, e.g. for screens or modules:  
   `final subScope = CherryPickProvider.of(context).openSubScope(scopeName: "profileFeature");`
+
+---
+
+## Logging
+
+To enable logging of all dependency injection (DI) events and errors in CherryPick, set the global logger before creating your scopes:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+void main() {
+  // Set a global logger before any scopes are created
+  CherryPick.setGlobalLogger(PrintLogger()); // or your own custom logger
+  final scope = CherryPick.openRootScope();
+  // All DI events and cycle errors will now be sent to your logger
+}
+```
+
+- By default, CherryPick uses SilentLogger (no output in production).
+- Any dependency resolution, scope events, or cycle detection errors are logged via info/error on your logger.
 
 ---
 ## CherryPick is not just for Flutter!
@@ -396,6 +527,16 @@ You can use CherryPick in Dart CLI, server apps, and microservices. All major fe
 | `@injectable` | Field injection support   | Classes                            |
 | `@inject`     | Auto-injection            | Class fields                       |
 | `@scope`      | Scope/realm               | Class fields                       |
+
+
+---
+
+## FAQ
+
+### Q: Do I need to use `await` with CherryPick.closeRootScope(), CherryPick.closeScope(), or scope.dispose() if I have no Disposable services?
+
+**A:**  
+Yes! Even if none of your services currently implement `Disposable`, always use `await` when closing scopes. If you later add resource cleanup (by implementing `dispose()`), CherryPick will handle it automatically without you needing to change your scope cleanup code. This ensures resource management is future-proof, robust, and covers all application scenarios.
 
 ---
 

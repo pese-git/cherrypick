@@ -3,6 +3,647 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.13`](#cherrypick---v300-dev13)
+ - [`cherrypick_flutter` - `v3.0.0-dev.1`](#cherrypick_flutter---v300-dev1)
+ - [`talker_cherrypick_logger` - `v3.0.0-dev.1`](#talker_cherrypick_logger---v300-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v3.0.0-dev.1`
+ - `talker_cherrypick_logger` - `v3.0.0-dev.1`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.13`
+
+ - **FIX**: fix examples.
+ - **DOCS**: update contributors list with GitHub links and add new contributor.
+ - **DOCS**(binding,docs): clarify `.singleton()` with `.toInstance()` behavior in docs and API.
+ - **DOCS**(binding,docs): explain .singleton() + parametric provider behavior.
+ - **DOCS**(binding): clarify  registration limitation in API doc.
+ - **DOCS**(di): clarify 'toInstance' binding limitations in builder.
+
+
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`talker_cherrypick_logger` - `v3.0.0-dev.0`](#talker_cherrypick_logger---v300-dev0)
+
+---
+
+#### `talker_cherrypick_logger` - `v3.0.0-dev.0`
+
+ - chore(talker_cherrypick_logger): sync version with cherrypick 3.0.0-dev.12
+
+
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v3.0.0-dev.0`](#cherrypick_flutter---v300-dev0)
+
+---
+
+#### `cherrypick_flutter` - `v3.0.0-dev.0`
+
+ - chore(cherrypick_flutter): sync version with cherrypick 3.0.0-dev.12
+
+
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_generator` - `v3.0.0-dev.0`](#cherrypick_generator---v300-dev0)
+
+---
+
+#### `cherrypick_generator` - `v3.0.0-dev.0`
+
+ - chore(cherrypick_generator): sync version with cherrypick 3.0.0-dev.12
+
+
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_annotations` - `v3.0.0-dev.0`](#cherrypick_annotations---v300-dev0)
+
+---
+
+#### `cherrypick_annotations` - `v3.0.0-dev.0`
+
+ - chore(cherrypick_annotations): sync version with cherrypick 3.0.0-dev.0
+
+
+## 2025-08-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_annotations` - `v1.1.2-dev.2`](#cherrypick_annotations---v112-dev2)
+ - [`cherrypick_generator` - `v2.0.0-dev.2`](#cherrypick_generator---v200-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_generator` - `v2.0.0-dev.2`
+
+---
+
+#### `cherrypick_annotations` - `v1.1.2-dev.2`
+
+ - **DOCS**(annotations): improve API documentation and usage example.
+
+
+## 2025-08-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.12`](#cherrypick---v300-dev12)
+ - [`cherrypick_flutter` - `v1.1.3-dev.12`](#cherrypick_flutter---v113-dev12)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.7`](#talker_cherrypick_logger---v110-dev7)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.12`
+ - `talker_cherrypick_logger` - `v1.1.0-dev.7`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.12`
+
+ - **FIX**(scope): prevent concurrent modification in dispose().
+ - **FIX**(binding): fix unterminated string literal and syntax issues in binding.dart.
+
+
+## 2025-08-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.11`](#cherrypick---v300-dev11)
+ - [`cherrypick_flutter` - `v1.1.3-dev.11`](#cherrypick_flutter---v113-dev11)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.6`](#talker_cherrypick_logger---v110-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.11`
+ - `talker_cherrypick_logger` - `v1.1.0-dev.6`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.11`
+
+ - **FIX**(scope): prevent concurrent modification in dispose().
+ - **FIX**(binding): fix unterminated string literal and syntax issues in binding.dart.
+
+
+## 2025-08-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.10`](#cherrypick---v300-dev10)
+ - [`cherrypick_annotations` - `v1.1.2-dev.1`](#cherrypick_annotations---v112-dev1)
+ - [`cherrypick_flutter` - `v1.1.3-dev.10`](#cherrypick_flutter---v113-dev10)
+ - [`cherrypick_generator` - `v2.0.0-dev.1`](#cherrypick_generator---v200-dev1)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.5`](#talker_cherrypick_logger---v110-dev5)
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.10`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `cherrypick_annotations` - `v1.1.2-dev.1`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.10`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `cherrypick_generator` - `v2.0.0-dev.1`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.5`
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.4`](#talker_cherrypick_logger---v110-dev4)
+
+---
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.4`
+
+ - **DOCS**(readme): update install instructions to use pub.dev as default method and remove obsolete git example.
+
+
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.3`](#talker_cherrypick_logger---v110-dev3)
+
+---
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.3`
+
+
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.2`](#talker_cherrypick_logger---v110-dev2)
+
+---
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.2`
+
+ - Bump "talker_cherrypick_logger" to `1.1.0-dev.2`.
+
+
+## 2025-08-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick_generator` - `v2.0.0-dev.0`](#cherrypick_generator---v200-dev0)
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.9`](#cherrypick---v300-dev9)
+ - [`cherrypick_annotations` - `v1.1.2-dev.0`](#cherrypick_annotations---v112-dev0)
+ - [`cherrypick_flutter` - `v1.1.3-dev.9`](#cherrypick_flutter---v113-dev9)
+ - [`talker_cherrypick_logger` - `v1.1.0-dev.0`](#talker_cherrypick_logger---v110-dev0)
+
+---
+
+#### `cherrypick_generator` - `v2.0.0-dev.0`
+
+ - **BREAKING** **DOCS**(generator): improve and unify English documentation and examples for all DI source files.
+
+#### `cherrypick` - `v3.0.0-dev.9`
+
+ - **DOCS**(readme): add talker_cherrypick_logger to Additional Modules section.
+ - **DOCS**(api): improve all DI core code documentation with English dartdoc and examples.
+
+#### `cherrypick_annotations` - `v1.1.2-dev.0`
+
+ - **DOCS**(annotations): unify and improve English DartDoc for all DI annotations.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.9`
+
+ - **DOCS**(provider): add detailed English API documentation for CherryPickProvider Flutter integration.
+
+#### `talker_cherrypick_logger` - `v1.1.0-dev.0`
+
+ - **FEAT**(logging): add talker_dio_logger and talker_bloc_logger integration, improve cherrypick logger structure, add UI log screen for DI and network/bloc debug.
+ - **DOCS**: add full English documentation and usage guide to README.md.
+ - **DOCS**: add detailed English documentation and usage examples for TalkerCherryPickObserver.
+
+
+## 2025-08-12
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.8`](#cherrypick---v300-dev8)
+ - [`cherrypick_flutter` - `v1.1.3-dev.8`](#cherrypick_flutter---v113-dev8)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.8`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.8`
+
+ - **REFACTOR**(tests): replace MockLogger with MockObserver in scope tests to align with updated observer API.
+ - **FIX**(doc): remove hide symbol.
+ - **FEAT**(core): add full DI lifecycle observability via onInstanceDisposed.
+ - **DOCS**(logging): update Logging section in README with modern Observer usage and Talker integration examples.
+ - **DOCS**(observer): improve documentation, translate all comments to English, add usage examples.
+ - **DOCS**(README): add section with overview table for additional modules.
+ - **DOCS**(README): refactor structure and improve clarity of advanced features.
+ - **DOCS**(README): add 'Hierarchical Subscopes' section and update structure for advanced features clarity.
+
+
+## 2025-08-11
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.7`](#cherrypick---v300-dev7)
+
+Packages with other changes:
+
+ - [`cherrypick_annotations` - `v1.1.1`](#cherrypick_annotations---v111)
+ - [`cherrypick_flutter` - `v1.1.3-dev.7`](#cherrypick_flutter---v113-dev7)
+ - [`cherrypick_generator` - `v1.1.1`](#cherrypick_generator---v111)
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.7`
+
+ - **FIX**(comment): fix warnings.
+ - **FIX**(license): correct urls.
+ - **FEAT**: add Disposable interface source and usage example.
+ - **DOCS**(readme): add comprehensive section on annotations and DI code generation.
+ - **DOCS**(readme): add detailed section and examples for automatic Disposable resource cleanup\n\n- Added a dedicated section with English description and code samples on using Disposable for automatic resource management.\n- Updated Features to include automatic resource cleanup for Disposable dependencies.\n\nHelps developers understand and implement robust DI resource management practices.
+ - **DOCS**(faq): add best practice FAQ about using await with scope disposal.
+ - **DOCS**(faq): add best practice FAQ about using await with scope disposal.
+ - **BREAKING** **REFACTOR**(core): make closeRootScope async and await dispose.
+ - **BREAKING** **DOCS**(disposable): add detailed English documentation and usage examples for Disposable interface; chore: update binding_resolver and add explanatory comment in scope_test for deprecated usage.\n\n- Expanded Disposable interface docs, added sync & async example classes, and CherryPick integration sample.\n- Clarified how to implement and use Disposable in DI context.\n- Updated binding_resolver for internal improvements.\n- Added ignore for deprecated member use in scope_test for clarity and future upgrades.\n\nBREAKING CHANGE: Documentation style enhancement and clearer API usage for Disposable implementations.
+
+#### `cherrypick_annotations` - `v1.1.1`
+
+ - **FIX**(license): correct urls.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.7`
+
+ - **FIX**(license): correct urls.
+
+#### `cherrypick_generator` - `v1.1.1`
+
+ - **FIX**(license): correct urls.
+
+
+## 2025-08-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.6`](#cherrypick---v300-dev6)
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.3-dev.6`](#cherrypick_flutter---v113-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.6`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.6`
+
+ - **FIX**: improve global cycle detector logic.
+ - **DOCS**(readme): add comprehensive DI state and action logging to features.
+ - **DOCS**(helper): add complete DartDoc with real usage examples for CherryPick class.
+ - **DOCS**(log_format): add detailed English documentation for formatLogMessage function.
+ - **BREAKING** **FEAT**(core): refactor root scope API, improve logger injection, helpers, and tests.
+ - **BREAKING** **FEAT**(logger): add extensible logging API, usage examples, and bilingual documentation.
+
+
+## 2025-08-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.5`](#cherrypick---v300-dev5)
+ - [`cherrypick_flutter` - `v1.1.3-dev.5`](#cherrypick_flutter---v113-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.5`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.5`
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+
+## 2025-08-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.4`](#cherrypick---v300-dev4)
+ - [`cherrypick_flutter` - `v1.1.3-dev.4`](#cherrypick_flutter---v113-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.4`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.4`
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+
+## 2025-08-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.3`](#cherrypick---v300-dev3)
+ - [`cherrypick_flutter` - `v1.1.3-dev.3`](#cherrypick_flutter---v113-dev3)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.3`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.3`
+
+ - **REFACTOR**(scope): simplify _findBindingResolver<T> with one-liner and optional chaining.
+ - **PERF**(scope): speed up dependency lookup with Map-based binding resolver index.
+ - **DOCS**(perf): clarify Map-based resolver optimization applies since v3.0.0 in all docs.
+ - **DOCS**: update EN/RU quick start and tutorial with Fast Map-based lookup section; clarify performance benefit in README.
+
+
+## 2025-08-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.2`](#cherrypick---v300-dev2)
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.3-dev.2`](#cherrypick_flutter---v113-dev2)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.2`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.2`
+
+ - **FEAT**(binding): add deprecated proxy async methods for backward compatibility and highlight transition to modern API.
+ - **DOCS**: add quick guide for circular dependency detection to README.
+ - **DOCS**: add quick guide for circular dependency detection to README.
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+
+
+## 2025-07-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.0-dev.1`](#cherrypick---v300-dev1)
+ - [`cherrypick_flutter` - `v1.1.3-dev.1`](#cherrypick_flutter---v113-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v1.1.3-dev.1`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.1`
+
+ - **DOCS**: add quick guide for circular dependency detection to README.
+
+
+## 2025-07-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v3.0.0-dev.0`](#cherrypick---v300-dev0)
+
+Packages with other changes:
+
+ - [`cherrypick_flutter` - `v1.1.3-dev.0`](#cherrypick_flutter---v113-dev0)
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.0`
+
+ - **BREAKING** **FEAT**: implement comprehensive circular dependency detection system.
+
+#### `cherrypick_flutter` - `v1.1.3-dev.0`
+
+ - **FIX**: update deps.
+
+
 ## 2025-07-28
 
 ### Changes

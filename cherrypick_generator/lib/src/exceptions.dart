@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,10 +14,36 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:source_gen/source_gen.dart';
 
-/// Enhanced exception class for CherryPick generator with detailed context information
+/// ---------------------------------------------------------------------------
+/// CherryPickGeneratorException
+///
+/// The base exception for all CherryPick code generation and annotation
+/// validation errors. This exception provides enhanced diagnostics including
+/// the error category, helpful suggestions, and additional debugging context.
+///
+/// All errors are structured to be as helpful as possible for users
+/// running build_runner and for CherryPick contributors debugging generators.
+///
+/// ## Example usage:
+/// ```dart
+/// if (someErrorCondition) {
+///   throw AnnotationValidationException(
+///     'Custom message about what went wrong',
+///     element: methodElement,
+///     suggestion: 'Add @provide() or @instance() annotation',
+///     context: {'found_annotations': annotations},
+///   );
+/// }
+/// ```
+/// ---------------------------------------------------------------------------
 class CherryPickGeneratorException extends InvalidGenerationSourceError {
+  /// A string describing the error category (for grouping).
   final String category;
+
+  /// An optional suggestion string for resolving the error.
   final String? suggestion;
+
+  /// Arbitrary key-value map for additional debugging information.
   final Map<String, dynamic>? context;
 
   CherryPickGeneratorException(
@@ -50,7 +76,7 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     buffer.writeln('  Type: ${element.runtimeType}');
     buffer.writeln('  Location: ${element.source?.fullName ?? 'unknown'}');
 
-    // Note: enclosingElement may not be available in all analyzer versions
+    // Try to show enclosing element info for extra context
     try {
       final enclosing = (element as dynamic).enclosingElement;
       if (enclosing != null) {
@@ -60,7 +86,7 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
       // Ignore if enclosingElement is not available
     }
 
-    // Additional context
+    // Arbitrary user context
     if (context != null && context.isNotEmpty) {
       buffer.writeln('');
       buffer.writeln('Additional Context:');
@@ -69,7 +95,7 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
       });
     }
 
-    // Suggestion
+    // Hint/suggestion if present
     if (suggestion != null) {
       buffer.writeln('');
       buffer.writeln('💡 Suggestion: $suggestion');
@@ -79,7 +105,24 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
   }
 }
 
-/// Specific exception types for different error categories
+/// ---------------------------------------------------------------------------
+/// AnnotationValidationException
+///
+/// Thrown when annotation usage is invalid (e.g., missing required annotation,
+/// mutually exclusive annotations, or incorrect @named format).
+///
+/// Grouped as category "ANNOTATION_VALIDATION".
+///
+/// ## Example:
+/// ```dart
+/// throw AnnotationValidationException(
+///   '@instance and @provide cannot be used together',
+///   element: method,
+///   suggestion: 'Use only one of @instance or @provide.',
+///   context: {'method_name': method.displayName},
+/// );
+/// ```
+/// ---------------------------------------------------------------------------
 class AnnotationValidationException extends CherryPickGeneratorException {
   AnnotationValidationException(
     super.message, {
@@ -89,6 +132,24 @@ class AnnotationValidationException extends CherryPickGeneratorException {
   }) : super(category: 'ANNOTATION_VALIDATION');
 }
 
+/// ---------------------------------------------------------------------------
+/// TypeParsingException
+///
+/// Thrown when a Dart type cannot be interpreted/parsed for DI,
+/// or if it's not compatible (void, raw Future, etc).
+///
+/// Grouped as category "TYPE_PARSING".
+///
+/// ## Example:
+/// ```dart
+/// throw TypeParsingException(
+///   'Cannot parse injected type',
+///   element: field,
+///   suggestion: 'Specify a concrete type. Avoid dynamic and raw Future.',
+///   context: {'type': field.type.getDisplayString()},
+/// );
+/// ```
+/// ---------------------------------------------------------------------------
 class TypeParsingException extends CherryPickGeneratorException {
   TypeParsingException(
     super.message, {
@@ -98,6 +159,23 @@ class TypeParsingException extends CherryPickGeneratorException {
   }) : super(category: 'TYPE_PARSING');
 }
 
+/// ---------------------------------------------------------------------------
+/// CodeGenerationException
+///
+/// Thrown on unexpected code generation or formatting failures
+/// during generator execution.
+///
+/// Grouped as category "CODE_GENERATION".
+///
+/// ## Example:
+/// ```dart
+/// throw CodeGenerationException(
+///   'Could not generate module binding',
+///   element: classElement,
+///   suggestion: 'Check module class methods and signatures.',
+/// );
+/// ```
+/// ---------------------------------------------------------------------------
 class CodeGenerationException extends CherryPickGeneratorException {
   CodeGenerationException(
     super.message, {
@@ -107,6 +185,23 @@ class CodeGenerationException extends CherryPickGeneratorException {
   }) : super(category: 'CODE_GENERATION');
 }
 
+/// ---------------------------------------------------------------------------
+/// DependencyResolutionException
+///
+/// Thrown if dependency information (for example, types or names)
+/// cannot be resolved during code generation analysis.
+///
+/// Grouped as category "DEPENDENCY_RESOLUTION".
+///
+/// ## Example:
+/// ```dart
+/// throw DependencyResolutionException(
+///   'Dependency type not found in scope',
+///   element: someElement,
+///   suggestion: 'Check CherryPick registration for this type.',
+/// );
+/// ```
+/// ---------------------------------------------------------------------------
 class DependencyResolutionException extends CherryPickGeneratorException {
   DependencyResolutionException(
     super.message, {

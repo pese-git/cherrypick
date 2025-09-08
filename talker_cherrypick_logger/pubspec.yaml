@@ -1,0 +1,26 @@
+name: talker_cherrypick_logger
+description: A Talker logger integration for CherryPick DI to observe and log DI events and errors.
+version: 3.0.0-dev.1
+homepage: https://cherrypick-di.netlify.app
+documentation: https://cherrypick-di.netlify.app/docs/intro
+repository: https://github.com/pese-git/cherrypick
+issue_tracker: https://github.com/pese-git/cherrypick/issues
+
+topics:
+  - cherrypick
+  - state
+  - logging
+  - log
+  
+environment:
+  sdk: ">=3.5.2 <4.0.0"
+
+# Add regular dependencies here.
+dependencies:
+  talker: ^4.9.3
+  cherrypick: ^3.0.0-dev.13
+
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.24.0

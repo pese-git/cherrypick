@@ -1,3 +1,63 @@
+## 3.0.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 3.0.0-dev.0
+
+ - chore(cherrypick_flutter): sync version with cherrypick 3.0.0-dev.12
+
+## 1.1.3-dev.12
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.11
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.10
+
+ - **DOCS**(pub): update homepage and documentation URLs in pubspec.yaml to new official site.
+
+## 1.1.3-dev.9
+
+ - **DOCS**(provider): add detailed English API documentation for CherryPickProvider Flutter integration.
+
+## 1.1.3-dev.8
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.7
+
+ - **FIX**(license): correct urls.
+
+## 1.1.3-dev.6
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.5
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.4
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.3
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.2
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.1
+
+ - Update a dependency to the latest release.
+
+## 1.1.3-dev.0
+
+ - **FIX**: update deps.
+
 ## 1.1.2
 
  - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.

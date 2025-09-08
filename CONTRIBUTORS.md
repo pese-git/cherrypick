@@ -1,4 +1,5 @@
 # Contributors
 
-- Sergey Penkovsky <sergey.penkovsky@gmail.com>
-- Klim Yaroshevich <yarashevich_kv@st.by>
+- [Sergey Penkovsky](https://github.com/pese-git)
+- [Klim Yaroshevich](https://github.com/KlimYarosh)
+- [Alexey Popkov](https://github.com/AlexeyYuPopkov)

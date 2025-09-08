@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,59 +11,40 @@
 // limitations under the License.
 //
 
-/// ENGLISH:
-/// Annotation for marking Dart classes or libraries as modules.
+import 'package:meta/meta.dart';
+
+/// Marks an abstract Dart class as a dependency injection module for CherryPick code generation.
 ///
-/// Use the `@module()` annotation on abstract classes (or on a library)
-/// to indicate that the class represents a DI (Dependency Injection) module.
-/// This is commonly used in code generation tools to automatically register
-/// and configure dependencies defined within the module.
+/// Use `@module()` on your abstract class to indicate it provides DI bindings (via provider methods).
+/// This enables code generation of a concrete module that registers all bindings from your methods.
 ///
-/// Example:
+/// Typical usage:
 /// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
 /// @module()
-/// abstract class AppModule extends Module {
-///   // Dependency definitions go here.
+/// abstract class AppModule {
+///   @singleton()
+///   Logger provideLogger() => Logger();
+///
+///   @named('mock')
+///   ApiClient mockApi() => MockApiClient();
 /// }
 /// ```
 ///
-/// Generates code like:
+/// The generated code will look like:
 /// ```dart
 /// final class $AppModule extends AppModule {
 ///   @override
 ///   void builder(Scope currentScope) {
-///     // Dependency registration...
+///     // Dependency registration code...
 ///   }
 /// }
 /// ```
 ///
-/// RUSSIAN (Русский):
-/// Аннотация для пометки классов или библиотек Dart как модуля.
-///
-/// Используйте `@module()` для абстрактных классов (или библиотек), чтобы
-/// показать, что класс реализует DI-модуль (Dependency Injection).
-/// Обычно используется генераторами кода для автоматической регистрации
-/// и конфигурирования зависимостей, определённых в модуле.
-///
-/// Пример:
-/// ```dart
-/// @module()
-/// abstract class AppModule extends Module {
-///   // Определения зависимостей
-/// }
-/// ```
-///
-/// Будет сгенерирован код:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     // Регистрация зависимостей...
-///   }
-/// }
-/// ```
-// ignore: camel_case_types
+/// See also: [@provide], [@singleton], [@instance], [@named]
+@experimental
 final class module {
-  /// Creates a [module] annotation.
+  /// Creates a [module] annotation for use on a DI module class.
   const module();
 }

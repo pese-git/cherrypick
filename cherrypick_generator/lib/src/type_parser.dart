@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,35 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'exceptions.dart';
 
-/// Enhanced type parser that uses AST analysis instead of regular expressions
+/// Utility for analyzing and parsing Dart types for CherryPick DI code generation.
+///
+/// This type parser leverages the Dart analyzer AST to extract nuanced information
+/// from Dart types encountered in the source code, in particular for dependency
+/// injection purposes. It is capable of extracting nullability, generics,
+/// and Future-related metadata with strong guarantees and handles even nested generics.
+///
+/// # Example usage for parsing types:
+/// ```dart
+/// final parsed = TypeParser.parseType(method.returnType, method);
+/// print(parsed);
+/// print(parsed.resolveMethodName); // e.g. "resolveAsync" or "tryResolve"
+/// ```
+///
+/// # Supported scenarios:
+/// - Nullable types (e.g., `List<String>?`)
+/// - Generic types (e.g., `Map<String, User>`)
+/// - Async types (`Future<T>`, including nested generics)
+/// - Validation for DI compatibility (throws for `void`, warns on `dynamic`)
 class TypeParser {
-  /// Parses a DartType and extracts detailed type information
+  /// Parses a [DartType] and extracts detailed type information for use in code generation.
+  ///
+  /// If a type is not suitable or cannot be parsed, a [TypeParsingException] is thrown.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parsed = TypeParser.parseType(field.type, field);
+  /// if (parsed.isNullable) print('Field is nullable');
+  /// ```
   static ParsedType parseType(DartType dartType, Element context) {
     try {
       return _parseTypeInternal(dartType, context);
@@ -49,7 +75,7 @@ class TypeParser {
       return _parseGenericType(dartType, context, isNullable);
     }
 
-    // Simple type
+    // Simple type (non-generic, non-Future)
     return ParsedType(
       displayString: displayString,
       coreType: displayString.replaceAll('?', ''),
@@ -103,7 +129,15 @@ class TypeParser {
     );
   }
 
-  /// Validates that a type is suitable for dependency injection
+  /// Validates that a parsed type is suitable for dependency injection.
+  ///
+  /// Throws [TypeParsingException] for void and may warn for dynamic.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parsed = TypeParser.parseType(field.type, field);
+  /// TypeParser.validateInjectableType(parsed, field);
+  /// ```
   static void validateInjectableType(ParsedType parsedType, Element context) {
     // Check for void type
     if (parsedType.coreType == 'void') {
@@ -131,7 +165,7 @@ class TypeParser {
   }
 }
 
-/// Represents a parsed type with detailed information
+/// Represents a parsed type with full metadata for code generation.
 class ParsedType {
   /// The full display string of the type (e.g., "Future<List<String>?>")
   final String displayString;
@@ -139,19 +173,19 @@ class ParsedType {
   /// The core type name without nullability and Future wrapper (e.g., "List<String>")
   final String coreType;
 
-  /// Whether the type is nullable
+  /// True if nullable (has `?`)
   final bool isNullable;
 
-  /// Whether the type is wrapped in Future
+  /// True if this type is a `Future<T>`
   final bool isFuture;
 
-  /// Whether the type has generic parameters
+  /// True if the type is a generic type (`List<T>`)
   final bool isGeneric;
 
-  /// Parsed type arguments for generic types
+  /// List of parsed type arguments in generics, if any.
   final List<ParsedType> typeArguments;
 
-  /// For Future types, the inner type
+  /// For `Future<T>`, this is the type inside the `Future`.
   final ParsedType? innerType;
 
   const ParsedType({
@@ -164,7 +198,11 @@ class ParsedType {
     this.innerType,
   });
 
-  /// Returns the type string suitable for code generation
+  /// Generates the type string suitable for code generation.
+  ///
+  /// - For futures, the codegen type of the inner type is returned
+  /// - For generics, returns e.g. `List<User>`
+  /// - For plain types, just the name
   String get codeGenType {
     if (isFuture && innerType != null) {
       return innerType!.codeGenType;
@@ -179,10 +217,10 @@ class ParsedType {
     return coreType;
   }
 
-  /// Returns whether this type should use tryResolve instead of resolve
+  /// True if this type should use `tryResolve` instead of `resolve` for DI.
   bool get shouldUseTryResolve => isNullable;
 
-  /// Returns the appropriate resolve method name
+  /// Returns the method name for DI, e.g. "resolve", "tryResolveAsync", etc.
   String get resolveMethodName {
     if (isFuture) {
       return shouldUseTryResolve ? 'tryResolveAsync' : 'resolveAsync';

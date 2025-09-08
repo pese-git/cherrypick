@@ -75,9 +75,73 @@ Example:
     // or
     final str = rootScope.tryResolve<String>();
 
-    // close main scope
-    Cherrypick.closeRootScope();
+    // Recommended: Close the root scope & automatically release all Disposable resources
+    await Cherrypick.closeRootScope();
+    // Or, for advanced/manual scenarios:
+    // await rootScope.dispose();
 ```
+
+### Automatic resource management (`Disposable`, `dispose`)
+
+If your service implements the `Disposable` interface, CherryPick will automatically await `dispose()` when you close a scope.
+
+**Best practice:**  
+Always finish your work with `await Cherrypick.closeRootScope()` (for the root scope) or `await scope.closeSubScope('feature')` (for subscopes).  
+These methods will automatically await `dispose()` on all resolved objects implementing `Disposable`, ensuring safe and complete cleanup (sync and async). 
+
+Manual `await scope.dispose()` is available if you manage scopes yourself.
+
+#### Example
+
+```dart
+class MyService implements Disposable {
+  @override
+  FutureOr<void> dispose() async {
+    // release resources, close connections, perform async shutdown, etc.
+    print('MyService disposed!');
+  }
+}
+
+final scope = openRootScope();
+scope.installModules([
+  ModuleImpl(),
+]);
+
+final service = scope.resolve<MyService>();
+
+// ... use service
+
+// Recommended:
+await Cherrypick.closeRootScope(); // will print: MyService disposed!
+
+// Or, to close a subscope:
+await scope.closeSubScope('feature');
+
+class ModuleImpl extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<MyService>().toProvide(() => MyService()).singleton();
+  }
+}
+```
+
+## Logging
+
+To enable logging of all dependency injection (DI) events and errors in CherryPick, set the global logger before creating your scopes:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+void main() {
+  // Set a global logger before any scopes are created
+  CherryPick.setGlobalLogger(PrintLogger()); // or your own custom logger
+  final scope = CherryPick.openRootScope();
+  // All DI events and cycle errors will now be sent to your logger
+}
+```
+
+- By default, CherryPick uses SilentLogger (no output in production).
+- Any dependency resolution, scope events, or cycle detection errors are logged via info/error on your logger.
 
 ## Example app
 

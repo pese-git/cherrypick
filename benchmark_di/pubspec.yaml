@@ -1,0 +1,21 @@
+name: benchmark_di
+version: 0.1.0
+publish_to: none
+description: Universal benchmark for any DI library (cherrypick, get_it, and others)
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  cherrypick:
+    path: ../cherrypick
+  args: ^2.7.0
+  get_it: ^8.2.0
+  riverpod: ^2.6.1
+  kiwi: ^5.0.1
+  yx_scope: ^1.1.2
+
+dev_dependencies:
+  lints: ^5.0.0
+  benchmark_harness: ^2.2.2
+  benchmark_runner: ^0.0.2

@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,60 +11,34 @@
 // limitations under the License.
 //
 
-/// ENGLISH:
-/// Annotation to declare a factory/provider method or class as a singleton.
+import 'package:meta/meta.dart';
+
+/// Marks a method or class as a dependency provider (factory/provider) for CherryPick module code generation.
 ///
-/// Use the `@singleton()` annotation on methods in your DI module to specify
-/// that only one instance of the resulting object should be created and shared
-/// for all consumers. This is especially useful in dependency injection
-/// frameworks and service locators.
+/// Use `@provide` on any method inside a `@module()` annotated class when you want that method
+/// to be used as a DI factory/provider during code generation.
+///
+/// This should be used for methods that create dynamic, optional, or complex dependencies, especially
+/// if you want to control the codegen/injection pipeline explicitly and support parameters.
 ///
 /// Example:
 /// ```dart
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
 /// @module()
-/// abstract class AppModule extends Module {
+/// abstract class FeatureModule {
+///   @provide
+///   Future<Api> provideApi(@params Map<String, dynamic> args) async => ...;
+///
 ///   @singleton()
-///   Dio dio() => Dio();
+///   @provide
+///   Logger provideLogger() => Logger();
 /// }
 /// ```
 ///
-/// This generates the following code:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).singleton();
-///   }
-/// }
-/// ```
-///
-/// RUSSIAN (Русский):
-/// Аннотация для объявления фабричного/провайдерного метода или класса синглтоном.
-///
-/// Используйте `@singleton()` для методов внутри DI-модуля, чтобы указать,
-/// что соответствующий объект (экземпляр класса) должен быть создан только один раз
-/// и использоваться всеми компонентами приложения (единый общий экземпляр).
-/// Это характерно для систем внедрения зависимостей и сервис-локаторов.
-///
-/// Пример:
-/// ```dart
-/// @module()
-/// abstract class AppModule extends Module {
-///   @singleton()
-///   Dio dio() => Dio();
-/// }
-/// ```
-///
-/// Будет сгенерирован следующий код:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).singleton();
-///   }
-/// }
-/// ```
-// ignore: camel_case_types
+/// See also: [@singleton], [@instance], [@params], [@named]
+@experimental
 final class provide {
+  /// Creates a [provide] annotation for marking provider methods/classes in DI modules.
   const provide();
 }

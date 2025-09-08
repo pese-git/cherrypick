@@ -1,6 +1,9 @@
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 import 'package:dio/dio.dart';
 import 'package:cherrypick/cherrypick.dart';
+import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
+import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import '../data/network/json_placeholder_api.dart';
 import '../data/post_repository_impl.dart';
 import '../domain/repository/post_repository.dart';
@@ -9,6 +12,20 @@ part 'app_module.module.cherrypick.g.dart';
 
 @module()
 abstract class AppModule extends Module {
+  @provide()
+  @singleton()
+  TalkerDioLoggerSettings talkerDioLoggerSettings() => TalkerDioLoggerSettings(
+        printRequestHeaders: true,
+        printResponseHeaders: true,
+        printResponseMessage: true,
+      );
+
+  @provide()
+  @singleton()
+  TalkerDioLogger talkerDioLogger(
+          Talker talker, TalkerDioLoggerSettings settings) =>
+      TalkerDioLogger(talker: talker, settings: settings);
+
   @instance()
   int timeout() => 1000;
 
@@ -35,8 +52,8 @@ abstract class AppModule extends Module {
   @provide()
   @singleton()
   @named('dio')
-  Dio dio(@named('baseUrl') String baseUrl) =>
-      Dio(BaseOptions(baseUrl: baseUrl));
+  Dio dio(@named('baseUrl') String baseUrl, TalkerDioLogger logger) =>
+      Dio(BaseOptions(baseUrl: baseUrl))..interceptors.add(logger);
 
   @provide()
   @singleton()

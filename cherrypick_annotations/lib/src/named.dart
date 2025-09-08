@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,67 +11,52 @@
 // limitations under the License.
 //
 
-/// ENGLISH:
-/// Annotation to assign a name or identifier to a class, method, or other element.
+import 'package:meta/meta.dart';
+
+/// Assigns a name or key identifier to a class, field, factory method or parameter
+/// for use in multi-registration scenarios (named dependencies) in CherryPick DI.
 ///
-/// The `@named('value')` annotation allows you to specify a string name
-/// for a dependency, factory, or injectable. This is useful for distinguishing
-/// between multiple registrations of the same type in dependency injection,
-/// code generation, and for providing human-readable metadata.
+/// Use `@named('key')` to distinguish between multiple bindings/implementations
+/// of the same type—when registering and when injecting dependencies.
 ///
-/// Example:
+/// You can use `@named`:
+/// - On provider/factory methods in a module
+/// - On fields with `@inject()` to receive a named instance
+/// - On function parameters (for method/constructor injection)
+///
+/// ### Example: On Provider Method
 /// ```dart
 /// @module()
-/// abstract class AppModule extends Module {
-///   @named('dio')
-///   Dio dio() => Dio();
+/// abstract class AppModule {
+///   @named('main')
+///   ApiClient apiClient() => ApiClient();
+///
+///   @named('mock')
+///   ApiClient mockApi() => MockApiClient();
 /// }
 /// ```
 ///
-/// This will generate:
+/// ### Example: On Injectable Field
 /// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).withName('dio').singleton();
-///   }
+/// @injectable()
+/// class WidgetModel with _\$WidgetModel {
+///   @inject()
+///   @named('main')
+///   late final ApiClient api;
 /// }
 /// ```
 ///
-/// RUSSIAN (Русский):
-/// Аннотация для задания имени или идентификатора классу, методу или другому элементу.
-///
-/// Аннотация `@named('значение')` позволяет указать строковое имя для зависимости,
-/// фабрики или внедряемого значения. Это удобно для различения нескольких
-/// регистраций одного типа в DI, генерации кода.
-///
-/// Пример:
+/// ### Example: On Parameter
 /// ```dart
-/// @module()
-/// abstract class AppModule extends Module {
-///   @named('dio')
-///   Dio dio() => Dio();
+/// class UserScreen {
+///   UserScreen(@named('current') User user);
 /// }
 /// ```
-///
-/// Будет сгенерирован следующий код:
-/// ```dart
-/// final class $AppModule extends AppModule {
-///   @override
-///   void builder(Scope currentScope) {
-///     bind<Dio>().toProvide(() => dio()).withName('dio').singleton();
-///   }
-/// }
-/// ```
-// ignore: camel_case_types
+@experimental
 final class named {
-  /// EN: The assigned name or identifier for the element.
-  ///
-  /// RU: Назначенное имя или идентификатор для элемента.
+  /// The assigned name or identifier for the dependency, provider, or parameter.
   final String value;
 
-  /// EN: Creates a [named] annotation with the given [value].
-  ///
-  /// RU: Создаёт аннотацию [named] с заданным значением [value].
+  /// Creates a [named] annotation with the given [value] key or name.
   const named(this.value);
 }

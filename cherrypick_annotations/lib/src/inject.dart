@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -13,22 +13,31 @@
 
 import 'package:meta/meta.dart';
 
-/// Annotation for field injection in CherryPick DI framework.
-/// Apply this to a field, and the code generator will automatically inject
-/// the appropriate dependency into it.
+/// Marks a field for dependency injection by CherryPick's code generator.
 ///
-/// ---
+/// Use `@inject()` on fields within a class marked with `@injectable()`.
+/// Such fields will be automatically injected from the DI [Scope]
+/// when using the generated mixin or calling `.injectFields()`.
 ///
-/// Аннотация для внедрения зависимости в поле через фреймворк CherryPick DI.
-/// Поместите её на поле класса — генератор кода автоматически подставит нужную зависимость.
-///
-/// Example / Пример:
+/// Example:
 /// ```dart
-/// @inject()
-/// late final SomeService service;
+/// import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+///
+/// @injectable()
+/// class LoginScreen with _\$LoginScreen {
+///   @inject()
+///   late final AuthService authService;
+///
+///   @inject()
+///   @named('main')
+///   late final ApiClient api;
+/// }
+///
+/// // After running build_runner, call:
+/// // LoginScreen().injectFields();
 /// ```
 @experimental
-// ignore: camel_case_types
 final class inject {
+  /// Creates an [inject] annotation for field injection.
   const inject();
 }

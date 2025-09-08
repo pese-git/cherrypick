@@ -1,4 +1,4 @@
-import 'package:cherrypick/src/binding.dart';
+import 'package:cherrypick/cherrypick.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -7,12 +7,12 @@ void main() {
     group('Without name', () {
       test('Returns null by default', () {
         final binding = Binding<int>();
-        expect(binding.instance, null);
+        expect(binding.resolver, null);
       });
 
       test('Sets mode to instance', () {
         final binding = Binding<int>().toInstance(5);
-        expect(binding.mode, Mode.instance);
+        expect(binding.resolver, isA<InstanceResolver<int>>());
       });
 
       test('isSingleton is true', () {
@@ -22,19 +22,19 @@ void main() {
 
       test('Stores value', () {
         final binding = Binding<int>().toInstance(5);
-        expect(binding.instance, 5);
+        expect(binding.resolver?.resolveSync(), 5);
       });
     });
 
     group('With name', () {
       test('Returns null by default', () {
         final binding = Binding<int>().withName('n');
-        expect(binding.instance, null);
+        expect(binding.resolver, null);
       });
 
       test('Sets mode to instance', () {
         final binding = Binding<int>().withName('n').toInstance(5);
-        expect(binding.mode, Mode.instance);
+        expect(binding.resolver, isA<InstanceResolver<int>>());
       });
 
       test('Sets key', () {
@@ -49,7 +49,7 @@ void main() {
 
       test('Stores value', () {
         final binding = Binding<int>().withName('n').toInstance(5);
-        expect(binding.instance, 5);
+        expect(binding.resolver?.resolveSync(), 5);
       });
 
       test('Sets name', () {
@@ -60,45 +60,39 @@ void main() {
 
     test('Multiple toInstance calls change value', () {
       final binding = Binding<int>().toInstance(1).toInstance(2);
-      expect(binding.instance, 2);
+      expect(binding.resolver?.resolveSync(), 2);
     });
   });
 
   // --- Instance binding (asynchronous) ---
   group('Async Instance Binding (toInstanceAsync)', () {
     test('Resolves instanceAsync with expected value', () async {
-      final binding = Binding<int>().toInstanceAsync(Future.value(42));
-      expect(await binding.instanceAsync, 42);
-    });
-
-    test('Does not affect instance', () {
-      final binding = Binding<int>().toInstanceAsync(Future.value(5));
-      expect(binding.instance, null);
+      final binding = Binding<int>().toInstance(Future.value(42));
+      expect(await binding.resolveAsync(), 42);
     });
 
     test('Sets mode to instance', () {
-      final binding = Binding<int>().toInstanceAsync(Future.value(5));
-      expect(binding.mode, Mode.instance);
+      final binding = Binding<int>().toInstance(Future.value(5));
+      expect(binding.resolver, isA<InstanceResolver<int>>());
     });
 
     test('isSingleton is true after toInstanceAsync', () {
-      final binding = Binding<int>().toInstanceAsync(Future.value(5));
+      final binding = Binding<int>().toInstance(Future.value(5));
       expect(binding.isSingleton, isTrue);
     });
 
     test('Composes with withName', () async {
-      final binding = Binding<int>()
-          .withName('asyncValue')
-          .toInstanceAsync(Future.value(7));
+      final binding =
+          Binding<int>().withName('asyncValue').toInstance(Future.value(7));
       expect(binding.isNamed, isTrue);
       expect(binding.name, 'asyncValue');
-      expect(await binding.instanceAsync, 7);
+      expect(await binding.resolveAsync(), 7);
     });
 
     test('Keeps value after multiple awaits', () async {
-      final binding = Binding<int>().toInstanceAsync(Future.value(123));
-      final result1 = await binding.instanceAsync;
-      final result2 = await binding.instanceAsync;
+      final binding = Binding<int>().toInstance(Future.value(123));
+      final result1 = await binding.resolveAsync();
+      final result2 = await binding.resolveAsync();
       expect(result1, equals(result2));
     });
   });
@@ -108,12 +102,12 @@ void main() {
     group('Without name', () {
       test('Returns null by default', () {
         final binding = Binding<int>();
-        expect(binding.provider, null);
+        expect(binding.resolver, null);
       });
 
       test('Sets mode to providerInstance', () {
         final binding = Binding<int>().toProvide(() => 5);
-        expect(binding.mode, Mode.providerInstance);
+        expect(binding.resolver, isA<ProviderResolver<int>>());
       });
 
       test('isSingleton is false by default', () {
@@ -123,19 +117,19 @@ void main() {
 
       test('Returns provided value', () {
         final binding = Binding<int>().toProvide(() => 5);
-        expect(binding.provider, 5);
+        expect(binding.resolveSync(), 5);
       });
     });
 
     group('With name', () {
       test('Returns null by default', () {
         final binding = Binding<int>().withName('n');
-        expect(binding.provider, null);
+        expect(binding.resolver, null);
       });
 
       test('Sets mode to providerInstance', () {
         final binding = Binding<int>().withName('n').toProvide(() => 5);
-        expect(binding.mode, Mode.providerInstance);
+        expect(binding.resolver, isA<ProviderResolver<int>>());
       });
 
       test('Sets key', () {
@@ -150,7 +144,7 @@ void main() {
 
       test('Returns provided value', () {
         final binding = Binding<int>().withName('n').toProvide(() => 5);
-        expect(binding.provider, 5);
+        expect(binding.resolveSync(), 5);
       });
 
       test('Sets name', () {
@@ -163,14 +157,14 @@ void main() {
   // --- Async provider binding ---
   group('Async Provider Binding', () {
     test('Resolves asyncProvider value', () async {
-      final binding = Binding<int>().toProvideAsync(() async => 5);
-      expect(await binding.asyncProvider?.call(), 5);
+      final binding = Binding<int>().toProvide(() async => 5);
+      expect(await binding.resolveAsync(), 5);
     });
 
     test('Resolves asyncProviderWithParams value', () async {
       final binding = Binding<int>()
-          .toProvideAsyncWithParams((param) async => 5 + (param as int));
-      expect(await binding.asyncProviderWithParams?.call(3), 8);
+          .toProvideWithParams((param) async => 5 + (param as int));
+      expect(await binding.resolveAsync(3), 8);
     });
   });
 
@@ -179,12 +173,7 @@ void main() {
     group('Without name', () {
       test('Returns null if no provider set', () {
         final binding = Binding<int>().singleton();
-        expect(binding.provider, null);
-      });
-
-      test('Sets mode to providerInstance', () {
-        final binding = Binding<int>().toProvide(() => 5).singleton();
-        expect(binding.mode, Mode.providerInstance);
+        expect(binding.resolver, null);
       });
 
       test('isSingleton is true', () {
@@ -194,7 +183,7 @@ void main() {
 
       test('Returns singleton value', () {
         final binding = Binding<int>().toProvide(() => 5).singleton();
-        expect(binding.provider, 5);
+        expect(binding.resolveSync(), 5);
       });
 
       test('Returns same value each call and provider only called once', () {
@@ -204,8 +193,8 @@ void main() {
           return counter;
         }).singleton();
 
-        final first = binding.provider;
-        final second = binding.provider;
+        final first = binding.resolveSync();
+        final second = binding.resolveSync();
         expect(first, equals(second));
         expect(counter, 1);
       });
@@ -214,13 +203,7 @@ void main() {
     group('With name', () {
       test('Returns null if no provider set', () {
         final binding = Binding<int>().withName('n').singleton();
-        expect(binding.provider, null);
-      });
-
-      test('Sets mode to providerInstance', () {
-        final binding =
-            Binding<int>().withName('n').toProvide(() => 5).singleton();
-        expect(binding.mode, Mode.providerInstance);
+        expect(binding.resolver, null);
       });
 
       test('Sets key', () {
@@ -238,7 +221,7 @@ void main() {
       test('Returns singleton value', () {
         final binding =
             Binding<int>().withName('n').toProvide(() => 5).singleton();
-        expect(binding.provider, 5);
+        expect(binding.resolveSync(), 5);
       });
 
       test('Sets name', () {
@@ -246,12 +229,6 @@ void main() {
             Binding<int>().withName('n').toProvide(() => 5).singleton();
         expect(binding.name, 'n');
       });
-    });
-
-    test('Chained withName and singleton preserves mode', () {
-      final binding =
-          Binding<int>().toProvide(() => 3).withName("named").singleton();
-      expect(binding.mode, Mode.providerInstance);
     });
   });
 
@@ -265,7 +242,7 @@ void main() {
 
     test('providerWithParams returns null if not set', () {
       final binding = Binding<int>();
-      expect(binding.providerWithParams(123), null);
+      expect(binding.resolveSync(123), null);
     });
   });
 }

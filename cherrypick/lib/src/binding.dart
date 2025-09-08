@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,180 +11,333 @@
 // limitations under the License.
 //
 
-enum Mode { simple, instance, providerInstance, providerInstanceWithParams }
+import 'package:cherrypick/src/binding_resolver.dart';
 
-typedef Provider<T> = T? Function();
-
-typedef ProviderWithParams<T> = T Function(dynamic params);
-
-typedef AsyncProvider<T> = Future<T> Function();
-
-typedef AsyncProviderWithParams<T> = Future<T> Function(dynamic params);
-
-/// RU: Класс Binding<T> настраивает параметры экземпляра.
-/// ENG: The Binding<T> class configures the settings for the instance.
+/// {@template binding_docs}
+/// [Binding] configures how a dependency of type [T] is created, provided, or managed in CherryPick DI.
 ///
+/// A [Binding] can:
+/// - Register a direct instance
+/// - Register a provider (sync/async)
+/// - Register a provider supporting dynamic params
+/// - Be named (for multi-implementation/keyed injection)
+/// - Be marked as [singleton] (single instance within scope)
+///
+/// ### Examples
+///
+/// Register a direct instance:
+/// ```dart
+/// bind<String>().toInstance("Hello, world!");
+/// ```
+///
+/// Register via sync provider:
+/// ```dart
+/// bind<MyService>().toProvide(() => MyService());
+/// ```
+///
+/// Register via async provider (returns Future):
+/// ```dart
+/// bind<MyApi>().toProvide(() async => await MyApi.connect());
+/// ```
+///
+/// Register provider with dynamic params:
+/// ```dart
+/// bind<User>().toProvideWithParams((params) => User(name: params["name"]));
+/// ```
+///
+/// Register with name/key:
+/// ```dart
+/// bind<Client>().withName("mock").toInstance(MockClient());
+/// bind<Client>().withName("prod").toInstance(RealClient());
+/// final c = scope.resolve<Client>(named: "mock");
+/// ```
+///
+/// Singleton (same instance reused):
+/// ```dart
+/// bind<Database>().toProvide(() => Database()).singleton();
+/// ```
+///
+/// {@endtemplate}
+
+import 'package:cherrypick/src/observer.dart';
+
 class Binding<T> {
-  late Mode _mode;
   late Type _key;
-  late String _name;
-  T? _instance;
-  Future<T>? _instanceAsync;
-  Provider<T>? _provider;
-  ProviderWithParams<T>? _providerWithParams;
+  String? _name;
 
-  AsyncProvider<T>? asyncProvider;
-  AsyncProviderWithParams<T>? asyncProviderWithParams;
+  BindingResolver<T>? _resolver;
 
-  late bool _isSingleton = false;
-  late bool _isNamed = false;
+  CherryPickObserver? observer;
 
-  Binding() {
-    _mode = Mode.simple;
+  // Deferred logging flags
+  bool _createdLogged = false;
+  bool _namedLogged = false;
+  bool _singletonLogged = false;
+
+  Binding({this.observer}) {
     _key = T;
+    // Deferred уведомения observer, не логировать здесь напрямую
   }
 
-  /// RU: Метод возвращает [Mode] экземпляра.
-  /// ENG: The method returns the [Mode] of the instance.
-  ///
-  /// return [Mode]
-  Mode get mode => _mode;
+  void markCreated() {
+    if (!_createdLogged) {
+      observer?.onBindingRegistered(
+        runtimeType.toString(),
+        T,
+      );
+      _createdLogged = true;
+    }
+  }
 
-  /// RU: Метод возвращает тип экземпляра.
-  /// ENG: The method returns the type of the instance.
+  void markNamed() {
+    if (isNamed && !_namedLogged) {
+      observer?.onDiagnostic(
+        'Binding named: ${T.toString()} name: $_name',
+        details: {
+          'type': 'Binding',
+          'name': T.toString(),
+          'nameParam': _name,
+          'description': 'named',
+        },
+      );
+      _namedLogged = true;
+    }
+  }
+
+  void markSingleton() {
+    if (isSingleton && !_singletonLogged) {
+      observer?.onDiagnostic(
+        'Binding singleton: ${T.toString()}${_name != null ? ' name: $_name' : ''}',
+        details: {
+          'type': 'Binding',
+          'name': T.toString(),
+          if (_name != null) 'name': _name,
+          'description': 'singleton mode enabled',
+        },
+      );
+      _singletonLogged = true;
+    }
+  }
+
+  void logAllDeferred() {
+    markCreated();
+    markNamed();
+    markSingleton();
+  }
+
+  /// Returns the type key used by this binding.
   ///
-  /// return [Type]
+  /// Usually you don't need to access it directly.
   Type get key => _key;
 
-  /// RU: Метод возвращает имя экземпляра.
-  /// ENG: The method returns the name of the instance.
-  ///
-  /// return [String]
-  String get name => _name;
+  /// Returns the name (if any) for this binding.
+  /// Useful for named/multi-implementation resolution.
+  String? get name => _name;
 
-  /// RU: Метод проверяет сингелтон экземпляр или нет.
-  /// ENG: The method checks the singleton instance or not.
-  ///
-  /// return [bool]
-  bool get isSingleton => _isSingleton;
+  /// Returns true if this binding is named (named/keyed binding).
+  bool get isNamed => _name != null;
 
-  /// RU: Метод проверяет именован экземпляр или нет.
-  /// ENG: The method checks whether the instance is named or not.
-  ///
-  /// return [bool]
-  bool get isNamed => _isNamed;
+  /// Returns true if this binding is marked as a singleton.
+  /// Singleton bindings will only create one instance within the scope.
+  bool get isSingleton => _resolver?.isSingleton ?? false;
 
-  /// RU: Добавляет имя для экземляпя [value].
-  /// ENG: Added name for instance [value].
+  BindingResolver<T>? get resolver => _resolver;
+
+  /// Adds a name/key to this binding (for multi-implementation or keyed injection).
   ///
-  /// return [Binding]
+  /// Example:
+  /// ```dart
+  /// bind<Client>().withName("mock").toInstance(MockClient());
+  /// ```
   Binding<T> withName(String name) {
     _name = name;
-    _isNamed = true;
     return this;
   }
 
-  /// RU: Инициализация экземляпяра [value].
-  /// ENG: Initialization instance [value].
+  /// Binds a direct instance (static object) for this type.
   ///
-  /// return [Binding]
-  Binding<T> toInstance(T value) {
-    _mode = Mode.instance;
-    _instance = value;
-    _isSingleton = true;
+  /// Example:
+  /// ```dart
+  /// bind<Api>().toInstance(ApiMock());
+  /// ```
+  ///
+  /// **Important limitation:**
+  /// If you register several dependencies via [toInstance] inside a [`Module.builder`],
+  /// do _not_ use `scope.resolve<T>()` to get objects that are also being registered during the _same_ builder execution.
+  /// All [toInstance] bindings are applied sequentially, and at the point of registration,
+  /// earlier objects are not yet available for resolve.
+  ///
+  /// **Correct:**
+  /// ```dart
+  /// void builder(Scope scope) {
+  ///   final a = A();
+  ///   final b = B(a);
+  ///   bind<A>().toInstance(a);
+  ///   bind<B>().toInstance(b);
+  /// }
+  /// ```
+  /// **Wrong:**
+  /// ```dart
+  /// void builder(Scope scope) {
+  ///   bind<A>().toInstance(A());
+  ///   bind<B>().toInstance(B(scope.resolve<A>())); // Error! A is not available yet.
+  /// }
+  /// ```
+  /// **Wrong:**
+  /// ```dart
+  /// void builder(Scope scope) {
+  ///   bind<A>().toProvide(() => A());
+  ///   bind<B>().toInstance(B(scope.resolve<A>())); // Error! A is not available yet.
+  /// }
+  /// ```
+  /// This restriction only applies to [toInstance] bindings.
+  // ignore: deprecated_member_use_from_same_package
+  /// With [toProvide]/[toProvideAsync] you may freely use `scope.resolve<T>()` in the builder or provider function.
+  Binding<T> toInstance(Instance<T> value) {
+    _resolver = InstanceResolver<T>(value);
     return this;
   }
 
-  /// RU: Инициализация экземляпяра [value].
-  /// ENG: Initialization instance [value].
+  /// Binds a provider function (sync or async) that creates the instance when resolved.
   ///
-  /// return [Binding]
-  Binding<T> toInstanceAsync(Future<T> value) {
-    _mode = Mode.instance;
-    _instanceAsync = value;
-    _isSingleton = true;
-    return this;
-  }
-
-  /// RU: Инициализация экземляпяра  через провайдер [value].
-  /// ENG: Initialization instance via provider [value].
-  ///
-  /// return [Binding]
+  /// Example:
+  /// ```dart
+  /// bind<Api>().toProvide(() => ApiService());
+  /// bind<Db>().toProvide(() async => await openDb());
+  /// ```
   Binding<T> toProvide(Provider<T> value) {
-    _mode = Mode.providerInstance;
-    _provider = value;
+    _resolver = ProviderResolver<T>((_) => value.call(), withParams: false);
     return this;
   }
 
-  /// RU: Инициализация экземляпяра  через провайдер [value].
-  /// ENG: Initialization instance via provider [value].
+  /// Binds a provider function that takes dynamic params at resolve-time (e.g. for factories).
   ///
-  /// return [Binding]
-  Binding<T> toProvideAsync(AsyncProvider<T> provider) {
-    _mode = Mode.providerInstance;
-    asyncProvider = provider;
-    return this;
-  }
-
-  /// RU: Инициализация экземляпяра  через провайдер [value] c динамическим параметром.
-  /// ENG: Initialization instance via provider [value] with a dynamic param.
-  ///
-  /// return [Binding]
+  /// Example:
+  /// ```dart
+  /// bind<User>().toProvideWithParams((params) => User(name: params["name"]));
+  /// ```
   Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
-    _mode = Mode.providerInstanceWithParams;
-    _providerWithParams = value;
+    _resolver = ProviderResolver<T>(value, withParams: true);
     return this;
   }
 
-  /// RU: Инициализация экземляра через асинхронный провайдер [value] с динамическим параметром.
-  /// ENG: Initializes the instance via async provider [value] with a dynamic param.
-  ///
-  /// return [Binding]
-  Binding<T> toProvideAsyncWithParams(AsyncProviderWithParams<T> provider) {
-    _mode = Mode.providerInstanceWithParams;
-    asyncProviderWithParams = provider;
-    return this;
+  @Deprecated('Use toInstance instead of toInstanceAsync')
+  Binding<T> toInstanceAsync(Instance<T> value) {
+    return this.toInstance(value);
   }
 
-  /// RU: Инициализация экземляпяра  как сингелтон [value].
-  /// ENG: Initialization instance as a singelton [value].
+  @Deprecated('Use toProvide instead of toProvideAsync')
+  Binding<T> toProvideAsync(Provider<T> value) {
+    return this.toProvide(value);
+  }
+
+  @Deprecated('Use toProvideWithParams instead of toProvideAsyncWithParams')
+  Binding<T> toProvideAsyncWithParams(ProviderWithParams<T> value) {
+    return this.toProvideWithParams(value);
+  }
+
+  /// Marks this binding as singleton (will only create and cache one instance per scope).
   ///
-  /// return [Binding]
+  /// Call this after toProvide/toInstance etc:
+  /// ```dart
+  /// bind<Api>().toProvide(() => MyApi()).singleton();
+  /// ```
+  ///
+  /// ---
+  ///
+  /// ⚠️ **Special note: Behavior with parametric providers (`toProvideWithParams`/`toProvideAsyncWithParams`):**
+  ///
+  /// If you declare a binding using `.toProvideWithParams(...)` (or its async variant) and then chain `.singleton()`, only the **very first** `resolve<T>(params: ...)` will use its parameters;
+  /// every subsequent call (regardless of params) will return the same (cached) instance.
+  ///
+  /// Example:
+  /// ```dart
+  /// bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
+  /// final a = scope.resolve<Service>(params: 1); // creates Service(1)
+  /// final b = scope.resolve<Service>(params: 2); // returns Service(1)
+  /// print(identical(a, b)); // true
+  /// ```
+  ///
+  /// Use this pattern only if you want a master singleton. If you expect a new instance per params, **do not** use `.singleton()` on parameterized providers.
+  ///
+  /// ℹ️ **Note about `.singleton()` and `.toInstance()`:**
+  ///
+  /// Calling `.singleton()` after `.toInstance()` does **not** change the binding’s behavior:
+  /// the object passed with `toInstance()` is already a single, constant instance that will always be returned for every resolve.
+  /// There is no need to use `.singleton()` with `toInstance()`. This call has no effect.
+  /// `.singleton()` is only meaningful with providers (`toProvide`, `toProvideAsync`, etc), to ensure only one instance is created by the factory.
   Binding<T> singleton() {
-    _isSingleton = true;
+    _resolver?.toSingleton();
     return this;
   }
 
-  /// RU: Поиск экземпляра.
-  /// ENG: Resolve instance.
+  /// Resolves the instance synchronously (if binding supports sync access).
   ///
-  /// return [T]
-  T? get instance => _instance;
-
-  /// RU: Поиск экземпляра.
-  /// ENG: Resolve instance.
+  /// Returns the created/found instance or null.
   ///
-  /// return [T]
-  Future<T>? get instanceAsync => _instanceAsync;
-
-  /// RU: Поиск экземпляра.
-  /// ENG: Resolve instance.
-  ///
-  /// return [T]
-  T? get provider {
-    if (_isSingleton) {
-      _instance ??= _provider?.call();
-      return _instance;
+  /// Example:
+  /// ```dart
+  /// final s = scope.resolveSync<String>();
+  /// ```
+  T? resolveSync([dynamic params]) {
+    final res = resolver?.resolveSync(params);
+    if (res != null) {
+      observer?.onDiagnostic(
+        'Binding resolved instance: ${T.toString()}',
+        details: {
+          if (_name != null) 'name': _name,
+          'method': 'resolveSync',
+          'description': 'object created/resolved',
+        },
+      );
+    } else {
+      observer?.onWarning(
+        'resolveSync returned null: ${T.toString()}',
+        details: {
+          if (_name != null) 'name': _name,
+          'method': 'resolveSync',
+          'description': 'resolveSync returned null',
+        },
+      );
     }
-    return _provider?.call();
+    return res;
   }
 
-  /// RU: Поиск экземпляра с параметром.
+  /// Resolves the instance asynchronously (if binding supports async/future access).
   ///
-  /// ENG: Resolve instance with [params].
+  /// Returns a [Future] with the instance, or null if unavailable.
   ///
-  /// return [T]
-  T? providerWithParams(dynamic params) {
-    return _providerWithParams?.call(params);
+  /// Example:
+  /// ```dart
+  /// final user = await scope.resolveAsync<User>();
+  /// ```
+  Future<T>? resolveAsync([dynamic params]) {
+    final future = resolver?.resolveAsync(params);
+    if (future != null) {
+      future
+          .then((res) => observer?.onDiagnostic(
+                'Future resolved for: ${T.toString()}',
+                details: {
+                  if (_name != null) 'name': _name,
+                  'method': 'resolveAsync',
+                  'description': 'Future resolved',
+                },
+              ))
+          .catchError((e, s) => observer?.onError(
+                'resolveAsync error: ${T.toString()}',
+                e,
+                s,
+              ));
+    } else {
+      observer?.onWarning(
+        'resolveAsync returned null: ${T.toString()}',
+        details: {
+          if (_name != null) 'name': _name,
+          'method': 'resolveAsync',
+          'description': 'resolveAsync returned null',
+        },
+      );
+    }
+    return future;
   }
 }

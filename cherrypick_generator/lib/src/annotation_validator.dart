@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,9 +15,43 @@ import 'package:analyzer/dart/element/element.dart';
 import 'exceptions.dart';
 import 'metadata_utils.dart';
 
-/// Validates annotation combinations and usage patterns
+/// Provides static utility methods for validating annotation usage in CherryPick
+/// dependency injection code generation.
+///
+/// This validator helps ensure that `@provide`, `@instance`, `@singleton`, `@params`,
+/// `@inject`, `@named`, `@module`, and `@injectable` annotations are correctly and safely
+/// combined in your codebase, preventing common configuration and codegen errors before
+/// code is generated.
+///
+/// #### Example Usage
+/// ```dart
+/// void processMethod(MethodElement method) {
+///   AnnotationValidator.validateMethodAnnotations(method);
+/// }
+/// ```
+///
+/// All exceptions are thrown as [AnnotationValidationException] and will include
+/// a helpful message and context.
+///
+/// ---
+/// Typical checks performed by this utility:
+/// - Mutual exclusivity (`@instance` vs `@provide`)
+/// - Required presence for fields and methods
+/// - Proper parameters for `@named` and `@params`
+/// - Correct usage of injectable fields, module class methods, etc.
+///
 class AnnotationValidator {
-  /// Validates annotations on a method element
+  /// Validates annotations for a given [MethodElement].
+  ///
+  /// Checks:
+  ///   - Mutual exclusivity of `@instance` and `@provide`.
+  ///   - That a method is annotated with exactly one DI-producing annotation.
+  ///   - If `@params` is present, that it is used together with `@provide`.
+  ///   - Appropriate usage of `@singleton`.
+  ///   - [@named] syntax and conventions.
+  ///   - Parameter validation for method arguments.
+  ///
+  /// Throws [AnnotationValidationException] on any violation.
   static void validateMethodAnnotations(MethodElement method) {
     final annotations = _getAnnotationNames(method.metadata);
 
@@ -26,14 +60,28 @@ class AnnotationValidator {
     _validateAnnotationParameters(method);
   }
 
-  /// Validates annotations on a field element
+  /// Validates that a [FieldElement] has correct injection annotations.
+  ///
+  /// Specifically, ensures:
+  ///   - Injectable fields are of valid type.
+  ///   - No `void` injection.
+  ///   - Correct scope naming if present.
+  ///
+  /// Throws [AnnotationValidationException] if checks fail.
   static void validateFieldAnnotations(FieldElement field) {
     final annotations = _getAnnotationNames(field.metadata);
 
     _validateInjectFieldAnnotations(field, annotations);
   }
 
-  /// Validates annotations on a class element
+  /// Validates all class-level DI annotations.
+  ///
+  /// Executes checks for:
+  ///   - Module class validity (e.g. must have public DI methods if `@module`).
+  ///   - Injectable class: at least one @inject field, field finalness, etc.
+  ///   - Provides helpful context for error/warning reporting.
+  ///
+  /// Throws [AnnotationValidationException] if checks fail.
   static void validateClassAnnotations(ClassElement classElement) {
     final annotations = _getAnnotationNames(classElement.metadata);
 
@@ -41,6 +89,9 @@ class AnnotationValidator {
     _validateInjectableClassAnnotations(classElement, annotations);
   }
 
+  // --- Internal helpers follow (private) ---
+
+  /// Helper: Returns the names of all annotation types on `metadata`.
   static List<String> _getAnnotationNames(List<ElementAnnotation> metadata) {
     return metadata
         .map((m) => m.computeConstantValue()?.type?.getDisplayString())
@@ -49,6 +100,9 @@ class AnnotationValidator {
         .toList();
   }
 
+  /// Validates that mutually exclusive method annotations are not used together.
+  ///
+  /// For example, `@instance` and `@provide` cannot both be present.
   static void _validateMutuallyExclusiveAnnotations(
     MethodElement method,
     List<String> annotations,
@@ -68,6 +122,10 @@ class AnnotationValidator {
     }
   }
 
+  /// Validates correct annotation combinations, e.g.
+  /// - `@params` must be with `@provide`
+  /// - One of `@instance` or `@provide` must be present for a registration method
+  /// - Validates singleton usage
   static void _validateAnnotationCombinations(
     MethodElement method,
     List<String> annotations,
@@ -105,6 +163,7 @@ class AnnotationValidator {
     }
   }
 
+  /// Singleton-specific method annotation checks.
   static void _validateSingletonUsage(
     MethodElement method,
     List<String> annotations,
@@ -130,6 +189,7 @@ class AnnotationValidator {
     }
   }
 
+  /// Validates extra requirements or syntactic rules for annotation arguments, like @named.
   static void _validateAnnotationParameters(MethodElement method) {
     // Validate @named annotation parameters
     final namedValue = MetadataUtils.getNamedValue(method.metadata);
@@ -170,11 +230,11 @@ class AnnotationValidator {
     }
   }
 
+  /// Checks that @params is used with compatible parameter type.
   static void _validateParamsParameter(
       ParameterElement param, MethodElement method) {
     // @params parameter should typically be dynamic or Map<String, dynamic>
     final paramType = param.type.getDisplayString();
-
     if (paramType != 'dynamic' &&
         paramType != 'Map<String, dynamic>' &&
         paramType != 'Map<String, dynamic>?') {
@@ -194,6 +254,7 @@ class AnnotationValidator {
     }
   }
 
+  /// Checks field-level annotation for valid injectable fields.
   static void _validateInjectFieldAnnotations(
     FieldElement field,
     List<String> annotations,
@@ -227,6 +288,7 @@ class AnnotationValidator {
     }
   }
 
+  /// Checks @module usage: must have at least one DI method, each with DI-annotation.
   static void _validateModuleClassAnnotations(
     ClassElement classElement,
     List<String> annotations,
@@ -268,6 +330,7 @@ class AnnotationValidator {
     }
   }
 
+  /// Checks @injectable usage on classes and their fields.
   static void _validateInjectableClassAnnotations(
     ClassElement classElement,
     List<String> annotations,
