@@ -44,6 +44,46 @@ final setupFuture = loadEnvironment();
 bind<Environment>().toInstanceAsync(setupFuture);
 ```
 
+> ⚠️ **Важное примечание по использованию toInstance в Module**
+>
+> Если вы регистрируете цепочку зависимостей через `toInstance` внутри метода `builder` вашего `Module`, нельзя в это же время вызывать `scope.resolve<T>()` для только что объявленного типа.
+>
+> CherryPick инициализирует биндинги последовательно внутри builder: в этот момент ещё не все зависимости зарегистрированы в DI-контейнере. Попытка воспользоваться `scope.resolve<T>()` для только что добавленного объекта приведёт к ошибке (`Can't resolve dependency ...`).
+>
+> **Как правильно:**  
+> Складывайте всю цепочку вручную до регистрации:
+>
+> ```dart
+> void builder(Scope scope) {
+>   final a = A();
+>   final b = B(a);
+>   final c = C(b);
+>   bind<A>().toInstance(a);
+>   bind<B>().toInstance(b);
+>   bind<C>().toInstance(c);
+> }
+> ```
+>
+> **Неправильно:**
+> ```dart
+> void builder(Scope scope) {
+>   bind<A>().toInstance(A());
+>   // Ошибка! В этот момент A ещё не зарегистрирован.
+>   bind<B>().toInstance(B(scope.resolve<A>()));
+> }
+> ```
+>
+> **Неправильно:**
+> ```dart
+> void builder(Scope scope) {
+>   bind<A>().toProvide(() => A());
+>   // Ошибка! В этот момент A ещё не зарегистрирован.
+>   bind<B>().toInstance(B(scope.resolve<A>()));
+> }
+> ```
+>
+> **Примечание:** Это ограничение касается только `toInstance`. Для провайдеров (`toProvide`/`toProvideAsync`) и других стратегий вы можете использовать `scope.resolve<T>()` внутри builder без ограничений.
+
 
 - **toProvide** — обычная синхронная фабрика.
 - **toProvideAsync** — асинхронная фабрика (например, если нужно дожидаться Future).

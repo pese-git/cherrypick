@@ -102,30 +102,72 @@ A **Binding** acts as a configuration for how to create or provide a particular 
 #### Example
 
 ```dart
-// Provide a direct instance
-Binding<String>().toInstance("Hello world");
+void builder(Scope scope) {
+  // Provide a direct instance
+  bind<String>().toInstance("Hello world");
 
-// Provide an async direct instance
-Binding<String>().toInstanceAsync(Future.value("Hello world"));
+  // Provide an async direct instance
+  bind<String>().toInstanceAsync(Future.value("Hello world"));
 
-// Provide a lazy sync instance using a factory
-Binding<String>().toProvide(() => "Hello world");
+  // Provide a lazy sync instance using a factory
+  bind<String>().toProvide(() => "Hello world");
 
-// Provide a lazy async instance using a factory
-Binding<String>().toProvideAsync(() async => "Hello async world");
+  // Provide a lazy async instance using a factory
+  bind<String>().toProvideAsync(() async => "Hello async world");
 
-// Provide an instance with dynamic parameters (sync)
-Binding<String>().toProvideWithParams((params) => "Hello $params");
+  // Provide an instance with dynamic parameters (sync)
+  bind<String>().toProvideWithParams((params) => "Hello $params");
 
-// Provide an instance with dynamic parameters (async)
-Binding<String>().toProvideAsyncWithParams((params) async => "Hello $params");
+  // Provide an instance with dynamic parameters (async)
+  bind<String>().toProvideAsyncWithParams((params) async => "Hello $params");
 
-// Named instance for retrieval by name
-Binding<String>().toProvide(() => "Hello world").withName("my_string");
+  // Named instance for retrieval by name
+  bind<String>().toProvide(() => "Hello world").withName("my_string");
 
-// Mark as singleton (only one instance within the scope)
-Binding<String>().toProvide(() => "Hello world").singleton();
+  // Mark as singleton (only one instance within the scope)
+  bind<String>().toProvide(() => "Hello world").singleton();
+}
 ```
+
+> ⚠️ **Important note about using `toInstance` in Module `builder`:**
+>
+> If you register a chain of dependencies via `toInstance` inside a Module's `builder`, **do not** call `scope.resolve<T>()` for types that are also being registered in the same builder — at the moment they are registered.
+>
+> CherryPick initializes all bindings in the builder sequentially. Dependencies registered earlier are not yet available to `resolve` within the same builder execution. Trying to resolve just-registered types will result in an error (`Can't resolve dependency ...`).
+>
+> **How to do it right:**  
+> Manually construct the full dependency chain before calling `toInstance`:
+>
+> ```dart
+> void builder(Scope scope) {
+>   final a = A();
+>   final b = B(a);
+>   final c = C(b);
+>   bind<A>().toInstance(a);
+>   bind<B>().toInstance(b);
+>   bind<C>().toInstance(c);
+> }
+> ```
+>
+> **Wrong:**
+> ```dart
+> void builder(Scope scope) {
+>   bind<A>().toInstance(A());
+>   // Error! At this point, A is not registered yet.
+>   bind<B>().toInstance(B(scope.resolve<A>()));
+> }
+> ```
+>
+> **Wrong:**
+> ```dart
+> void builder(Scope scope) {
+>   bind<A>().toProvide(() => A());
+>   // Error! At this point, A is not registered yet.
+>   bind<B>().toInstance(B(scope.resolve<A>()));
+> }
+> ```
+>
+> **Note:** This limitation applies **only** to `toInstance`. With `toProvide`/`toProvideAsync` and similar providers, you can safely use `scope.resolve<T>()` inside the builder.
 
 ### Module
 
