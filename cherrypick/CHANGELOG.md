@@ -1,3 +1,12 @@
+## 3.0.0-dev.13
+
+ - **FIX**: fix examples.
+ - **DOCS**: update contributors list with GitHub links and add new contributor.
+ - **DOCS**(binding,docs): clarify `.singleton()` with `.toInstance()` behavior in docs and API.
+ - **DOCS**(binding,docs): explain .singleton() + parametric provider behavior.
+ - **DOCS**(binding): clarify  registration limitation in API doc.
+ - **DOCS**(di): clarify 'toInstance' binding limitations in builder.
+
 ## 3.0.0-dev.12
 
  - **FIX**(scope): prevent concurrent modification in dispose().

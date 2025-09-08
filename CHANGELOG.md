@@ -15,6 +15,41 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick` - `v3.0.0-dev.13`](#cherrypick---v300-dev13)
+ - [`cherrypick_flutter` - `v3.0.0-dev.1`](#cherrypick_flutter---v300-dev1)
+ - [`talker_cherrypick_logger` - `v3.0.0-dev.1`](#talker_cherrypick_logger---v300-dev1)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v3.0.0-dev.1`
+ - `talker_cherrypick_logger` - `v3.0.0-dev.1`
+
+---
+
+#### `cherrypick` - `v3.0.0-dev.13`
+
+ - **FIX**: fix examples.
+ - **DOCS**: update contributors list with GitHub links and add new contributor.
+ - **DOCS**(binding,docs): clarify `.singleton()` with `.toInstance()` behavior in docs and API.
+ - **DOCS**(binding,docs): explain .singleton() + parametric provider behavior.
+ - **DOCS**(binding): clarify  registration limitation in API doc.
+ - **DOCS**(di): clarify 'toInstance' binding limitations in builder.
+
+
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`talker_cherrypick_logger` - `v3.0.0-dev.0`](#talker_cherrypick_logger---v300-dev0)
 
 ---
