@@ -1,3 +1,7 @@
+## 3.0.0-dev.0
+
+ - chore(talker_cherrypick_logger): sync version with cherrypick 3.0.0-dev.12
+
 ## 1.1.0-dev.7
 
  - Update a dependency to the latest release.

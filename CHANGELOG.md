@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`talker_cherrypick_logger` - `v3.0.0-dev.0`](#talker_cherrypick_logger---v300-dev0)
+
+---
+
+#### `talker_cherrypick_logger` - `v3.0.0-dev.0`
+
+ - chore(talker_cherrypick_logger): sync version with cherrypick 3.0.0-dev.12
+
+
+## 2025-09-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick_flutter` - `v3.0.0-dev.0`](#cherrypick_flutter---v300-dev0)
 
 ---
