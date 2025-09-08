@@ -1,3 +1,7 @@
+## 3.0.0-dev.0
+
+ - chore(cherrypick_generator): sync version with cherrypick 3.0.0-dev.12
+
 ## 2.0.0-dev.2
 
  - Update a dependency to the latest release.
