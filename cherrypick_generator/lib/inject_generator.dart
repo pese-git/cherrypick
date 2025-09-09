@@ -11,13 +11,12 @@
 // limitations under the License.
 //
 
-import 'dart:async';
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
 
 /// CherryPick DI field injector generator for codegen.
@@ -100,12 +99,12 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// }
   /// ```
   @override
-  FutureOr<String> generateForAnnotatedElement(
-    Element element,
+  dynamic generateForAnnotatedElement(
+    Element2 element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    if (element is! ClassElement) {
+    if (element is! ClassElement2) {
       throw InvalidGenerationSourceError(
         '@injectable() can only be applied to classes.',
         element: element,
@@ -113,7 +112,7 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     }
 
     final classElement = element;
-    final className = classElement.name;
+    final className = classElement.firstFragment.name2;
     final mixinName = '_\$$className';
 
     final buffer = StringBuffer()
@@ -121,8 +120,9 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
       ..writeln('  void _inject($className instance) {');
 
     // Collect and process all @inject fields
-    final injectFields =
-        classElement.fields.where(_isInjectField).map(_parseInjectField);
+    final injectFields = classElement.fields2
+        .where((f) => _isInjectField(f))
+        .map((f) => _parseInjectField(f));
 
     for (final parsedField in injectFields) {
       buffer.writeln(_generateInjectionLine(parsedField));
@@ -138,8 +138,8 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// Returns true if a field is annotated with `@inject`.
   ///
   /// Used to detect which fields should be processed for injection.
-  static bool _isInjectField(FieldElement field) {
-    return field.metadata.any(
+  static bool _isInjectField(FieldElement2 field) {
+    return field.firstFragment.metadata2.annotations.any(
       (m) => m.computeConstantValue()?.type?.getDisplayString() == 'inject',
     );
   }
@@ -149,11 +149,11 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   ///
   /// Converts Dart field declaration and all parameterizing injection-related
   /// annotations into a [_ParsedInjectField] which is used for codegen.
-  static _ParsedInjectField _parseInjectField(FieldElement field) {
+  static _ParsedInjectField _parseInjectField(FieldElement2 field) {
     String? scopeName;
     String? namedValue;
 
-    for (final meta in field.metadata) {
+    for (final meta in field.firstFragment.metadata2.annotations) {
       final DartObject? obj = meta.computeConstantValue();
       final type = obj?.type?.getDisplayString();
       if (type == 'scope') {
@@ -177,15 +177,15 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     }
 
     // Determine nullability for field types like T? or Future<T?>
-    bool isNullable = dartType.nullabilitySuffix ==
-            NullabilitySuffix.question ||
+    bool isNullable =
+        dartType.nullabilitySuffix == NullabilitySuffix.question ||
         (dartType is ParameterizedType &&
-            (dartType)
-                .typeArguments
-                .any((t) => t.nullabilitySuffix == NullabilitySuffix.question));
+            (dartType).typeArguments.any(
+              (t) => t.nullabilitySuffix == NullabilitySuffix.question,
+            ));
 
     return _ParsedInjectField(
-      fieldName: field.name,
+      fieldName: field.firstFragment.name2 ?? '',
       coreType: coreTypeName.replaceAll('?', ''), // удаляем "?" на всякий
       isFuture: isFuture,
       isNullable: isNullable,
@@ -207,11 +207,11 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   String _generateInjectionLine(_ParsedInjectField field) {
     final resolveMethod = field.isFuture
         ? (field.isNullable
-            ? 'tryResolveAsync<${field.coreType}>'
-            : 'resolveAsync<${field.coreType}>')
+              ? 'tryResolveAsync<${field.coreType}>'
+              : 'resolveAsync<${field.coreType}>')
         : (field.isNullable
-            ? 'tryResolve<${field.coreType}>'
-            : 'resolve<${field.coreType}>');
+              ? 'tryResolve<${field.coreType}>'
+              : 'resolve<${field.coreType}>');
 
     final openCall = (field.scopeName != null && field.scopeName!.isNotEmpty)
         ? "CherryPick.openScope(scopeName: '${field.scopeName}')"

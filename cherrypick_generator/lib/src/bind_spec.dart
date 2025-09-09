@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 
 import 'bind_parameters_spec.dart';
 import 'metadata_utils.dart';
@@ -25,7 +25,7 @@ enum BindingType {
   instance,
 
   /// Provider/factory function (@provide).
-  provide;
+  provide,
 }
 
 /// ---------------------------------------------------------------------------
@@ -155,7 +155,8 @@ class BindSpec {
     switch (bindingType) {
       case BindingType.instance:
         throw StateError(
-            'Internal error: _generateWithParamsProvideClause called for @instance binding with @params.');
+          'Internal error: _generateWithParamsProvideClause called for @instance binding with @params.',
+        );
       //return isAsyncInstance
       //    ? '.toInstanceAsync(($fnArgs) => $methodName($fnArgs))'
       //    : '.toInstance(($fnArgs) => $methodName($fnArgs))';
@@ -189,20 +190,24 @@ class BindSpec {
       case BindingType.provide:
         if (isAsyncProvide) {
           if (needsMultiline) {
-            final lambdaIndent =
-                (isSingleton || named != null) ? indent + 6 : indent + 2;
-            final closingIndent =
-                (isSingleton || named != null) ? indent + 4 : indent;
+            final lambdaIndent = (isSingleton || named != null)
+                ? indent + 6
+                : indent + 2;
+            final closingIndent = (isSingleton || named != null)
+                ? indent + 4
+                : indent;
             return '.toProvideAsync(\n${' ' * lambdaIndent}() => $methodName($argsStr),\n${' ' * closingIndent})';
           } else {
             return '.toProvideAsync(() => $methodName($argsStr))';
           }
         } else {
           if (needsMultiline) {
-            final lambdaIndent =
-                (isSingleton || named != null) ? indent + 6 : indent + 2;
-            final closingIndent =
-                (isSingleton || named != null) ? indent + 4 : indent;
+            final lambdaIndent = (isSingleton || named != null)
+                ? indent + 6
+                : indent + 2;
+            final closingIndent = (isSingleton || named != null)
+                ? indent + 4
+                : indent;
             return '.toProvide(\n${' ' * lambdaIndent}() => $methodName($argsStr),\n${' ' * closingIndent})';
           } else {
             return '.toProvide(() => $methodName($argsStr))';
@@ -246,7 +251,7 @@ class BindSpec {
   /// print(bindSpec.returnType); // e.g., 'Logger'
   /// ```
   /// Throws [AnnotationValidationException] or [CodeGenerationException] if invalid.
-  static BindSpec fromMethod(MethodElement method) {
+  static BindSpec fromMethod(MethodElement2 method) {
     try {
       // Validate method annotations
       AnnotationValidator.validateMethodAnnotations(method);
@@ -254,28 +259,44 @@ class BindSpec {
       // Parse return type using improved type parser
       final parsedReturnType = TypeParser.parseType(method.returnType, method);
 
-      final methodName = method.displayName;
+      final methodName = method.firstFragment.name2 ?? '';
 
       // Check for @singleton annotation.
-      final isSingleton = MetadataUtils.anyMeta(method.metadata, 'singleton');
+      final isSingleton = MetadataUtils.anyMeta(
+        method.firstFragment.metadata2.annotations,
+        'singleton',
+      );
 
       // Get @named value if present.
-      final named = MetadataUtils.getNamedValue(method.metadata);
+      final named = MetadataUtils.getNamedValue(
+        method.firstFragment.metadata2.annotations,
+      );
 
       // Parse each method parameter.
       final params = <BindParameterSpec>[];
       bool hasParams = false;
-      for (final p in method.parameters) {
+      for (final p in method.formalParameters) {
         final typeStr = p.type.getDisplayString();
-        final paramNamed = MetadataUtils.getNamedValue(p.metadata);
-        final isParams = MetadataUtils.anyMeta(p.metadata, 'params');
+        final paramNamed = MetadataUtils.getNamedValue(
+          p.firstFragment.metadata2.annotations,
+        );
+        final isParams = MetadataUtils.anyMeta(
+          p.firstFragment.metadata2.annotations,
+          'params',
+        );
         if (isParams) hasParams = true;
         params.add(BindParameterSpec(typeStr, paramNamed, isParams: isParams));
       }
 
       // Determine bindingType: @instance or @provide.
-      final hasInstance = MetadataUtils.anyMeta(method.metadata, 'instance');
-      final hasProvide = MetadataUtils.anyMeta(method.metadata, 'provide');
+      final hasInstance = MetadataUtils.anyMeta(
+        method.firstFragment.metadata2.annotations,
+        'instance',
+      );
+      final hasProvide = MetadataUtils.anyMeta(
+        method.firstFragment.metadata2.annotations,
+        'provide',
+      );
 
       if (!hasInstance && !hasProvide) {
         throw AnnotationValidationException(
@@ -290,8 +311,9 @@ class BindSpec {
         );
       }
 
-      final bindingType =
-          hasInstance ? BindingType.instance : BindingType.provide;
+      final bindingType = hasInstance
+          ? BindingType.instance
+          : BindingType.provide;
 
       // PROHIBIT @params with @instance bindings!
       if (bindingType == BindingType.instance && hasParams) {

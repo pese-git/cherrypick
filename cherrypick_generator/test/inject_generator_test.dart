@@ -480,9 +480,10 @@ void notAClass() {}
         );
       });
 
-      test('should generate empty mixin for class without @inject fields',
-          () async {
-        const input = '''
+      test(
+        'should generate empty mixin for class without @inject fields',
+        () async {
+          const input = '''
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 
 part 'test_widget.inject.cherrypick.g.dart';
@@ -494,7 +495,7 @@ class TestWidget {
 }
 ''';
 
-        const expectedOutput = '''
+          const expectedOutput = '''
 // dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
@@ -509,8 +510,9 @@ mixin _\$TestWidget {
 }
 ''';
 
-        await _testGeneration(input, expectedOutput);
-      });
+          await _testGeneration(input, expectedOutput);
+        },
+      );
     });
 
     group('Edge Cases', () {
@@ -593,12 +595,8 @@ mixin _\$TestWidget {
 Future<void> _testGeneration(String input, String expectedOutput) async {
   await testBuilder(
     injectBuilder(BuilderOptions.empty),
-    {
-      'a|lib/test_widget.dart': input,
-    },
-    outputs: {
-      'a|lib/test_widget.inject.cherrypick.g.dart': expectedOutput,
-    },
-    reader: await PackageAssetReader.currentIsolate(),
+    {'a|lib/test_widget.dart': input},
+    outputs: {'a|lib/test_widget.inject.cherrypick.g.dart': expectedOutput},
+    readerWriter: TestReaderWriter(),
   );
 }

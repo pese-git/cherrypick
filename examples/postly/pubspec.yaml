@@ -5,21 +5,20 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ">=3.8.0 <4.0.0"
 
 
 dependencies:
   flutter:
     sdk: flutter
 
-  cherrypick:
-    path: ../../cherrypick
-  cherrypick_annotations:
-    path: ../../cherrypick_annotations
+  cherrypick: any
+  cherrypick_annotations: any
   
   dio: ^5.4.0
   retrofit: ^4.0.3
-  freezed_annotation: ^2.4.4
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
   dartz: ^0.10.1
   flutter_bloc: ^9.1.1
   auto_route: ^10.1.0+1
@@ -28,25 +27,23 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   talker_flutter: ^5.0.0
-  talker_cherrypick_logger:
-    path: ../../talker_cherrypick_logger
+  talker_cherrypick_logger: any
   talker_dio_logger: ^5.0.0
   talker_bloc_logger: ^5.0.0
-
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
-  build_runner: 2.4.15
-  cherrypick_generator:
-    path: ../../cherrypick_generator
+  build_runner: ^2.5.0
+  cherrypick_generator: any
   
   json_serializable: ^6.9.0
-  retrofit_generator: ^9.1.5
+  retrofit_generator: ^10.0.5
   auto_route_generator: ^10.0.1
-  freezed: ^2.5.8
+  freezed: ^3.0.0
   melos: ^6.3.2
 
 flutter:

@@ -1,7 +1,6 @@
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:test/test.dart';
 
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/source/source.dart';
 import 'package:cherrypick_generator/src/type_parser.dart';
 import 'package:cherrypick_generator/src/exceptions.dart';
 
@@ -42,7 +41,9 @@ void main() {
 
         expect(
           () => TypeParser.validateInjectableType(
-              parsedType, _createMockElement()),
+            parsedType,
+            _createMockElement(),
+          ),
           throwsA(isA<TypeParsingException>()),
         );
       });
@@ -59,7 +60,9 @@ void main() {
 
         expect(
           () => TypeParser.validateInjectableType(
-              parsedType, _createMockElement()),
+            parsedType,
+            _createMockElement(),
+          ),
           throwsA(isA<TypeParsingException>()),
         );
       });
@@ -76,7 +79,9 @@ void main() {
 
         expect(
           () => TypeParser.validateInjectableType(
-              parsedType, _createMockElement()),
+            parsedType,
+            _createMockElement(),
+          ),
           returnsNormally,
         );
       });
@@ -159,19 +164,21 @@ void main() {
       expect(parsedType.resolveMethodName, equals('resolveAsync'));
     });
 
-    test('should return correct resolveMethodName for nullable async types',
-        () {
-      final parsedType = ParsedType(
-        displayString: 'Future<String?>',
-        coreType: 'String',
-        isNullable: true,
-        isFuture: true,
-        isGeneric: false,
-        typeArguments: [],
-      );
+    test(
+      'should return correct resolveMethodName for nullable async types',
+      () {
+        final parsedType = ParsedType(
+          displayString: 'Future<String?>',
+          coreType: 'String',
+          isNullable: true,
+          isFuture: true,
+          isGeneric: false,
+          typeArguments: [],
+        );
 
-      expect(parsedType.resolveMethodName, equals('tryResolveAsync'));
-    });
+        expect(parsedType.resolveMethodName, equals('tryResolveAsync'));
+      },
+    );
 
     test('should implement equality correctly', () {
       final parsedType1 = ParsedType(
@@ -216,19 +223,19 @@ void main() {
 }
 
 // Mock element for testing
-Element _createMockElement() {
+Element2 _createMockElement() {
   return _MockElement();
 }
 
-class _MockElement implements Element {
+class _MockElement implements Element2 {
   @override
   String get displayName => 'MockElement';
 
-  @override
-  String get name => 'MockElement';
-
-  @override
-  Source? get source => null;
+  //@override
+  //String get name => 'MockElement';
+  //
+  //@override
+  //Source? get source => null;
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

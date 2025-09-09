@@ -41,14 +41,16 @@ class MetadataUtils {
   /// bool isSingleton = MetadataUtils.anyMeta(myMethod.metadata, 'singleton');
   /// ```
   static bool anyMeta(List<ElementAnnotation> meta, String typeName) {
-    return meta.any((m) =>
-        m
-            .computeConstantValue()
-            ?.type
-            ?.getDisplayString()
-            .toLowerCase()
-            .contains(typeName.toLowerCase()) ??
-        false);
+    return meta.any(
+      (m) =>
+          m
+              .computeConstantValue()
+              ?.type
+              ?.getDisplayString()
+              .toLowerCase()
+              .contains(typeName.toLowerCase()) ??
+          false,
+    );
   }
 
   /// Extracts the string value from a `@named('value')` annotation if present in [meta].
