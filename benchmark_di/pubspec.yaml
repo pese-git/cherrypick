@@ -4,7 +4,7 @@ publish_to: none
 description: Universal benchmark for any DI library (cherrypick, get_it, and others)
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.2.0 <4.0.0'
 
 dependencies:
   cherrypick:

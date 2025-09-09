@@ -15,20 +15,20 @@ topics:
   - inversion-of-control
 
 environment:
-  sdk: ">=3.5.2 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
   cherrypick_annotations: ^3.0.0
-  analyzer: ^7.0.0
+  analyzer: ^7.7.1
   dart_style: ^3.0.0
   build: ^2.4.1
   source_gen: ^2.0.0
   collection: ^1.18.0
 
 dev_dependencies:
-  lints: ^4.0.0
-  mockito: ^5.4.4
+  lints: ^5.1.1
+  mockito: ^5.4.5
   test: ^1.25.8
   build_test: ^2.1.7
   build_runner: ^2.4.13

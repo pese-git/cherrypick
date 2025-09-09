@@ -13,6 +13,27 @@ packages:
   - examples/postly
 
 scripts:
+  clean_all:
+    run: |
+      melos clean
+      melos exec -- rm -rf lib/**.g.dart lib/generated/
+    description: |
+      Очищает build артефакты flutter и сгенерированный код во всех пакетах.
+
+  all:
+    steps:
+      - codegen
+      - analyze
+      - format
+      - test
+    description: Run all steps.
+
+  lint:all:
+    steps:
+      - analyze
+      - format
+    description: Run all static analysis checks.
+
   analyze:
     exec: dart analyze
 
@@ -20,11 +41,10 @@ scripts:
     exec: dart format lib
 
   test:
-    run: |
-      echo "Running Dart tests..."
-      melos exec --scope="cherrypick,cherrypick_annotations,cherrypick_generator" -- dart test --reporter=compact
-      echo "Running Flutter tests..."
-      melos exec --scope="cherrypick_flutter" -- flutter test --reporter=compact
+    steps:
+      - test:dart
+      - test:flutter
+    description: Run all tests.
 
   test:dart:
     description: "Run tests for Dart packages only"

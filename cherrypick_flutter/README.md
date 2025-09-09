@@ -1,4 +1,5 @@
 [![Melos + FVM CI](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pese-git/cherrypick/actions/workflows/pipeline.yml)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3c3e0f98-27a9-4dd4-9eab-4be0b96798b8/deploy-status)](https://app.netlify.com/projects/cherrypick-di/deploys)
 
 ---
 
