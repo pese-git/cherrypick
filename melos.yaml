@@ -13,6 +13,13 @@ packages:
   - examples/postly
 
 scripts:
+  clean_all:
+    run: |
+      melos clean
+      melos exec -- rm -rf lib/**.g.dart lib/generated/
+    description: |
+      Очищает build артефакты flutter и сгенерированный код во всех пакетах.
+
   all:
     steps:
       - codegen
