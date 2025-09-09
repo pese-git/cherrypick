@@ -15,7 +15,7 @@ topics:
   - inversion-of-control
 
 environment:
-  sdk: ">=3.5.2 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
@@ -27,7 +27,7 @@ dependencies:
   collection: ^1.18.0
 
 dev_dependencies:
-  lints: ^4.0.0
+  lints: ^5.1.1
   mockito: ^5.4.4
   test: ^1.25.8
   build_test: ^2.1.7
