@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2025-09-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v3.0.1`](#cherrypick---v301)
+ - [`cherrypick_annotations` - `v3.0.1`](#cherrypick_annotations---v301)
+ - [`cherrypick_flutter` - `v3.0.1`](#cherrypick_flutter---v301)
+ - [`cherrypick_generator` - `v3.0.1`](#cherrypick_generator---v301)
+ - [`talker_cherrypick_logger` - `v3.0.1`](#talker_cherrypick_logger---v301)
+
+---
+
+#### `cherrypick` - `v3.0.1`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `cherrypick_annotations` - `v3.0.1`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `cherrypick_flutter` - `v3.0.1`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `cherrypick_generator` - `v3.0.1`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `talker_cherrypick_logger` - `v3.0.1`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+
 ## 2025-09-08
 
 ### Changes
