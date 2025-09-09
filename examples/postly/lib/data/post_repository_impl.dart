@@ -12,9 +12,9 @@ class PostRepositoryImpl implements PostRepository {
   Future<Either<Exception, List<Post>>> getPosts() async {
     try {
       final posts = await api.getPosts();
-      return Right(posts
-          .map((e) => Post(id: e.id, title: e.title, body: e.body))
-          .toList());
+      return Right(
+        posts.map((e) => Post(id: e.id, title: e.title, body: e.body)).toList(),
+      );
     } catch (e) {
       return Left(Exception(e.toString()));
     }

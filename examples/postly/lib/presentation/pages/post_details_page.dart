@@ -12,10 +12,7 @@ class PostDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Post #${post.id}')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(post.body),
-      ),
+      body: Padding(padding: const EdgeInsets.all(16), child: Text(post.body)),
     );
   }
 }

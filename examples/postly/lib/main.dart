@@ -23,10 +23,10 @@ void main() {
   }
 
   // Используем safe root scope для гарантии защиты
-  CherryPick.openRootScope()
-      .installModules([CoreModule(talker: talker), $AppModule()]);
+  CherryPick.openRootScope().installModules([
+    CoreModule(talker: talker),
+    $AppModule(),
+  ]);
 
-  runApp(MyApp(
-    talker: talker,
-  ));
+  runApp(MyApp(talker: talker));
 }
