@@ -498,5 +498,10 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       await d.dispose();
     }
     _disposables.clear();
+
+    // Clear modules
+    _modulesList.clear();
+    // Clear binding-index
+    _bindingResolvers.clear();
   }
 }
