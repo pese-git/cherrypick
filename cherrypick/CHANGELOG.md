@@ -1,3 +1,8 @@
+## 3.0.2
+
+ - **FIX**(test): fix warning.
+ - **FIX**(scope): properly clear binding and module references on dispose.
+
 ## 3.0.1
 
  - **DOCS**: add Netlify deployment status badge to README files.
