@@ -223,17 +223,17 @@ class Binding<T> {
 
   @Deprecated('Use toInstance instead of toInstanceAsync')
   Binding<T> toInstanceAsync(Instance<T> value) {
-    return this.toInstance(value);
+    return toInstance(value);
   }
 
   @Deprecated('Use toProvide instead of toProvideAsync')
   Binding<T> toProvideAsync(Provider<T> value) {
-    return this.toProvide(value);
+    return toProvide(value);
   }
 
   @Deprecated('Use toProvideWithParams instead of toProvideAsyncWithParams')
   Binding<T> toProvideAsyncWithParams(ProviderWithParams<T> value) {
-    return this.toProvideWithParams(value);
+    return toProvideWithParams(value);
   }
 
   /// Marks this binding as singleton (will only create and cache one instance per scope).
