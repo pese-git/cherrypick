@@ -1,3 +1,9 @@
+## 4.0.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**: update Dart SDK minimum versions.
+
 ## 3.0.3
 
 ## 3.0.2

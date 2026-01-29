@@ -11,6 +11,32 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`cherrypick_annotations` - `v4.0.0-dev.0`](#cherrypick_annotations---v400-dev0)
+ - [`cherrypick_generator` - `v4.0.0-dev.0`](#cherrypick_generator---v400-dev0)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+---
+
+#### `cherrypick_annotations` - `v4.0.0-dev.0`
+
+ - **BREAKING** **FEAT**: update Dart SDK minimum versions.
+
+#### `cherrypick_generator` - `v4.0.0-dev.0`
+
+ - **BREAKING** **FEAT**: update Dart SDK minimum versions.
+
+
+## 2026-01-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - There are no breaking changes in this release.
 
 Packages with other changes:
