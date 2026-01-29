@@ -175,21 +175,21 @@ packages:
       path: "../../cherrypick"
       relative: true
     source: path
-    version: "3.0.1"
+    version: "3.0.2"
   cherrypick_annotations:
     dependency: "direct main"
     description:
       path: "../../cherrypick_annotations"
       relative: true
     source: path
-    version: "3.0.1"
+    version: "3.0.2-dev.0"
   cherrypick_generator:
     dependency: "direct dev"
     description:
       path: "../../cherrypick_generator"
       relative: true
     source: path
-    version: "3.0.0"
+    version: "3.0.2-dev.0"
   cli_config:
     dependency: transitive
     description:
@@ -920,7 +920,7 @@ packages:
       path: "../../talker_cherrypick_logger"
       relative: true
     source: path
-    version: "3.0.1"
+    version: "3.0.2"
   talker_dio_logger:
     dependency: "direct main"
     description:
@@ -1131,4 +1131,4 @@ packages:
     version: "2.2.2"
 sdks:
   dart: ">=3.8.0 <4.0.0"
-  flutter: ">=3.32.0"
+  flutter: ">=3.29.0"

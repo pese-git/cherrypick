@@ -53,9 +53,9 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     this.suggestion,
     this.context,
   }) : super(
-         _formatMessage(message, category, suggestion, context, element),
-         element: element,
-       );
+          _formatMessage(message, category, suggestion, context, element),
+          element: element,
+        );
 
   static String _formatMessage(
     String message,

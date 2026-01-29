@@ -179,10 +179,10 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     // Determine nullability for field types like T? or Future<T?>
     bool isNullable =
         dartType.nullabilitySuffix == NullabilitySuffix.question ||
-        (dartType is ParameterizedType &&
-            (dartType).typeArguments.any(
-              (t) => t.nullabilitySuffix == NullabilitySuffix.question,
-            ));
+            (dartType is ParameterizedType &&
+                (dartType).typeArguments.any(
+                      (t) => t.nullabilitySuffix == NullabilitySuffix.question,
+                    ));
 
     return _ParsedInjectField(
       fieldName: field.firstFragment.name2 ?? '',
@@ -207,11 +207,11 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   String _generateInjectionLine(_ParsedInjectField field) {
     final resolveMethod = field.isFuture
         ? (field.isNullable
-              ? 'tryResolveAsync<${field.coreType}>'
-              : 'resolveAsync<${field.coreType}>')
+            ? 'tryResolveAsync<${field.coreType}>'
+            : 'resolveAsync<${field.coreType}>')
         : (field.isNullable
-              ? 'tryResolve<${field.coreType}>'
-              : 'resolve<${field.coreType}>');
+            ? 'tryResolve<${field.coreType}>'
+            : 'resolve<${field.coreType}>');
 
     final openCall = (field.scopeName != null && field.scopeName!.isNotEmpty)
         ? "CherryPick.openScope(scopeName: '${field.scopeName}')"
