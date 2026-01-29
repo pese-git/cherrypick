@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-01-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_annotations` - `v3.0.2`](#cherrypick_annotations---v302)
+ - [`cherrypick_generator` - `v3.0.2`](#cherrypick_generator---v302)
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `cherrypick_annotations` - `v3.0.2`
+ - `cherrypick_generator` - `v3.0.2`
+
+---
+
+#### `cherrypick_annotations` - `v3.0.2`
+
+#### `cherrypick_generator` - `v3.0.2`
+
+
 ## 2025-10-20
 
 ### Changes

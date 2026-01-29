@@ -1,3 +1,7 @@
+## 3.0.2
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
 ## 3.0.2-dev.0
 
  - **REFACTOR**(generator): migrate cherrypick_generator to analyzer element2 API.
