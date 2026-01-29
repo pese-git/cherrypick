@@ -15,16 +15,17 @@ abstract class AppModule extends Module {
   @provide()
   @singleton()
   TalkerDioLoggerSettings talkerDioLoggerSettings() => TalkerDioLoggerSettings(
-        printRequestHeaders: true,
-        printResponseHeaders: true,
-        printResponseMessage: true,
-      );
+    printRequestHeaders: true,
+    printResponseHeaders: true,
+    printResponseMessage: true,
+  );
 
   @provide()
   @singleton()
   TalkerDioLogger talkerDioLogger(
-          Talker talker, TalkerDioLoggerSettings settings) =>
-      TalkerDioLogger(talker: talker, settings: settings);
+    Talker talker,
+    TalkerDioLoggerSettings settings,
+  ) => TalkerDioLogger(talker: talker, settings: settings);
 
   @instance()
   int timeout() => 1000;
@@ -75,12 +76,14 @@ abstract class AppModule extends Module {
   @provide()
   @named('TestProvideWithParams1')
   String testProvideWithParams1(
-          @named('baseUrl') String baseUrl, @params() dynamic params) =>
-      "hello $params";
+    @named('baseUrl') String baseUrl,
+    @params() dynamic params,
+  ) => "hello $params";
 
   @provide()
   @named('TestProvideAsyncWithParams1')
   Future<String> testProvideAsyncWithParams1(
-          @named('baseUrl') String baseUrl, @params() dynamic params) async =>
-      "hello $params";
+    @named('baseUrl') String baseUrl,
+    @params() dynamic params,
+  ) async => "hello $params";
 }

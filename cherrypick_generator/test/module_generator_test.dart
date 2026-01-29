@@ -590,9 +590,10 @@ void notAClass() {}
         );
       });
 
-      test('should throw error for method without @instance or @provide',
-          () async {
-        const input = '''
+      test(
+        'should throw error for method without @instance or @provide',
+        () async {
+          const input = '''
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 import 'package:cherrypick/cherrypick.dart';
 
@@ -604,11 +605,12 @@ abstract class TestModule extends Module {
 }
 ''';
 
-        await expectLater(
-          () => _testGeneration(input, ''),
-          throwsA(isA<InvalidGenerationSourceError>()),
-        );
-      });
+          await expectLater(
+            () => _testGeneration(input, ''),
+            throwsA(isA<InvalidGenerationSourceError>()),
+          );
+        },
+      );
 
       test('should throw error for @params with @instance', () async {
         const input = '''
@@ -637,12 +639,8 @@ abstract class TestModule extends Module {
 Future<void> _testGeneration(String input, String expectedOutput) async {
   await testBuilder(
     moduleBuilder(BuilderOptions.empty),
-    {
-      'a|lib/test_module.dart': input,
-    },
-    outputs: {
-      'a|lib/test_module.module.cherrypick.g.dart': expectedOutput,
-    },
-    reader: await PackageAssetReader.currentIsolate(),
+    {'a|lib/test_module.dart': input},
+    outputs: {'a|lib/test_module.module.cherrypick.g.dart': expectedOutput},
+    readerWriter: TestReaderWriter(),
   );
 }

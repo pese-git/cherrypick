@@ -1,3 +1,7 @@
+## 3.0.2-dev.0
+
+ - **REFACTOR**(generator): migrate cherrypick_generator to analyzer element2 API.
+
 ## 3.0.1
 
  - **DOCS**: add Netlify deployment status badge to README files.

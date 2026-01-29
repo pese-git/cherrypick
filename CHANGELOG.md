@@ -46,6 +46,32 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick_annotations` - `v3.0.2-dev.0`](#cherrypick_annotations---v302-dev0)
+ - [`cherrypick_generator` - `v3.0.2-dev.0`](#cherrypick_generator---v302-dev0)
+
+---
+
+#### `cherrypick_annotations` - `v3.0.2-dev.0`
+
+ - **REFACTOR**(generator): migrate cherrypick_generator to analyzer element2 API.
+
+#### `cherrypick_generator` - `v3.0.2-dev.0`
+
+ - **REFACTOR**(generator): migrate cherrypick_generator to analyzer element2 API.
+
+
+## 2025-09-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick` - `v3.0.1`](#cherrypick---v301)
  - [`cherrypick_annotations` - `v3.0.1`](#cherrypick_annotations---v301)
  - [`cherrypick_flutter` - `v3.0.1`](#cherrypick_flutter---v301)

@@ -12,6 +12,7 @@
 //
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'bind_spec.dart';
 
 /// ---------------------------------------------------------------------------
@@ -75,14 +76,11 @@ class GeneratedClass {
   /// final gen = GeneratedClass.fromClassElement(classElement);
   /// print(gen.generatedClassName); // e.g. $AppModule
   /// ```
-  static GeneratedClass fromClassElement(ClassElement element) {
-    final className = element.displayName;
-    // Generated class name with '$' prefix (standard for generated Dart code).
+  static GeneratedClass fromClassElement(ClassElement2 element) {
+    final className = element.firstFragment.name2 ?? '';
     final generatedClassName = r'$' + className;
-    // Get source file name
-    final sourceFile = element.source.shortName;
-    // Collect bindings for all non-abstract methods.
-    final binds = element.methods
+    final sourceFile = element.firstFragment.libraryFragment.source.shortName;
+    final binds = element.methods2
         .where((m) => !m.isAbstract)
         .map(BindSpec.fromMethod)
         .toList();

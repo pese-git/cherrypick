@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:source_gen/source_gen.dart';
 
 /// ---------------------------------------------------------------------------
@@ -48,21 +48,21 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
 
   CherryPickGeneratorException(
     String message, {
-    required Element element,
+    required Element2 element,
     required this.category,
     this.suggestion,
     this.context,
   }) : super(
-          _formatMessage(message, category, suggestion, context, element),
-          element: element,
-        );
+         _formatMessage(message, category, suggestion, context, element),
+         element: element,
+       );
 
   static String _formatMessage(
     String message,
     String category,
     String? suggestion,
     Map<String, dynamic>? context,
-    Element element,
+    Element2 element,
   ) {
     final buffer = StringBuffer();
 
@@ -74,7 +74,9 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     buffer.writeln('Context:');
     buffer.writeln('  Element: ${element.displayName}');
     buffer.writeln('  Type: ${element.runtimeType}');
-    buffer.writeln('  Location: ${element.source?.fullName ?? 'unknown'}');
+    buffer.writeln(
+      '  Location: ${element.firstFragment.libraryFragment?.source.fullName ?? 'unknown'}',
+    );
 
     // Try to show enclosing element info for extra context
     try {

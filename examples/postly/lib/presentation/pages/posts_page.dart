@@ -38,8 +38,9 @@ class PostsPage extends StatelessWidget {
                   title: Text(posts[i].title),
                   subtitle: Text(posts[i].body),
                   onTap: () {
-                    AutoRouter.of(context)
-                        .push(PostDetailsRoute(post: posts[i]));
+                    AutoRouter.of(
+                      context,
+                    ).push(PostDetailsRoute(post: posts[i]));
                   },
                 ),
               ),

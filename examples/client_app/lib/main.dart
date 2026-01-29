@@ -9,11 +9,7 @@ void main() {
     // Создаем модуль, который будет предоставлять UseCase
   ]);
 
-  runApp(
-    const CherryPickProvider(
-      child: MyApp(),
-    ),
-  );
+  runApp(const CherryPickProvider(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -21,10 +17,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CherryPickProvider(
-      child: MaterialApp(
-        home: MyHomePage(),
-      ),
-    );
+    return CherryPickProvider(child: MaterialApp(home: MyHomePage()));
   }
 }

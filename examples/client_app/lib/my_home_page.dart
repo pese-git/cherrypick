@@ -11,12 +11,8 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     //_inject(context); // Make sure this function is called in context
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Example App'),
-      ),
-      body: Center(
-        child: Text(useCase.fetchData()),
-      ),
+      appBar: AppBar(title: const Text('Example App')),
+      body: Center(child: Text(useCase.fetchData())),
     );
   }
 }

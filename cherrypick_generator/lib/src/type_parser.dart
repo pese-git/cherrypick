@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'exceptions.dart';
@@ -45,7 +45,7 @@ class TypeParser {
   /// final parsed = TypeParser.parseType(field.type, field);
   /// if (parsed.isNullable) print('Field is nullable');
   /// ```
-  static ParsedType parseType(DartType dartType, Element context) {
+  static ParsedType parseType(DartType dartType, Element2 context) {
     try {
       return _parseTypeInternal(dartType, context);
     } catch (e) {
@@ -61,7 +61,7 @@ class TypeParser {
     }
   }
 
-  static ParsedType _parseTypeInternal(DartType dartType, Element context) {
+  static ParsedType _parseTypeInternal(DartType dartType, Element2 context) {
     final displayString = dartType.getDisplayString();
     final isNullable = dartType.nullabilitySuffix == NullabilitySuffix.question;
 
@@ -87,7 +87,10 @@ class TypeParser {
   }
 
   static ParsedType _parseFutureType(
-      DartType dartType, Element context, bool isNullable) {
+    DartType dartType,
+    Element2 context,
+    bool isNullable,
+  ) {
     if (dartType is! ParameterizedType || dartType.typeArguments.isEmpty) {
       throw TypeParsingException(
         'Future type must have a type argument',
@@ -112,7 +115,10 @@ class TypeParser {
   }
 
   static ParsedType _parseGenericType(
-      ParameterizedType dartType, Element context, bool isNullable) {
+    ParameterizedType dartType,
+    Element2 context,
+    bool isNullable,
+  ) {
     final typeArguments = dartType.typeArguments
         .map((arg) => _parseTypeInternal(arg, context))
         .toList();
@@ -138,7 +144,7 @@ class TypeParser {
   /// final parsed = TypeParser.parseType(field.type, field);
   /// TypeParser.validateInjectableType(parsed, field);
   /// ```
-  static void validateInjectableType(ParsedType parsedType, Element context) {
+  static void validateInjectableType(ParsedType parsedType, Element2 context) {
     // Check for void type
     if (parsedType.coreType == 'void') {
       throw TypeParsingException(

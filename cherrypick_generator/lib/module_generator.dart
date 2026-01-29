@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
@@ -79,12 +79,12 @@ class ModuleGenerator extends GeneratorForAnnotation<ann.module> {
   ///
   /// See file-level docs for usage and generated output example.
   @override
-  String generateForAnnotatedElement(
-    Element element,
+  dynamic generateForAnnotatedElement(
+    Element2 element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    if (element is! ClassElement) {
+    if (element is! ClassElement2) {
       throw InvalidGenerationSourceError(
         '@module() can only be applied to classes.',
         element: element,

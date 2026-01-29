@@ -16,7 +16,8 @@ scripts:
   clean_all:
     run: |
       melos clean
-      melos exec -- rm -rf lib/**.g.dart lib/generated/
+      melos exec -- rm -rf lib/**.g.dart lib/**/**.g.dart lib/generated/
+      melos exec -- rm -rf .dart_tool build pubspec_overrides.yaml
     description: |
       Очищает build артефакты flutter и сгенерированный код во всех пакетах.
 
