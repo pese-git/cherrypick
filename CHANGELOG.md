@@ -15,6 +15,28 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick_annotations` - `v3.0.3`](#cherrypick_annotations---v303)
+ - [`cherrypick_generator` - `v3.0.3`](#cherrypick_generator---v303)
+
+---
+
+#### `cherrypick_annotations` - `v3.0.3`
+
+#### `cherrypick_generator` - `v3.0.3`
+
+
+## 2026-01-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick_annotations` - `v3.0.2`](#cherrypick_annotations---v302)
  - [`cherrypick_generator` - `v3.0.2`](#cherrypick_generator---v302)
 
