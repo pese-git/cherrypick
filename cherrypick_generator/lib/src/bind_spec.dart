@@ -190,20 +190,24 @@ class BindSpec {
       case BindingType.provide:
         if (isAsyncProvide) {
           if (needsMultiline) {
-            final lambdaIndent =
-                (isSingleton || named != null) ? indent + 6 : indent + 2;
-            final closingIndent =
-                (isSingleton || named != null) ? indent + 4 : indent;
+            final lambdaIndent = (isSingleton || named != null)
+                ? indent + 6
+                : indent + 2;
+            final closingIndent = (isSingleton || named != null)
+                ? indent + 4
+                : indent;
             return '.toProvideAsync(\n${' ' * lambdaIndent}() => $methodName($argsStr),\n${' ' * closingIndent})';
           } else {
             return '.toProvideAsync(() => $methodName($argsStr))';
           }
         } else {
           if (needsMultiline) {
-            final lambdaIndent =
-                (isSingleton || named != null) ? indent + 6 : indent + 2;
-            final closingIndent =
-                (isSingleton || named != null) ? indent + 4 : indent;
+            final lambdaIndent = (isSingleton || named != null)
+                ? indent + 6
+                : indent + 2;
+            final closingIndent = (isSingleton || named != null)
+                ? indent + 4
+                : indent;
             return '.toProvide(\n${' ' * lambdaIndent}() => $methodName($argsStr),\n${' ' * closingIndent})';
           } else {
             return '.toProvide(() => $methodName($argsStr))';
@@ -307,8 +311,9 @@ class BindSpec {
         );
       }
 
-      final bindingType =
-          hasInstance ? BindingType.instance : BindingType.provide;
+      final bindingType = hasInstance
+          ? BindingType.instance
+          : BindingType.provide;
 
       // PROHIBIT @params with @instance bindings!
       if (bindingType == BindingType.instance && hasParams) {

@@ -305,8 +305,9 @@ class AnnotationValidator {
     }
 
     // Check if class has public methods
-    final publicMethods =
-        classElement.methods2.where((m) => m.isPublic).toList();
+    final publicMethods = classElement.methods2
+        .where((m) => m.isPublic)
+        .toList();
     if (publicMethods.isEmpty) {
       throw AnnotationValidationException(
         'Module class must have at least one public method',
