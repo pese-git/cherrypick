@@ -41,7 +41,7 @@ dev_dependencies:
   cherrypick_generator: ^4.0.0-dev.0
   
   json_serializable: ^6.9.0
-  retrofit_generator: ^10.0.5
+  retrofit_generator: ^10.2.1
   auto_route_generator: ^10.0.1
   freezed: ^3.0.0
   melos: ^6.3.2
