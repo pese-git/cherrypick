@@ -15,28 +15,13 @@ Packages with breaking changes:
 
 Packages with other changes:
 
- - [`cherrypick` - `v3.0.3`](#cherrypick---v303)
  - [`cherrypick_generator` - `v4.0.0-dev.1`](#cherrypick_generator---v400-dev1)
- - [`cherrypick_flutter` - `v3.0.3`](#cherrypick_flutter---v303)
- - [`talker_cherrypick_logger` - `v3.0.3`](#talker_cherrypick_logger---v303)
-
-Packages with dependency updates only:
-
-> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
-
- - `cherrypick_flutter` - `v3.0.3`
- - `talker_cherrypick_logger` - `v3.0.3`
 
 ---
 
-#### `cherrypick` - `v3.0.3`
-
- - **DOCS**: sync references after ProviderFactory rename.
-
 #### `cherrypick_generator` - `v4.0.0-dev.1`
 
- - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
- - **FIX**: add deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
 
 
 ## 2026-01-29
