@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:source_gen/source_gen.dart';
 
 /// ---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
 
   CherryPickGeneratorException(
     String message, {
-    required Element2 element,
+    required Element element,
     required this.category,
     this.suggestion,
     this.context,
@@ -62,7 +62,7 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     String category,
     String? suggestion,
     Map<String, dynamic>? context,
-    Element2 element,
+    Element element,
   ) {
     final buffer = StringBuffer();
 
