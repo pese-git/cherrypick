@@ -23,10 +23,10 @@ import 'package:analyzer/dart/element/element.dart';
 ///
 /// # Example usage
 /// ```dart
-/// if (MetadataUtils.anyMeta(method.metadata, 'singleton')) {
+/// if (MetadataUtils.anyMeta(method.metadata.annotations, 'singleton')) {
 ///   // The method is annotated with @singleton
 /// }
-/// final name = MetadataUtils.getNamedValue(field.metadata);
+/// final name = MetadataUtils.getNamedValue(field.metadata.annotations);
 /// if (name != null) print('@named value: $name');
 /// ```
 /// ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ class MetadataUtils {
   ///
   /// Example:
   /// ```dart
-  /// bool isSingleton = MetadataUtils.anyMeta(myMethod.metadata, 'singleton');
+  /// bool isSingleton = MetadataUtils.anyMeta(myMethod.metadata.annotations, 'singleton');
   /// ```
   static bool anyMeta(List<ElementAnnotation> meta, String typeName) {
     return meta.any(

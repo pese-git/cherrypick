@@ -15,12 +15,12 @@ import 'dart:isolate';
 
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:build_runner_core/build_runner_core.dart';
 import 'package:package_config/package_config.dart';
 import 'package:test/test.dart';
 
 import 'package:source_gen/source_gen.dart';
 import 'package:cherrypick_generator/module_generator.dart';
+import 'package:build_runner/src/build/build_result.dart';
 
 void main() {
   group('ModuleGenerator Tests', () {

@@ -11,7 +11,8 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
@@ -103,11 +104,11 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// ```
   @override
   dynamic generateForAnnotatedElement(
-    Element2 element,
+    Element element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) {
-    if (element is! ClassElement2) {
+    if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         '@injectable() can only be applied to classes.',
         element: element,
@@ -115,14 +116,15 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     }
 
     final classElement = element;
-    final className = classElement.firstFragment.name2;
+    final className = classElement.name;
     final mixinName = '_\$$className';
 
     AnnotationValidator.validateClassAnnotations(classElement);
 
     final classType = TypeParser.parseType(classElement.thisType, classElement);
 
-    final injectFields = classElement.fields2
+    // Collect and process all @inject fields
+    final injectFields = classElement.fields
         .where((f) => _isInjectField(f))
         .map(_parseInjectField)
         .toList();
@@ -171,8 +173,8 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// Returns true if a field is annotated with `@inject`.
   ///
   /// Used to detect which fields should be processed for injection.
-  static bool _isInjectField(FieldElement2 field) {
-    return field.firstFragment.metadata2.annotations.any(
+  static bool _isInjectField(FieldElement field) {
+    return field.metadata.annotations.any(
       (m) => m.computeConstantValue()?.type?.getDisplayString() == 'inject',
     );
   }
@@ -182,14 +184,12 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   ///
   /// Converts Dart field declaration and all parameterizing injection-related
   /// annotations into a [_ParsedInjectField] which is used for codegen.
-  static _ParsedInjectField _parseInjectField(FieldElement2 field) {
-    AnnotationValidator.validateFieldAnnotations(field);
-
+  static _ParsedInjectField _parseInjectField(FieldElement field) {
     String? scopeName;
     String? namedValue;
 
-    for (final meta in field.firstFragment.metadata2.annotations) {
-      final obj = meta.computeConstantValue();
+    for (final meta in field.metadata.annotations) {
+      final DartObject? obj = meta.computeConstantValue();
       final type = obj?.type?.getDisplayString();
       if (type == 'scope') {
         scopeName = obj?.getField('name')?.toStringValue();
@@ -202,7 +202,7 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     final parsedType = TypeParser.parseType(dartType, field);
 
     return _ParsedInjectField(
-      fieldName: field.firstFragment.name2 ?? '',
+      fieldName: field.firstFragment.name ?? '',
       parsedType: parsedType,
       scopeName: scopeName,
       namedValue: namedValue,

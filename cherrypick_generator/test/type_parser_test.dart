@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:test/test.dart';
 
 import 'package:cherrypick_generator/src/type_parser.dart';
@@ -223,19 +223,13 @@ void main() {
 }
 
 // Mock element for testing
-Element2 _createMockElement() {
+Element _createMockElement() {
   return _MockElement();
 }
 
-class _MockElement implements Element2 {
+class _MockElement implements Element {
   @override
   String get displayName => 'MockElement';
-
-  //@override
-  //String get name => 'MockElement';
-  //
-  //@override
-  //Source? get source => null;
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

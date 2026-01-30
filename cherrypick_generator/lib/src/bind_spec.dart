@@ -11,7 +11,7 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 
 import 'bind_parameters_spec.dart';
 import 'metadata_utils.dart';
@@ -251,7 +251,7 @@ class BindSpec {
   /// print(bindSpec.returnType); // e.g., 'Logger'
   /// ```
   /// Throws [AnnotationValidationException] or [CodeGenerationException] if invalid.
-  static BindSpec fromMethod(MethodElement2 method) {
+  static BindSpec fromMethod(MethodElement method) {
     try {
       // Validate method annotations
       AnnotationValidator.validateMethodAnnotations(method);
@@ -259,17 +259,17 @@ class BindSpec {
       // Parse return type using improved type parser
       final parsedReturnType = TypeParser.parseType(method.returnType, method);
 
-      final methodName = method.firstFragment.name2 ?? '';
+      final methodName = method.name ?? '';
 
       // Check for @singleton annotation.
       final isSingleton = MetadataUtils.anyMeta(
-        method.firstFragment.metadata2.annotations,
+        method.metadata.annotations,
         'singleton',
       );
 
       // Get @named value if present.
       final named = MetadataUtils.getNamedValue(
-        method.firstFragment.metadata2.annotations,
+        method.metadata.annotations,
       );
 
       // Parse each method parameter.
@@ -278,10 +278,10 @@ class BindSpec {
       for (final p in method.formalParameters) {
         final typeStr = p.type.getDisplayString();
         final paramNamed = MetadataUtils.getNamedValue(
-          p.firstFragment.metadata2.annotations,
+          p.metadata.annotations,
         );
         final isParams = MetadataUtils.anyMeta(
-          p.firstFragment.metadata2.annotations,
+          p.metadata.annotations,
           'params',
         );
         if (isParams) hasParams = true;
@@ -290,11 +290,11 @@ class BindSpec {
 
       // Determine bindingType: @instance or @provide.
       final hasInstance = MetadataUtils.anyMeta(
-        method.firstFragment.metadata2.annotations,
+        method.metadata.annotations,
         'instance',
       );
       final hasProvide = MetadataUtils.anyMeta(
-        method.firstFragment.metadata2.annotations,
+        method.metadata.annotations,
         'provide',
       );
 
