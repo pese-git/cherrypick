@@ -38,7 +38,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   build_runner: ^2.5.0
-  cherrypick_generator: ^4.0.0-dev.0
+  cherrypick_generator: ^4.0.0-dev.1
   
   json_serializable: ^6.9.0
   retrofit_generator: ^10.2.1
