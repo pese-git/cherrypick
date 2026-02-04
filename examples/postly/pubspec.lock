@@ -173,7 +173,7 @@ packages:
       path: "../../cherrypick_generator"
       relative: true
     source: path
-    version: "4.0.0-dev.0"
+    version: "4.0.0-dev.1"
   cli_launcher:
     dependency: transitive
     description:
