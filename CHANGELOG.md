@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick_generator` - `v4.0.0-dev.2`](#cherrypick_generator---v400-dev2)
+
+---
+
+#### `cherrypick_generator` - `v4.0.0-dev.2`
+
+ - **FIX**: update deps.
+
+
+## 2026-01-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick_generator` - `v4.0.0-dev.1`](#cherrypick_generator---v400-dev1)
 
 ---

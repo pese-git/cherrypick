@@ -1,3 +1,7 @@
+## 4.0.0-dev.2
+
+ - **FIX**: update deps.
+
 ## 4.0.0-dev.1
 
  - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
