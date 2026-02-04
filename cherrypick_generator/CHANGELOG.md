@@ -1,3 +1,7 @@
+## 4.0.0-dev.2
+
+ - **FIX**: update deps.
+
 ## 4.0.0-dev.1
 
  - **FEAT**: migrate to analyzer 9.0.0 API.
