@@ -11,12 +11,16 @@
 // limitations under the License.
 //
 
-import 'package:test/test.dart';
-import 'package:build_test/build_test.dart';
-import 'package:build/build.dart';
+import 'dart:isolate';
 
-import 'package:cherrypick_generator/module_generator.dart';
+import 'package:build/build.dart';
+import 'package:build_test/build_test.dart';
+import 'package:build_runner_core/build_runner_core.dart';
+import 'package:package_config/package_config.dart';
+import 'package:test/test.dart';
+
 import 'package:source_gen/source_gen.dart';
+import 'package:cherrypick_generator/module_generator.dart';
 
 void main() {
   group('ModuleGenerator Tests', () {
@@ -40,8 +44,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -75,8 +79,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -113,8 +117,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -149,8 +153,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -187,8 +191,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -224,8 +228,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -264,8 +268,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -299,8 +303,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -334,8 +338,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -374,8 +378,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -414,8 +418,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -453,8 +457,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -488,8 +492,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -541,8 +545,8 @@ abstract class TestModule extends Module {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_module.dart';
 
@@ -637,10 +641,41 @@ abstract class TestModule extends Module {
 
 /// Helper function to test code generation
 Future<void> _testGeneration(String input, String expectedOutput) async {
-  await testBuilder(
+  final readerWriter = TestReaderWriter(rootPackage: 'a');
+  await readerWriter.testing.loadIsolateSources();
+  final packageConfig = await loadPackageConfigUri(
+    (await Isolate.packageConfig)!,
+  );
+  final outputs = expectedOutput.isEmpty
+      ? null
+      : {
+        'a|lib/test_module.module.cherrypick.g.dart':
+            decodedMatches(_normalizedEquals(expectedOutput)),
+      };
+  final result = await testBuilder(
     moduleBuilder(BuilderOptions.empty),
     {'a|lib/test_module.dart': input},
-    outputs: {'a|lib/test_module.module.cherrypick.g.dart': expectedOutput},
-    readerWriter: TestReaderWriter(),
+    outputs: outputs,
+    readerWriter: readerWriter,
+    rootPackage: 'a',
+    packageConfig: packageConfig,
   );
+  if (expectedOutput.isEmpty && result.buildResult.status == BuildStatus.failure) {
+    throw InvalidGenerationSourceError('Build failed');
+  }
+}
+
+Matcher _normalizedEquals(String expected) {
+  return predicate<String>(
+    (actual) => _normalize(actual) == _normalize(expected),
+    'matches after normalization',
+  );
+}
+
+String _normalize(String input) {
+  return input
+      .replaceAll(RegExp(r'\s+'), '')
+      .replaceAll(RegExp(r',\)'), ')')
+      .replaceAll(RegExp(r',\]'), ']')
+      .replaceAll(RegExp(r',\}'), '}');
 }

@@ -11,13 +11,16 @@
 // limitations under the License.
 //
 
-import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element2.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
+import 'package:code_builder/code_builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart' as ann;
+
+import 'src/annotation_validator.dart';
+import 'src/code_builder_emitters.dart';
+import 'src/type_parser.dart';
 
 /// CherryPick DI field injector generator for codegen.
 ///
@@ -115,24 +118,58 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     final className = classElement.firstFragment.name2;
     final mixinName = '_\$$className';
 
-    final buffer = StringBuffer()
-      ..writeln('mixin $mixinName {')
-      ..writeln('  void _inject($className instance) {');
+    AnnotationValidator.validateClassAnnotations(classElement);
 
-    // Collect and process all @inject fields
+    final classType = TypeParser.parseType(
+      classElement.thisType,
+      classElement,
+    );
+
     final injectFields = classElement.fields2
         .where((f) => _isInjectField(f))
-        .map((f) => _parseInjectField(f));
+        .map(_parseInjectField)
+        .toList();
 
-    for (final parsedField in injectFields) {
-      buffer.writeln(_generateInjectionLine(parsedField));
-    }
+    final injectMethod = Method((b) {
+      b
+        ..name = '_inject'
+        ..returns = refer('void')
+        ..requiredParameters.add(
+          Parameter((p) {
+            p
+              ..name = 'instance'
+              ..type = CodeBuilderEmitters.resolveTypeRef(classType);
+          }),
+        )
+        ..body = Block((body) {
+          for (final field in injectFields) {
+            final scopeExpr = CodeBuilderEmitters.openScope(
+              scopeName: field.scopeName,
+            );
+            final resolveExpr = CodeBuilderEmitters.resolveCall(
+              scopeExpr: scopeExpr,
+              parsedType: field.parsedType,
+              named: field.namedValue,
+            );
+            body.statements.add(
+              refer('instance')
+                  .property(field.fieldName)
+                  .assign(resolveExpr)
+                  .statement,
+            );
+          }
+        });
+    });
 
-    buffer
-      ..writeln('  }')
-      ..writeln('}');
+    final mixin = Mixin((b) {
+      b
+        ..name = mixinName
+        ..methods.add(injectMethod);
+    });
 
-    return buffer.toString();
+    final library = Library((b) => b..body.add(mixin));
+    final emitter = DartEmitter(useNullSafetySyntax: true);
+    return '${library.accept(emitter)}';
   }
 
   /// Returns true if a field is annotated with `@inject`.
@@ -150,11 +187,13 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
   /// Converts Dart field declaration and all parameterizing injection-related
   /// annotations into a [_ParsedInjectField] which is used for codegen.
   static _ParsedInjectField _parseInjectField(FieldElement2 field) {
+    AnnotationValidator.validateFieldAnnotations(field);
+
     String? scopeName;
     String? namedValue;
 
     for (final meta in field.firstFragment.metadata2.annotations) {
-      final DartObject? obj = meta.computeConstantValue();
+      final obj = meta.computeConstantValue();
       final type = obj?.type?.getDisplayString();
       if (type == 'scope') {
         scopeName = obj?.getField('name')?.toStringValue();
@@ -164,64 +203,14 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
     }
 
     final DartType dartType = field.type;
-    String coreTypeName;
-    bool isFuture;
-
-    if (dartType.isDartAsyncFuture) {
-      final ParameterizedType paramType = dartType as ParameterizedType;
-      coreTypeName = paramType.typeArguments.first.getDisplayString();
-      isFuture = true;
-    } else {
-      coreTypeName = dartType.getDisplayString();
-      isFuture = false;
-    }
-
-    // Determine nullability for field types like T? or Future<T?>
-    bool isNullable =
-        dartType.nullabilitySuffix == NullabilitySuffix.question ||
-        (dartType is ParameterizedType &&
-            (dartType).typeArguments.any(
-              (t) => t.nullabilitySuffix == NullabilitySuffix.question,
-            ));
+    final parsedType = TypeParser.parseType(dartType, field);
 
     return _ParsedInjectField(
       fieldName: field.firstFragment.name2 ?? '',
-      coreType: coreTypeName.replaceAll('?', ''), // удаляем "?" на всякий
-      isFuture: isFuture,
-      isNullable: isNullable,
+      parsedType: parsedType,
       scopeName: scopeName,
       namedValue: namedValue,
     );
-  }
-
-  /// Generates Dart code for a single dependency-injected field based on its metadata.
-  ///
-  /// This code will resolve the field from the CherryPick DI container and assign it to the class instance.
-  /// Correctly dispatches to resolve, tryResolve, resolveAsync, or tryResolveAsync methods,
-  /// and applies container scoping or named resolution where required.
-  ///
-  /// Returns literal Dart code as string (1 line).
-  ///
-  /// Example output:
-  ///   `instance.logger = CherryPick.openRootScope().resolve<Logger>();`
-  String _generateInjectionLine(_ParsedInjectField field) {
-    final resolveMethod = field.isFuture
-        ? (field.isNullable
-              ? 'tryResolveAsync<${field.coreType}>'
-              : 'resolveAsync<${field.coreType}>')
-        : (field.isNullable
-              ? 'tryResolve<${field.coreType}>'
-              : 'resolve<${field.coreType}>');
-
-    final openCall = (field.scopeName != null && field.scopeName!.isNotEmpty)
-        ? "CherryPick.openScope(scopeName: '${field.scopeName}')"
-        : "CherryPick.openRootScope()";
-
-    final params = (field.namedValue != null && field.namedValue!.isNotEmpty)
-        ? "(named: '${field.namedValue}')"
-        : '()';
-
-    return "    instance.${field.fieldName} = $openCall.$resolveMethod$params;";
   }
 }
 
@@ -233,14 +222,8 @@ class _ParsedInjectField {
   /// The name of the field to be injected.
   final String fieldName;
 
-  /// The Dart type to resolve (e.g. `Logger` from `Logger` or `Future<Logger>`).
-  final String coreType;
-
-  /// True if the field is an async dependency (Future<...>), otherwise false.
-  final bool isFuture;
-
-  /// True if the field accepts null (T?), otherwise false.
-  final bool isNullable;
+  /// Parsed type info for the field.
+  final ParsedType parsedType;
 
   /// The scoping for DI resolution, or null to use root scope.
   final String? scopeName;
@@ -250,9 +233,7 @@ class _ParsedInjectField {
 
   _ParsedInjectField({
     required this.fieldName,
-    required this.coreType,
-    required this.isFuture,
-    required this.isNullable,
+    required this.parsedType,
     this.scopeName,
     this.namedValue,
   });

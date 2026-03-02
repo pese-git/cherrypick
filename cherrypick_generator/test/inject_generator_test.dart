@@ -11,9 +11,13 @@
 // limitations under the License.
 //
 
+import 'dart:isolate';
+
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
+import 'package:build_runner_core/build_runner_core.dart';
 import 'package:cherrypick_generator/inject_generator.dart';
+import 'package:package_config/package_config.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
@@ -40,8 +44,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -75,8 +79,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -113,8 +117,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -124,9 +128,8 @@ part of 'test_widget.dart';
 
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
-    instance.service = CherryPick.openRootScope().resolve<MyService>(
-      named: 'myService',
-    );
+    instance.service =
+        CherryPick.openRootScope().resolve<MyService>(named: 'myService');
   }
 }
 ''';
@@ -151,8 +154,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -162,9 +165,8 @@ part of 'test_widget.dart';
 
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
-    instance.service = CherryPick.openRootScope().tryResolve<MyService>(
-      named: 'myService',
-    );
+    instance.service =
+        CherryPick.openRootScope().tryResolve<MyService>(named: 'myService');
   }
 }
 ''';
@@ -191,8 +193,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -229,8 +231,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -240,9 +242,9 @@ part of 'test_widget.dart';
 
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
-    instance.service = CherryPick.openScope(
-      scopeName: 'userScope',
-    ).resolve<MyService>(named: 'myService');
+    instance.service =
+        CherryPick.openScope(scopeName: 'userScope')
+            .resolve<MyService>(named: 'myService');
   }
 }
 ''';
@@ -268,8 +270,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -303,8 +305,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -339,8 +341,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -350,9 +352,8 @@ part of 'test_widget.dart';
 
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
-    instance.service = CherryPick.openRootScope().resolveAsync<MyService>(
-      named: 'myService',
-    );
+    instance.service =
+        CherryPick.openRootScope().resolveAsync<MyService>(named: 'myService');
   }
 }
 ''';
@@ -391,8 +392,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -403,13 +404,11 @@ part of 'test_widget.dart';
 mixin _\$TestWidget {
   void _inject(TestWidget instance) {
     instance.apiService = CherryPick.openRootScope().resolve<ApiService>();
-    instance.cacheService = CherryPick.openRootScope().tryResolve<CacheService>(
-      named: 'cache',
-    );
+    instance.cacheService =
+        CherryPick.openRootScope().tryResolve<CacheService>(named: 'cache');
     instance.dbService =
-        CherryPick.openScope(
-          scopeName: 'dbScope',
-        ).resolveAsync<DatabaseService>();
+        CherryPick.openScope(scopeName: 'dbScope')
+            .resolveAsync<DatabaseService>();
   }
 }
 ''';
@@ -439,8 +438,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -496,8 +495,8 @@ class TestWidget {
 ''';
 
           const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -533,8 +532,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -569,8 +568,8 @@ class TestWidget {
 ''';
 
         const expectedOutput = '''
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 part of 'test_widget.dart';
 
@@ -593,10 +592,41 @@ mixin _\$TestWidget {
 
 /// Helper function to test code generation
 Future<void> _testGeneration(String input, String expectedOutput) async {
-  await testBuilder(
+  final readerWriter = TestReaderWriter(rootPackage: 'a');
+  await readerWriter.testing.loadIsolateSources();
+  final packageConfig = await loadPackageConfigUri(
+    (await Isolate.packageConfig)!,
+  );
+  final outputs = expectedOutput.isEmpty
+      ? null
+      : {
+        'a|lib/test_widget.inject.cherrypick.g.dart':
+            decodedMatches(_normalizedEquals(expectedOutput)),
+      };
+  final result = await testBuilder(
     injectBuilder(BuilderOptions.empty),
     {'a|lib/test_widget.dart': input},
-    outputs: {'a|lib/test_widget.inject.cherrypick.g.dart': expectedOutput},
-    readerWriter: TestReaderWriter(),
+    outputs: outputs,
+    readerWriter: readerWriter,
+    rootPackage: 'a',
+    packageConfig: packageConfig,
   );
+  if (expectedOutput.isEmpty && result.buildResult.status == BuildStatus.failure) {
+    throw InvalidGenerationSourceError('Build failed');
+  }
+}
+
+Matcher _normalizedEquals(String expected) {
+  return predicate<String>(
+    (actual) => _normalize(actual) == _normalize(expected),
+    'matches after normalization',
+  );
+}
+
+String _normalize(String input) {
+  return input
+      .replaceAll(RegExp(r'\s+'), '')
+      .replaceAll(RegExp(r',\)'), ')')
+      .replaceAll(RegExp(r',\]'), ']')
+      .replaceAll(RegExp(r',\}'), '}');
 }
