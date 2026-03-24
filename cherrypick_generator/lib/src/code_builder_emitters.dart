@@ -25,10 +25,9 @@ class CodeBuilderEmitters {
     if (scopeName == null || scopeName.isEmpty) {
       return refer('CherryPick').property('openRootScope').call([]);
     }
-    return refer('CherryPick').property('openScope').call(
-      [],
-      {'scopeName': literalString(scopeName)},
-    );
+    return refer(
+      'CherryPick',
+    ).property('openScope').call([], {'scopeName': literalString(scopeName)});
   }
 
   /// Builds a TypeReference appropriate for resolving a dependency.
@@ -71,10 +70,8 @@ class CodeBuilderEmitters {
       if (parsedType.typeArguments.isNotEmpty) {
         b.types.addAll(
           parsedType.typeArguments.map(
-            (arg) => _typeRefFromParsedType(
-              arg,
-              stripNullability: stripNullability,
-            ),
+            (arg) =>
+                _typeRefFromParsedType(arg, stripNullability: stripNullability),
           ),
         );
       }

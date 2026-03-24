@@ -120,10 +120,7 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
 
     AnnotationValidator.validateClassAnnotations(classElement);
 
-    final classType = TypeParser.parseType(
-      classElement.thisType,
-      classElement,
-    );
+    final classType = TypeParser.parseType(classElement.thisType, classElement);
 
     final injectFields = classElement.fields2
         .where((f) => _isInjectField(f))
@@ -152,10 +149,9 @@ class InjectGenerator extends GeneratorForAnnotation<ann.injectable> {
               named: field.namedValue,
             );
             body.statements.add(
-              refer('instance')
-                  .property(field.fieldName)
-                  .assign(resolveExpr)
-                  .statement,
+              refer(
+                'instance',
+              ).property(field.fieldName).assign(resolveExpr).statement,
             );
           }
         });

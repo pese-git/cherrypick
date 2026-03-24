@@ -107,7 +107,8 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
   /// analyzer fragment APIs, so this method must never throw.
   static String _safeLocation(Element2 element) {
     try {
-      return element.firstFragment.libraryFragment?.source.fullName ?? 'unknown';
+      return element.firstFragment.libraryFragment?.source.fullName ??
+          'unknown';
     } catch (_) {
       return 'unknown';
     }
