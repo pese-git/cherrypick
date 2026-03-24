@@ -1,3 +1,7 @@
+## Unreleased
+
+ - **BREAKING** **REFACTOR**(binding): rename `Provider<T>` typedef to `ProviderFactory<T>` to avoid naming conflicts with `package:provider`.
+
 ## 3.0.2
 
  - **FIX**(test): fix warning.
