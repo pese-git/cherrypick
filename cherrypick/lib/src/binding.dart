@@ -205,7 +205,7 @@ class Binding<T> {
   /// bind<Api>().toProvide(() => ApiService());
   /// bind<Db>().toProvide(() async => await openDb());
   /// ```
-  Binding<T> toProvide(Provider<T> value) {
+  Binding<T> toProvide(ProviderFactory<T> value) {
     _resolver = ProviderResolver<T>((_) => value.call(), withParams: false);
     return this;
   }
@@ -227,7 +227,7 @@ class Binding<T> {
   }
 
   @Deprecated('Use toProvide instead of toProvideAsync')
-  Binding<T> toProvideAsync(Provider<T> value) {
+  Binding<T> toProvideAsync(ProviderFactory<T> value) {
     return toProvide(value);
   }
 
