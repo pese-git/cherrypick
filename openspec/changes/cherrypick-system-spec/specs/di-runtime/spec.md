@@ -23,11 +23,11 @@
 - **THEN** subscope удаляется из дерева, а связанные ресурсы освобождаются
 
 #### Scenario: Путь scope и разделитель
-- **WHEN** scope открывается по иерархическому пути с разделителем
+- **WHEN** вызывается `CherryPick.openScope(scopeName: ..., separator: ...)` с иерархическим путем
 - **THEN** создается цепочка subscopes по каждому сегменту пути
 
 #### Scenario: Пустой scopeName
-- **WHEN** scope открывается с пустым именем
+- **WHEN** вызывается `CherryPick.openScope(scopeName: '')`
 - **THEN** возвращается root scope
 
 ### Requirement: Установка и удаление модулей
@@ -81,8 +81,8 @@
 ### Requirement: Ошибки несоответствия sync/async
 Резолв MUST выбрасывать ошибки при несоответствии sync/async режима.
 
-#### Scenario: ResolveSync для async‑инстанса
-- **WHEN** binding зарегистрирован как async‑инстанс или async‑provider, а вызывается `resolveSync`
+#### Scenario: Синхронный резолв для async‑binding
+- **WHEN** binding зарегистрирован как async‑инстанс или async‑provider, а вызывается `resolve<T>()` или `tryResolve<T>()`
 - **THEN** выбрасывается ошибка с указанием использовать async‑резолв
 
 ### Requirement: Управление Disposable
@@ -111,7 +111,7 @@
 - **THEN** observer получает соответствующие уведомления
 
 ### Requirement: Ошибки и сообщения об ошибках
-При критических сбоях резолва ядро MUST выбрасывать ошибку с понятным сообщением, а для tryResolve MUST не бросать исключения.
+При критических сбоях резолва ядро MUST выбрасывать ошибку с понятным сообщением. Для отсутствующей зависимости `tryResolve`/`tryResolveAsync` MUST возвращать `null` без исключения; ошибки выполнения резолва (например, цикл, sync/async mismatch, отсутствие обязательных params) MAY быть проброшены.
 
 #### Scenario: Ошибка отсутствующей зависимости
 - **WHEN** вызывается `resolve<T>()` для незарегистрированной зависимости
