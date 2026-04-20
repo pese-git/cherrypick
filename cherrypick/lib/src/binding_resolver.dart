@@ -13,86 +13,37 @@
 
 import 'dart:async';
 
-/// Represents a direct instance or an async instance ([T] or [Future<T>]).
-/// Used for both direct and async bindings.
-///
-/// Example:
-/// ```dart
-/// Instance<String> sync = "hello";
-/// Instance<MyApi> async = Future.value(MyApi());
-/// ```
-typedef Instance<T> = FutureOr<T>;
+/// Synchronous factory: `T Function()`.
+typedef Provider<T> = T Function();
 
-/// Provider function type for synchronous or asynchronous, parameterless creation of [T].
-/// Can return [T] or [Future<T>].
-///
-/// Example:
-/// ```dart
-/// Provider<MyService> provider = () => MyService();
-/// Provider<Api> asyncProvider = () async => await Api.connect();
-/// ```
-typedef Provider<T> = FutureOr<T> Function();
+/// Parameterized synchronous factory: `T Function(dynamic)`.
+typedef ProviderWithParams<T> = T Function(dynamic);
 
-/// Provider function type that accepts a dynamic parameter, for factory/parametrized injection.
-/// Returns [T] or [Future<T>].
-///
-/// Example:
-/// ```dart
-/// ProviderWithParams<User> provider = (params) => User(params["name"]);
-/// ```
-typedef ProviderWithParams<T> = FutureOr<T> Function(dynamic);
+/// Asynchronous factory: `Future<T> Function()`.
+typedef AsyncProvider<T> = Future<T> Function();
 
-/// Abstract interface for dependency resolvers used by [Binding].
-/// Defines how to resolve instances of type [T].
-///
-/// You usually don't use this directly; it's used internally for advanced/low-level DI.
+/// Parameterized asynchronous factory: `Future<T> Function(dynamic)`.
+typedef AsyncProviderWithParams<T> = Future<T> Function(dynamic);
+
+/// Internal interface for resolvers managed by [Binding].
 abstract class BindingResolver<T> {
-  /// Synchronously resolves the dependency, optionally taking parameters (for factory cases).
-  /// Throws if implementation does not support sync resolution.
   T? resolveSync([dynamic params]);
-
-  /// Asynchronously resolves the dependency, optionally taking parameters (for factory cases).
-  /// If instance is already a [Future], returns it directly.
   Future<T>? resolveAsync([dynamic params]);
-
-  /// Marks this resolver as singleton: instance(s) will be cached and reused inside the scope.
   void toSingleton();
-
-  /// Returns true if this resolver is marked as singleton.
   bool get isSingleton;
 }
 
-/// Concrete resolver for direct instance ([T] or [Future<T>]). No provider is called.
-///
-/// Used for [Binding.toInstance].
-/// Supports both sync and async resolution; sync will throw if underlying instance is [Future].
-/// Examples:
-/// ```dart
-/// var resolver = InstanceResolver("hello");
-/// resolver.resolveSync(); // == "hello"
-/// var asyncResolver = InstanceResolver(Future.value(7));
-/// asyncResolver.resolveAsync(); // Future<int>
-/// ```
-class InstanceResolver<T> implements BindingResolver<T> {
-  final Instance<T> _instance;
+/// Resolver for a pre-built synchronous instance.
+class SyncInstanceResolver<T> implements BindingResolver<T> {
+  final T _instance;
 
-  /// Wraps the given instance (sync or async) in a resolver.
-  InstanceResolver(this._instance);
+  SyncInstanceResolver(this._instance);
 
   @override
-  T resolveSync([_]) {
-    if (_instance is T) return _instance;
-    throw StateError(
-      'Instance $_instance is Future; '
-      'use resolveAsync() instead',
-    );
-  }
+  T resolveSync([_]) => _instance;
 
   @override
-  Future<T> resolveAsync([_]) {
-    if (_instance is Future<T>) return _instance;
-    return Future.value(_instance);
-  }
+  Future<T> resolveAsync([_]) => Future<T>.value(_instance);
 
   @override
   void toSingleton() {}
@@ -101,62 +52,30 @@ class InstanceResolver<T> implements BindingResolver<T> {
   bool get isSingleton => true;
 }
 
-/// Resolver for provider functions (sync/async/factory), with optional singleton caching.
-/// Used for [Binding.toProvide], [Binding.toProvideWithParams], [Binding.singleton].
-///
-/// Examples:
-/// ```dart
-/// // No param, sync:
-/// var r = ProviderResolver((_) => 5, withParams: false);
-/// r.resolveSync(); // == 5
-/// // With param:
-/// var rp = ProviderResolver((p) => p * 2, withParams: true);
-/// rp.resolveSync(2); // == 4
-/// // Singleton:
-/// r.toSingleton();
-/// // Async:
-/// var ra = ProviderResolver((_) async => await Future.value(10), withParams: false);
-/// await ra.resolveAsync(); // == 10
-/// ```
-class ProviderResolver<T> implements BindingResolver<T> {
-  final ProviderWithParams<T> _provider;
-  final bool _withParams;
+/// Resolver for a pre-built async instance ([Future]).
+class AsyncInstanceResolver<T> implements BindingResolver<T> {
+  final Future<T> _instance;
 
-  FutureOr<T>? _cache;
+  AsyncInstanceResolver(this._instance);
+
+  @override
+  T resolveSync([_]) {
+    throw StateError('Instance is a Future; use resolveAsync() instead');
+  }
+
+  @override
+  Future<T> resolveAsync([_]) => _instance;
+
+  @override
+  void toSingleton() {}
+
+  @override
+  bool get isSingleton => true;
+}
+
+/// Base class for provider-based resolvers with singleton flag support.
+abstract class _BaseProviderResolver<T> implements BindingResolver<T> {
   bool _singleton = false;
-
-  /// Creates a resolver from [provider], optionally accepting dynamic params.
-  ProviderResolver(
-    ProviderWithParams<T> provider, {
-    required bool withParams,
-  })  : _provider = provider,
-        _withParams = withParams;
-
-  @override
-  T resolveSync([dynamic params]) {
-    _checkParams(params);
-    final result = _cache ?? _provider(params);
-    if (result is T) {
-      if (_singleton) {
-        _cache ??= result;
-      }
-      return result;
-    }
-    throw StateError(
-      'Provider [$_provider] return Future<$T>. Use resolveAsync() instead.',
-    );
-  }
-
-  @override
-  Future<T> resolveAsync([dynamic params]) {
-    _checkParams(params);
-    final result = _cache ?? _provider(params);
-    final target = result is Future<T> ? result : Future<T>.value(result);
-    if (_singleton) {
-      _cache ??= target;
-    }
-    return target;
-  }
 
   @override
   void toSingleton() {
@@ -165,13 +84,281 @@ class ProviderResolver<T> implements BindingResolver<T> {
 
   @override
   bool get isSingleton => _singleton;
+}
 
-  /// Throws if params required but not supplied.
-  void _checkParams(dynamic params) {
-    if (_withParams && params == null) {
+/// Resolves [Binding.toProvide] with a sync `T Function()` provider.
+class SyncProviderResolver<T> extends _BaseProviderResolver<T> {
+  final Provider<T> _provider;
+  Object? _cached;
+  bool _isCached = false;
+
+  SyncProviderResolver(this._provider);
+
+  @override
+  T resolveSync([_]) {
+    if (_singleton && _isCached) {
+      return _cached as T;
+    }
+    final result = _provider();
+    if (_singleton) {
+      _cached = result;
+      _isCached = true;
+    }
+    return result;
+  }
+
+  @override
+  Future<T> resolveAsync([_]) => Future<T>.value(resolveSync());
+}
+
+/// Resolves [Binding.toProvideWithParams] with a sync `T Function(dynamic)` provider.
+class SyncProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
+  final ProviderWithParams<T> _provider;
+  Object? _cached;
+  bool _isCached = false;
+
+  SyncProviderWithParamsResolver(this._provider);
+
+  @override
+  T resolveSync([dynamic params]) {
+    if (_singleton && _isCached) {
+      return _cached as T;
+    }
+    if (params == null) {
+      throw StateError('[$T] Params is null. Maybe you forgot to pass it?');
+    }
+    final result = _provider(params);
+    if (_singleton) {
+      _cached = result;
+      _isCached = true;
+    }
+    return result;
+  }
+
+  @override
+  Future<T> resolveAsync([dynamic params]) =>
+      Future<T>.value(resolveSync(params));
+}
+
+/// Resolves [Binding.toProvide] with an async `Future<T> Function()` provider.
+class AsyncProviderResolver<T> extends _BaseProviderResolver<T> {
+  final AsyncProvider<T> _provider;
+  Future<T>? _cache;
+  bool _isCached = false;
+
+  AsyncProviderResolver(this._provider);
+
+  @override
+  T resolveSync([_]) {
+    throw StateError(
+      'Provider returns Future<$T>. Use resolveAsync() instead.',
+    );
+  }
+
+  @override
+  Future<T> resolveAsync([_]) {
+    if (_singleton && _isCached) {
+      return _cache!;
+    }
+    final result = _provider();
+    if (_singleton) {
+      _cache = result;
+      _isCached = true;
+    }
+    return result;
+  }
+}
+
+/// Resolves [Binding.toProvideWithParams] with an async `Future<T> Function(dynamic)` provider.
+class AsyncProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
+  final AsyncProviderWithParams<T> _provider;
+  Future<T>? _cache;
+  bool _isCached = false;
+
+  AsyncProviderWithParamsResolver(this._provider);
+
+  @override
+  T resolveSync([_]) {
+    throw StateError(
+      'Provider returns Future<$T>. Use resolveAsync() instead.',
+    );
+  }
+
+  @override
+  Future<T> resolveAsync([dynamic params]) {
+    if (_singleton && _isCached) {
+      return _cache!;
+    }
+    if (params == null) {
+      throw StateError('[$T] Params is null. Maybe you forgot to pass it?');
+    }
+    final result = _provider(params);
+    if (_singleton) {
+      _cache = result;
+      _isCached = true;
+    }
+    return result;
+  }
+}
+
+/// Fallback resolver for `FutureOr<T> Function()` providers whose static type
+/// is not known at compile time. Detects sync vs async at resolve time.
+class FutureOrProviderResolver<T> extends _BaseProviderResolver<T> {
+  final FutureOr<T> Function() _provider;
+  Object? _cached;
+  bool _isCached = false;
+
+  FutureOrProviderResolver(this._provider);
+
+  @override
+  T resolveSync([_]) {
+    if (_singleton && _isCached) {
+      final cached = _cached;
+      if (cached is Future<T>) {
+        throw StateError(
+          'Provider returns Future<$T>. Use resolveAsync() instead.',
+        );
+      }
+      return cached as T;
+    }
+    final result = _provider();
+    if (result is Future<T>) {
       throw StateError(
-        '[$T] Params is null. Maybe you forgot to pass it?',
+        'Provider returns Future<$T>. Use resolveAsync() instead.',
       );
     }
+    if (_singleton) {
+      _cached = result;
+      _isCached = true;
+    }
+    return result;
+  }
+
+  @override
+  Future<T> resolveAsync([_]) {
+    if (_singleton && _isCached) {
+      final cached = _cached;
+      if (cached is Future<T>) return cached;
+      return Future<T>.value(cached as T);
+    }
+    final result = _provider();
+    if (_singleton) {
+      _cached = result;
+      _isCached = true;
+    }
+    if (result is Future<T>) return result;
+    return Future<T>.value(result);
+  }
+}
+
+/// Fallback resolver for `FutureOr<T> Function(dynamic)` providers with params
+/// whose static type is not known at compile time.
+class FutureOrProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
+  final FutureOr<T> Function(dynamic) _provider;
+  Object? _cached;
+  bool _isCached = false;
+
+  FutureOrProviderWithParamsResolver(this._provider);
+
+  @override
+  T resolveSync([dynamic params]) {
+    if (_singleton && _isCached) {
+      final cached = _cached;
+      if (cached is Future<T>) {
+        throw StateError(
+          'Provider returns Future<$T>. Use resolveAsync() instead.',
+        );
+      }
+      return cached as T;
+    }
+    if (params == null) {
+      throw StateError('[$T] Params is null. Maybe you forgot to pass it?');
+    }
+    final result = _provider(params);
+    if (result is Future<T>) {
+      throw StateError(
+        'Provider returns Future<$T>. Use resolveAsync() instead.',
+      );
+    }
+    if (_singleton) {
+      _cached = result;
+      _isCached = true;
+    }
+    return result;
+  }
+
+  @override
+  Future<T> resolveAsync([dynamic params]) {
+    if (_singleton && _isCached) {
+      final cached = _cached;
+      if (cached is Future<T>) return cached;
+      return Future<T>.value(cached as T);
+    }
+    if (params == null) {
+      throw StateError('[$T] Params is null. Maybe you forgot to pass it?');
+    }
+    final result = _provider(params);
+    if (_singleton) {
+      _cached = result;
+      _isCached = true;
+    }
+    if (result is Future<T>) return result;
+    return Future<T>.value(result);
+  }
+}
+
+/// Factory for creating instance resolvers (sync or async).
+class InstanceResolver {
+  static BindingResolver<T> create<T>(FutureOr<T> instance) {
+    if (instance is Future<T>) {
+      return AsyncInstanceResolver<T>(instance);
+    }
+    return SyncInstanceResolver<T>(instance);
+  }
+}
+
+/// Factory for creating the correct provider resolver based on the
+/// provider's static return type, avoiding runtime checks in fast paths.
+class ProviderResolver {
+  static BindingResolver<T> create<T>(FutureOr<T> Function() provider) {
+    if (provider is T Function()) {
+      return SyncProviderResolver<T>(provider);
+    }
+    if (provider is Future<T> Function()) {
+      return AsyncProviderResolver<T>(provider);
+    }
+    return FutureOrProviderResolver<T>(provider);
+  }
+
+  static BindingResolver<T> createWithParams<T>(
+      FutureOr<T> Function(dynamic) provider) {
+    if (provider is T Function(dynamic)) {
+      return SyncProviderWithParamsResolver<T>(provider);
+    }
+    if (provider is Future<T> Function(dynamic)) {
+      return AsyncProviderWithParamsResolver<T>(provider);
+    }
+    return FutureOrProviderWithParamsResolver<T>(provider);
+  }
+
+  /// Explicit sync resolver without parameters.
+  static BindingResolver<T> sync<T>(Provider<T> provider) {
+    return SyncProviderResolver<T>(provider);
+  }
+
+  /// Explicit sync resolver with parameters.
+  static BindingResolver<T> syncWithParams<T>(ProviderWithParams<T> provider) {
+    return SyncProviderWithParamsResolver<T>(provider);
+  }
+
+  /// Explicit async resolver without parameters.
+  static BindingResolver<T> async<T>(AsyncProvider<T> provider) {
+    return AsyncProviderResolver<T>(provider);
+  }
+
+  /// Explicit async resolver with parameters.
+  static BindingResolver<T> asyncWithParams<T>(
+      AsyncProviderWithParams<T> provider) {
+    return AsyncProviderWithParamsResolver<T>(provider);
   }
 }
