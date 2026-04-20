@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cherrypick/cherrypick.dart';
 import 'package:test/test.dart';
 
@@ -12,7 +14,8 @@ void main() {
 
       test('Sets mode to instance', () {
         final binding = Binding<int>().toInstance(5);
-        expect(binding.resolver, isA<InstanceResolver<int>>());
+        expect(binding.resolver, isA<BindingResolver<int>>());
+        expect(binding.resolver, isA<SyncInstanceResolver<int>>());
       });
 
       test('isSingleton is true', () {
@@ -34,7 +37,8 @@ void main() {
 
       test('Sets mode to instance', () {
         final binding = Binding<int>().withName('n').toInstance(5);
-        expect(binding.resolver, isA<InstanceResolver<int>>());
+        expect(binding.resolver, isA<BindingResolver<int>>());
+        expect(binding.resolver, isA<SyncInstanceResolver<int>>());
       });
 
       test('Sets key', () {
@@ -73,7 +77,8 @@ void main() {
 
     test('Sets mode to instance', () {
       final binding = Binding<int>().toInstance(Future.value(5));
-      expect(binding.resolver, isA<InstanceResolver<int>>());
+      expect(binding.resolver, isA<BindingResolver<int>>());
+      expect(binding.resolver, isA<AsyncInstanceResolver<int>>());
     });
 
     test('isSingleton is true after toInstanceAsync', () {
@@ -107,7 +112,8 @@ void main() {
 
       test('Sets mode to providerInstance', () {
         final binding = Binding<int>().toProvide(() => 5);
-        expect(binding.resolver, isA<ProviderResolver<int>>());
+        expect(binding.resolver, isA<BindingResolver<int>>());
+        expect(binding.resolveSync(), 5);
       });
 
       test('isSingleton is false by default', () {
@@ -129,7 +135,8 @@ void main() {
 
       test('Sets mode to providerInstance', () {
         final binding = Binding<int>().withName('n').toProvide(() => 5);
-        expect(binding.resolver, isA<ProviderResolver<int>>());
+        expect(binding.resolver, isA<BindingResolver<int>>());
+        expect(binding.resolveSync(), 5);
       });
 
       test('Sets key', () {
@@ -165,6 +172,43 @@ void main() {
       final binding = Binding<int>()
           .toProvideWithParams((param) async => 5 + (param as int));
       expect(await binding.resolveAsync(3), 8);
+    });
+
+    test('Resolves toProvideAsync value', () async {
+      final binding = Binding<int>().toProvideAsync(() async => 5);
+      expect(await binding.resolveAsync(), 5);
+    });
+
+    test('toProvideAsync singleton caches instance', () async {
+      int counter = 0;
+      final binding = Binding<int>().toProvideAsync(() async {
+        counter++;
+        return counter;
+      }).singleton();
+
+      final first = await binding.resolveAsync();
+      final second = await binding.resolveAsync();
+      expect(first, equals(second));
+      expect(counter, 1);
+    });
+
+    test('Resolves toProvideAsyncWithParams value', () async {
+      final binding = Binding<int>()
+          .toProvideAsyncWithParams((param) async => 5 + (param as int));
+      expect(await binding.resolveAsync(3), 8);
+    });
+
+    test('toProvideAsyncWithParams singleton caches instance', () async {
+      int counter = 0;
+      final binding = Binding<int>().toProvideAsyncWithParams((param) async {
+        counter++;
+        return counter + (param as int);
+      }).singleton();
+
+      final first = await binding.resolveAsync(10);
+      final second = await binding.resolveAsync(20);
+      expect(first, equals(second));
+      expect(counter, 1);
     });
   });
 
@@ -229,6 +273,103 @@ void main() {
             Binding<int>().withName('n').toProvide(() => 5).singleton();
         expect(binding.name, 'n');
       });
+    });
+  });
+
+  // --- FutureOr provider resolver (lazy detection, no eager side-effects) ---
+  group('FutureOr Provider Resolver', () {
+    test('Does not call provider at binding creation', () {
+      int calls = 0;
+      FutureOr<int> provider() {
+        calls++;
+        return 42;
+      }
+
+      final binding = Binding<int>().toProvide(provider);
+      expect(calls, 0);
+      expect(binding.resolveSync(), 42);
+      expect(calls, 1);
+    });
+
+    test('Sync FutureOr provider resolves via resolveSync', () {
+      final binding = Binding<int>().toProvide(() => 7);
+      expect(binding.resolveSync(), 7);
+    });
+
+    test('Async FutureOr provider throws on resolveSync', () {
+      final binding =
+          Binding<int>().toProvide(() async => 7);
+      expect(() => binding.resolveSync(), throwsStateError);
+    });
+
+    test('Async FutureOr provider resolves via resolveAsync', () async {
+      final binding =
+          Binding<int>().toProvide(() async => 7);
+      expect(await binding.resolveAsync(), 7);
+    });
+
+    test('FutureOr provider with params does not call provider at creation',
+        () {
+      int calls = 0;
+      FutureOr<int> provider(dynamic p) {
+        calls++;
+        return (p as int) + 1;
+      }
+
+      final binding = Binding<int>().toProvideWithParams(provider);
+      expect(calls, 0);
+      expect(binding.resolveSync(5), 6);
+      expect(calls, 1);
+    });
+
+    test('Async FutureOr provider with params throws on resolveSync', () {
+      final binding = Binding<int>()
+          .toProvideWithParams((p) async => (p as int) + 1);
+      expect(() => binding.resolveSync(5), throwsStateError);
+    });
+
+    test('Async FutureOr provider with params resolves via resolveAsync',
+        () async {
+      final binding = Binding<int>()
+          .toProvideWithParams((p) async => (p as int) + 1);
+      expect(await binding.resolveAsync(5), 6);
+    });
+
+    test('FutureOr singleton caches sync result', () {
+      int calls = 0;
+      final binding = Binding<int>().toProvide(() {
+        calls++;
+        return 99;
+      }).singleton();
+
+      expect(binding.resolveSync(), 99);
+      expect(binding.resolveSync(), 99);
+      expect(calls, 1);
+    });
+
+    test('FutureOr singleton caches async result', () async {
+      int calls = 0;
+      final binding = Binding<int>().toProvide(() async {
+        calls++;
+        return 99;
+      }).singleton();
+
+      expect(await binding.resolveAsync(), 99);
+      expect(await binding.resolveAsync(), 99);
+      expect(calls, 1);
+    });
+  });
+
+  // --- InstanceResolver factory ---
+  group('InstanceResolver.create', () {
+    test('Returns SyncInstanceResolver for sync value', () {
+      final binding = Binding<int>().toInstance(5);
+      expect(binding.resolver, isA<SyncInstanceResolver<int>>());
+    });
+
+    test('Returns AsyncInstanceResolver for Future value', () {
+      final binding = Binding<int>().toInstance(Future.value(5));
+      expect(binding.resolver, isA<AsyncInstanceResolver<int>>());
     });
   });
 
