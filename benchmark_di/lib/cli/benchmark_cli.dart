@@ -31,184 +31,205 @@ class BenchmarkCliRunner {
   Future<void> run(List<String> args) async {
     final config = parseBenchmarkCli(args);
     final results = <Map<String, dynamic>>[];
-    for (final bench in config.benchesToRun) {
-      final scenario = toScenario(bench);
-      final mode = toMode(bench);
-      for (final c in config.chainCounts) {
-        for (final d in config.nestDepths) {
-          BenchmarkResult benchResult;
-          if (config.di == 'getit') {
-            final di = GetItAdapter();
-            if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<GetIt>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-              );
-              benchResult = await BenchmarkRunner.runAsync(
-                benchmark: benchAsync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
+    // DI implementations that do not support async scenarios
+    const asyncUnsupported = {'kiwi', 'yx_scope'};
+    for (final phase in config.phases) {
+      for (final bench in config.benchesToRun) {
+        final scenario = toScenario(bench);
+        final mode = toMode(bench);
+        if (asyncUnsupported.contains(config.di) &&
+            scenario == UniversalScenario.asyncChain) {
+          continue; // Skip async benchmarks for DI that does not support them
+        }
+        for (final c in config.chainCounts) {
+          for (final d in config.nestDepths) {
+            BenchmarkResult benchResult;
+            if (config.di == 'getit') {
+              final di = GetItAdapter();
+              if (scenario == UniversalScenario.asyncChain) {
+                final benchAsync = UniversalChainAsyncBenchmark<GetIt>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                );
+                benchResult = await BenchmarkRunner.runAsync(
+                  benchmark: benchAsync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              } else {
+                final benchSync = UniversalChainBenchmark<GetIt>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                  scenario: scenario,
+                );
+                benchResult = await BenchmarkRunner.runSync(
+                  benchmark: benchSync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              }
+            } else if (config.di == 'kiwi') {
+              final di = KiwiAdapter();
+              if (scenario == UniversalScenario.asyncChain) {
+                final benchAsync = UniversalChainAsyncBenchmark<KiwiContainer>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                );
+                benchResult = await BenchmarkRunner.runAsync(
+                  benchmark: benchAsync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              } else {
+                final benchSync = UniversalChainBenchmark<KiwiContainer>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                  scenario: scenario,
+                );
+                benchResult = await BenchmarkRunner.runSync(
+                  benchmark: benchSync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              }
+            } else if (config.di == 'riverpod') {
+              final di = RiverpodAdapter();
+              if (scenario == UniversalScenario.asyncChain) {
+                final benchAsync = UniversalChainAsyncBenchmark<
+                    Map<String, rp.ProviderBase<Object?>>>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                );
+                benchResult = await BenchmarkRunner.runAsync(
+                  benchmark: benchAsync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              } else {
+                final benchSync = UniversalChainBenchmark<
+                    Map<String, rp.ProviderBase<Object?>>>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                  scenario: scenario,
+                );
+                benchResult = await BenchmarkRunner.runSync(
+                  benchmark: benchSync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              }
+            } else if (config.di == 'yx_scope') {
+              final di = YxScopeAdapter();
+              if (scenario == UniversalScenario.asyncChain) {
+                final benchAsync =
+                    UniversalChainAsyncBenchmark<UniversalYxScopeContainer>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                );
+                benchResult = await BenchmarkRunner.runAsync(
+                  benchmark: benchAsync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              } else {
+                final benchSync =
+                    UniversalChainBenchmark<UniversalYxScopeContainer>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                  scenario: scenario,
+                );
+                benchResult = await BenchmarkRunner.runSync(
+                  benchmark: benchSync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              }
             } else {
-              final benchSync = UniversalChainBenchmark<GetIt>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-                scenario: scenario,
-              );
-              benchResult = await BenchmarkRunner.runSync(
-                benchmark: benchSync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
+              final di = CherrypickDIAdapter();
+              if (scenario == UniversalScenario.asyncChain) {
+                final benchAsync = UniversalChainAsyncBenchmark<Scope>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                );
+                benchResult = await BenchmarkRunner.runAsync(
+                  benchmark: benchAsync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              } else {
+                final benchSync = UniversalChainBenchmark<Scope>(
+                  di,
+                  chainCount: c,
+                  nestingDepth: d,
+                  mode: mode,
+                  scenario: scenario,
+                );
+                benchResult = await BenchmarkRunner.runSync(
+                  benchmark: benchSync,
+                  warmups: config.warmups,
+                  repeats: config.repeats,
+                  phase: phase,
+                );
+              }
             }
-          } else if (config.di == 'kiwi') {
-            final di = KiwiAdapter();
-            if (scenario == UniversalScenario.asyncChain) {
-              // UnsupportedError будет выброшен адаптером, но если дойдёт — вызывать async benchmark
-              final benchAsync = UniversalChainAsyncBenchmark<KiwiContainer>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-              );
-              benchResult = await BenchmarkRunner.runAsync(
-                benchmark: benchAsync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            } else {
-              final benchSync = UniversalChainBenchmark<KiwiContainer>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-                scenario: scenario,
-              );
-              benchResult = await BenchmarkRunner.runSync(
-                benchmark: benchSync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            }
-          } else if (config.di == 'riverpod') {
-            final di = RiverpodAdapter();
-            if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<
-                  Map<String, rp.ProviderBase<Object?>>>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-              );
-              benchResult = await BenchmarkRunner.runAsync(
-                benchmark: benchAsync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            } else {
-              final benchSync = UniversalChainBenchmark<
-                  Map<String, rp.ProviderBase<Object?>>>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-                scenario: scenario,
-              );
-              benchResult = await BenchmarkRunner.runSync(
-                benchmark: benchSync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            }
-          } else if (config.di == 'yx_scope') {
-            final di = YxScopeAdapter();
-            if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync =
-                  UniversalChainAsyncBenchmark<UniversalYxScopeContainer>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-              );
-              benchResult = await BenchmarkRunner.runAsync(
-                benchmark: benchAsync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            } else {
-              final benchSync =
-                  UniversalChainBenchmark<UniversalYxScopeContainer>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-                scenario: scenario,
-              );
-              benchResult = await BenchmarkRunner.runSync(
-                benchmark: benchSync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            }
-          } else {
-            final di = CherrypickDIAdapter();
-            if (scenario == UniversalScenario.asyncChain) {
-              final benchAsync = UniversalChainAsyncBenchmark<Scope>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-              );
-              benchResult = await BenchmarkRunner.runAsync(
-                benchmark: benchAsync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            } else {
-              final benchSync = UniversalChainBenchmark<Scope>(
-                di,
-                chainCount: c,
-                nestingDepth: d,
-                mode: mode,
-                scenario: scenario,
-              );
-              benchResult = await BenchmarkRunner.runSync(
-                benchmark: benchSync,
-                warmups: config.warmups,
-                repeats: config.repeats,
-              );
-            }
+            final timings = benchResult.timings;
+            if (timings.isEmpty) continue; // skip failed scenarios
+            timings.sort();
+            final count = timings.length;
+            final mean = timings.reduce((a, b) => a + b) / count;
+            final median = count.isOdd
+                ? timings[count ~/ 2]
+                : (timings[count ~/ 2 - 1] + timings[count ~/ 2]) / 2;
+            final minVal = timings.first;
+            final maxVal = timings.last;
+            final stddev = sqrt(timings
+                    .map((x) => pow(x - mean, 2))
+                    .reduce((a, b) => a + b) /
+                count);
+            results.add({
+              'benchmark': 'Universal_$bench',
+              'phase': phase.name,
+              'chainCount': c,
+              'nestingDepth': d,
+              'mean_us': mean.toStringAsFixed(2),
+              'median_us': median.toStringAsFixed(2),
+              'stddev_us': stddev.toStringAsFixed(2),
+              'min_us': minVal.toStringAsFixed(2),
+              'max_us': maxVal.toStringAsFixed(2),
+              'trials': timings.length,
+              'timings_us': timings.map((t) => t.toStringAsFixed(2)).toList(),
+              'memory_diff_kb': benchResult.memoryDiffKb,
+              'delta_peak_kb': benchResult.deltaPeakKb,
+              'peak_rss_kb': benchResult.peakRssKb,
+            });
           }
-          final timings = benchResult.timings;
-          timings.sort();
-          var mean = timings.reduce((a, b) => a + b) / timings.length;
-          var median = timings[timings.length ~/ 2];
-          var minVal = timings.first;
-          var maxVal = timings.last;
-          var stddev = timings.isEmpty
-              ? 0
-              : sqrt(
-                  timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) /
-                      timings.length);
-          results.add({
-            'benchmark': 'Universal_$bench',
-            'chainCount': c,
-            'nestingDepth': d,
-            'mean_us': mean.toStringAsFixed(2),
-            'median_us': median.toStringAsFixed(2),
-            'stddev_us': stddev.toStringAsFixed(2),
-            'min_us': minVal.toStringAsFixed(2),
-            'max_us': maxVal.toStringAsFixed(2),
-            'trials': timings.length,
-            'timings_us': timings.map((t) => t.toStringAsFixed(2)).toList(),
-            'memory_diff_kb': benchResult.memoryDiffKb,
-            'delta_peak_kb': benchResult.deltaPeakKb,
-            'peak_rss_kb': benchResult.peakRssKb,
-          });
         }
       }
     }

@@ -29,8 +29,7 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
 
   @override
   void teardown() {
-    // У yx_scope нет явного dispose на ScopeContainer, но можно добавить очистку Map/Deps если потребуется
-    // Ничего не делаем
+    _scope = UniversalYxScopeContainer();
   }
 
   @override
@@ -54,26 +53,13 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
     required UniversalBindingMode bindingMode,
   }) {
     if (scenario is UniversalScenario) {
+      if (scenario == UniversalScenario.asyncChain ||
+          bindingMode == UniversalBindingMode.asyncStrategy) {
+        throw UnsupportedError(
+            'YxScope does not support async dependencies or async binding scenarios.');
+      }
       return (scope) {
         switch (scenario) {
-          case UniversalScenario.asyncChain:
-            for (int chain = 1; chain <= chainCount; chain++) {
-              for (int level = 1; level <= nestingDepth; level++) {
-                final prevDepName = '${chain}_${level - 1}';
-                final depName = '${chain}_$level';
-                final dep = scope.dep<UniversalService>(
-                  () => UniversalServiceImpl(
-                    value: depName,
-                    dependency: level > 1
-                        ? scope.depFor<UniversalService>(name: prevDepName).get
-                        : null,
-                  ),
-                  name: depName,
-                );
-                scope.register<UniversalService>(dep, name: depName);
-              }
-            }
-            break;
           case UniversalScenario.register:
             final dep = scope.dep<UniversalService>(
               () => UniversalServiceImpl(value: 'reg', dependency: null),
@@ -112,6 +98,8 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
             break;
           case UniversalScenario.override:
             // handled at benchmark level
+            break;
+          default:
             break;
         }
         if (scenario == UniversalScenario.chain ||

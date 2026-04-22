@@ -25,7 +25,11 @@ class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
       bindingMode: mode,
       scenario: UniversalScenario.asyncChain,
     ));
+  }
+
+  Future<void> prewarm() async {
     await di.waitForAsyncReady();
+    await run();
   }
 
   @override
