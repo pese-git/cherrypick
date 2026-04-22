@@ -4,14 +4,14 @@ import 'package:benchmark_di/scenarios/universal_service.dart';
 import 'package:get_it/get_it.dart';
 import 'di_adapter.dart';
 
-/// Универсальный DIAdapter для GetIt c поддержкой scopes и строгой типизацией.
+/// DIAdapter for GetIt with scope support and strict typing.
 class GetItAdapter extends DIAdapter<GetIt> {
   late GetIt _getIt;
   final String? _scopeName;
   final bool _isSubScope;
   bool _scopePushed = false;
 
-  /// Основной (root) и subScope-конструкторы.
+  /// Root and subScope constructors.
   GetItAdapter({GetIt? instance, String? scopeName, bool isSubScope = false})
       : _scopeName = scopeName,
         _isSubScope = isSubScope {
@@ -23,7 +23,7 @@ class GetItAdapter extends DIAdapter<GetIt> {
   @override
   void setupDependencies(void Function(GetIt container) registration) {
     if (_isSubScope) {
-      // Создаём scope через pushNewScope с init
+      // Create scope via pushNewScope with init
       _getIt.pushNewScope(
         scopeName: _scopeName,
         init: (getIt) => registration(getIt),
@@ -41,7 +41,7 @@ class GetItAdapter extends DIAdapter<GetIt> {
 
   @override
   Future<T> resolveAsync<T extends Object>({String? named}) async =>
-      _getIt<T>(instanceName: named);
+      _getIt.getAsync<T>(instanceName: named);
 
   @override
   void teardown() {
@@ -92,8 +92,13 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.register:
-            getIt.registerSingleton<UniversalService>(
-                UniversalServiceImpl(value: 'reg', dependency: null));
+            if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
+              getIt.registerLazySingleton<UniversalService>(
+                  () => UniversalServiceImpl(value: 'reg', dependency: null));
+            } else {
+              getIt.registerSingleton<UniversalService>(
+                  UniversalServiceImpl(value: 'reg', dependency: null));
+            }
             break;
           case UniversalScenario.named:
             getIt.registerFactory<UniversalService>(
@@ -112,6 +117,17 @@ class GetItAdapter extends DIAdapter<GetIt> {
                   case UniversalBindingMode.singletonStrategy:
                     getIt.registerSingleton<UniversalService>(
                       UniversalServiceImpl(
+                        value: depName,
+                        dependency: level > 1
+                            ? getIt<UniversalService>(instanceName: prevDepName)
+                            : null,
+                      ),
+                      instanceName: depName,
+                    );
+                    break;
+                  case UniversalBindingMode.lazySingletonStrategy:
+                    getIt.registerLazySingleton<UniversalService>(
+                      () => UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
                             ? getIt<UniversalService>(instanceName: prevDepName)
@@ -154,9 +170,15 @@ class GetItAdapter extends DIAdapter<GetIt> {
         if (scenario == UniversalScenario.chain ||
             scenario == UniversalScenario.override) {
           final depName = '${chainCount}_$nestingDepth';
-          getIt.registerSingleton<UniversalService>(
-            getIt<UniversalService>(instanceName: depName),
-          );
+          if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
+            getIt.registerLazySingleton<UniversalService>(
+              () => getIt<UniversalService>(instanceName: depName),
+            );
+          } else {
+            getIt.registerSingleton<UniversalService>(
+              getIt<UniversalService>(instanceName: depName),
+            );
+          }
         }
       };
     }

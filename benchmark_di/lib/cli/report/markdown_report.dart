@@ -8,6 +8,7 @@ class MarkdownReport extends ReportGenerator {
   @override
   final List<String> keys = [
     'benchmark',
+    'phase',
     'chainCount',
     'nestingDepth',
     'mean_us',
@@ -24,7 +25,9 @@ class MarkdownReport extends ReportGenerator {
   /// Friendly display names for each benchmark type.
   static const nameMap = {
     'Universal_UniversalBenchmark.registerSingleton': 'RegisterSingleton',
+    'Universal_UniversalBenchmark.registerLazySingleton': 'RegisterLazySingleton',
     'Universal_UniversalBenchmark.chainSingleton': 'ChainSingleton',
+    'Universal_UniversalBenchmark.chainLazySingleton': 'ChainLazySingleton',
     'Universal_UniversalBenchmark.chainFactory': 'ChainFactory',
     'Universal_UniversalBenchmark.chainAsync': 'AsyncChain',
     'Universal_UniversalBenchmark.named': 'Named',
@@ -36,6 +39,7 @@ class MarkdownReport extends ReportGenerator {
   String render(List<Map<String, dynamic>> rows) {
     final headers = [
       'Benchmark',
+      'Phase',
       'Chain Count',
       'Depth',
       'Mean (us)',
@@ -52,6 +56,7 @@ class MarkdownReport extends ReportGenerator {
       final readableName = nameMap[r['benchmark']] ?? r['benchmark'];
       return [
         readableName,
+        r['phase'],
         r['chainCount'],
         r['nestingDepth'],
         r['mean_us'],
@@ -82,6 +87,7 @@ class MarkdownReport extends ReportGenerator {
     final legend = '''
       > **Legend:**  
       > `Benchmark` – Test name  
+      > `Phase` – `firstResolve` or `steadyStateResolve`  
       > `Chain Count` – Number of independent chains  
       > `Depth` – Depth of each chain  
       > `Mean (us)` – Average time per run (microseconds)  
