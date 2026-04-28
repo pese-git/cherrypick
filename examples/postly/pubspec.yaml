@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cherrypick: any
+  cherrypick: ^3.0.3
   cherrypick_annotations: ^4.0.0-dev.0
   
   dio: ^5.4.0
@@ -27,7 +27,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   talker_flutter: ^5.0.0
-  talker_cherrypick_logger: any
+  talker_cherrypick_logger: ^3.0.3
   talker_dio_logger: ^5.0.0
   talker_bloc_logger: ^5.0.0
   
@@ -38,7 +38,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   build_runner: ^2.5.0
-  cherrypick_generator: ^4.0.0-dev.0
+  cherrypick_generator: ^4.0.0-dev.1
   
   json_serializable: ^6.9.0
   retrofit_generator: ^10.0.5
