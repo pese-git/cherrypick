@@ -65,6 +65,8 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     Element2 element,
   ) {
     final buffer = StringBuffer();
+    final location = _safeLocation(element);
+    final enclosing = _safeEnclosingDisplayName(element);
 
     // Header with category
     buffer.writeln('[$category] $message');
@@ -74,18 +76,11 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     buffer.writeln('Context:');
     buffer.writeln('  Element: ${element.displayName}');
     buffer.writeln('  Type: ${element.runtimeType}');
-    buffer.writeln(
-      '  Location: ${element.firstFragment.libraryFragment?.source.fullName ?? 'unknown'}',
-    );
+    buffer.writeln('  Location: $location');
 
     // Try to show enclosing element info for extra context
-    try {
-      final enclosing = (element as dynamic).enclosingElement;
-      if (enclosing != null) {
-        buffer.writeln('  Enclosing: ${enclosing.displayName}');
-      }
-    } catch (e) {
-      // Ignore if enclosingElement is not available
+    if (enclosing != null) {
+      buffer.writeln('  Enclosing: $enclosing');
     }
 
     // Arbitrary user context
@@ -104,6 +99,34 @@ class CherryPickGeneratorException extends InvalidGenerationSourceError {
     }
 
     return buffer.toString();
+  }
+
+  /// Best-effort extraction of element location for diagnostics.
+  ///
+  /// Some tests use lightweight mocks for [Element2] that don't implement
+  /// analyzer fragment APIs, so this method must never throw.
+  static String _safeLocation(Element2 element) {
+    try {
+      return element.firstFragment.libraryFragment?.source.fullName ??
+          'unknown';
+    } catch (_) {
+      return 'unknown';
+    }
+  }
+
+  /// Best-effort extraction of enclosing element display name.
+  ///
+  /// Accessed via dynamic to stay compatible with analyzer API differences.
+  static String? _safeEnclosingDisplayName(Element2 element) {
+    try {
+      final enclosing = (element as dynamic).enclosingElement;
+      if (enclosing == null) return null;
+      final name = enclosing.displayName;
+      if (name is String && name.isNotEmpty) return name;
+      return enclosing.toString();
+    } catch (_) {
+      return null;
+    }
   }
 }
 
