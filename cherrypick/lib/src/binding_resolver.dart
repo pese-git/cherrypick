@@ -28,10 +28,10 @@ typedef Instance<T> = FutureOr<T>;
 ///
 /// Example:
 /// ```dart
-/// Provider<MyService> provider = () => MyService();
-/// Provider<Api> asyncProvider = () async => await Api.connect();
+/// ProviderFactory<MyService> provider = () => MyService();
+/// ProviderFactory<Api> asyncProvider = () async => await Api.connect();
 /// ```
-typedef Provider<T> = FutureOr<T> Function();
+typedef ProviderFactory<T> = FutureOr<T> Function();
 
 /// Provider function type that accepts a dynamic parameter, for factory/parametrized injection.
 /// Returns [T] or [Future<T>].
