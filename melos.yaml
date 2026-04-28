@@ -21,19 +21,19 @@ scripts:
     description: |
       Очищает build артефакты flutter и сгенерированный код во всех пакетах.
 
-#  all:
-#    steps:
-#      - codegen
-#      - analyze
-#      - format
-#      - test
-#    description: Run all steps.
+  all:
+    steps:
+      - codegen
+      - analyze
+      - format
+      - test
+    description: Run all steps.
 
-#  lint:all:
-#    steps:
-#      - analyze
-#      - format
-#    description: Run all static analysis checks.
+  lint:all:
+    steps:
+      - analyze
+      - format
+    description: Run all static analysis checks.
 
   analyze:
     exec: dart analyze
@@ -41,11 +41,11 @@ scripts:
   format:
     exec: dart format lib
 
-#  test:
-#    steps:
-#      - test:dart
-#      - test:flutter
-#    description: Run all tests.
+  test:
+    steps:
+      - test:dart
+      - test:flutter
+    description: Run all tests.
 
   test:dart:
     description: "Run tests for Dart packages only"
