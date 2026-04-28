@@ -26,6 +26,8 @@ dependencies:
   build: ^3.0.0
   source_gen: ^4.2.0
   collection: ^1.18.0
+  package_config: ^2.2.0
+  build_runner_core: ^9.3.1
 
 dev_dependencies:
   lints: ^6.0.0
