@@ -57,41 +57,47 @@ void main() {
   tearDown(() => CherryPick.closeRootScope());
 
   group('SilentCherryPickObserver fast-path', () {
-    test('resolve with default silent observer uses fast-path', () {
-      final scope = CherryPick.openSafeRootScope();
-      scope.installModules([_IntModule(42)]);
+    late Scope scope;
 
-      final result = scope.resolve<int>();
-      expect(result, 42);
+    setUp(() {
+      // Must NOT have cycle detection — otherwise _canUseDirectResolvePath is false
+      // and the fast-path branch is never taken.
+      CherryPick.disableGlobalCycleDetection();
+      scope = CherryPick.openRootScope();
+    });
+
+    test('resolve with default silent observer uses fast-path', () {
+      scope.installModules([_IntModule(42)]);
+      expect(scope.resolve<int>(), 42);
     });
 
     test('resolveAsync with default silent observer uses fast-path', () async {
-      final scope = CherryPick.openSafeRootScope();
       scope.installModules([_IntModule(42)]);
-
       final result = await scope.resolveAsync<int>();
       expect(result, 42);
     });
 
     test('tryResolve with default silent observer uses fast-path', () {
-      final scope = CherryPick.openSafeRootScope();
       scope.installModules([_IntModule(42)]);
-
-      final result = scope.tryResolve<int>();
-      expect(result, 42);
+      expect(scope.tryResolve<int>(), 42);
     });
 
     test('tryResolveAsync with default silent observer uses fast-path',
         () async {
-      final scope = CherryPick.openSafeRootScope();
       scope.installModules([_IntModule(42)]);
-
       final result = await scope.tryResolveAsync<int>();
       expect(result, 42);
     });
 
+    test('fast-path missing dependency throws', () {
+      expect(() => scope.resolve<int>(), throwsStateError);
+    });
+
+    test('fast-path missing async dependency throws', () {
+      expect(scope.resolveAsync<int>(), throwsA(isA<StateError>()));
+    });
+
     test('installModules with silent observer skips diagnostics', () {
-      final scope = CherryPick.openSafeRootScope();
       var buildCalls = 0;
       scope.installModules([_IntModule(42, onBuild: () => buildCalls++)]);
       expect(buildCalls, 1);
@@ -99,7 +105,6 @@ void main() {
     });
 
     test('Disposable is tracked even in silent observer fast-path', () async {
-      final scope = CherryPick.openSafeRootScope();
       scope.installModules([_DisposableModule()]);
 
       final service = scope.resolve<_DisposableService>();
