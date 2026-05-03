@@ -20,7 +20,6 @@ import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
 import 'package:cherrypick/src/observer.dart';
 
-
 /// Represents a DI scope (container) for modules, subscopes,
 /// and dependency resolution (sync/async) in CherryPick.
 ///
