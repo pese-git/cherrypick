@@ -6,6 +6,7 @@ class CsvReport extends ReportGenerator {
   @override
   final List<String> keys = [
     'benchmark',
+    'phase',
     'chainCount',
     'nestingDepth',
     'mean_us',

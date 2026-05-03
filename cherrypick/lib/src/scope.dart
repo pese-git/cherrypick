@@ -19,7 +19,6 @@ import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
 import 'package:cherrypick/src/observer.dart';
-// import 'package:cherrypick/src/log_format.dart';
 
 /// Represents a DI scope (container) for modules, subscopes,
 /// and dependency resolution (sync/async) in CherryPick.
@@ -60,6 +59,13 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   @override
   CherryPickObserver get observer => _observer;
 
+  bool get _isSilentObserver => _observer is SilentCherryPickObserver;
+
+  bool get _canUseDirectResolvePath =>
+      _isSilentObserver &&
+      !isCycleDetectionEnabled &&
+      !isGlobalCycleDetectionEnabled;
+
   /// COLLECTS all resolved instances that implement [Disposable].
   final Set<Disposable> _disposables = HashSet();
 
@@ -71,21 +77,23 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   Scope(this._parentScope, {required CherryPickObserver observer})
       : _observer = observer {
     setScopeId(_generateScopeId());
-    observer.onScopeOpened(scopeId ?? 'NO_ID');
-    observer.onDiagnostic(
-      'Scope created: ${scopeId ?? 'NO_ID'}',
-      details: {
-        'type': 'Scope',
-        'name': scopeId ?? 'NO_ID',
-        if (_parentScope?.scopeId != null) 'parent': _parentScope!.scopeId,
-        'description': 'scope created',
-      },
-    );
+    if (!_isSilentObserver) {
+      observer.onScopeOpened(scopeId ?? 'NO_ID');
+      observer.onDiagnostic(
+        'Scope created: ${scopeId ?? 'NO_ID'}',
+        details: {
+          'type': 'Scope',
+          'name': scopeId ?? 'NO_ID',
+          if (_parentScope?.scopeId != null) 'parent': _parentScope!.scopeId,
+          'description': 'scope created',
+        },
+      );
+    }
   }
 
   final Set<Module> _modulesList = HashSet();
 
-  // индекс для мгновенного поиска binding’ов
+  // index for fast binding lookup
   final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
 
   /// Generates a unique identifier string for this scope instance.
@@ -119,16 +127,18 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         childScope.enableGlobalCycleDetection();
       }
       _scopeMap[name] = childScope;
-      observer.onDiagnostic(
-        'SubScope created: $name',
-        details: {
-          'type': 'SubScope',
-          'name': name,
-          'id': childScope.scopeId,
-          if (scopeId != null) 'parent': scopeId,
-          'description': 'subscope created',
-        },
-      );
+      if (!_isSilentObserver) {
+        observer.onDiagnostic(
+          'SubScope created: $name',
+          details: {
+            'type': 'SubScope',
+            'name': name,
+            'id': childScope.scopeId,
+            if (scopeId != null) 'parent': scopeId,
+            'description': 'subscope created',
+          },
+        );
+      }
     }
     return _scopeMap[name]!;
   }
@@ -149,17 +159,19 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
       }
-      observer.onScopeClosed(childScope.scopeId ?? name);
-      observer.onDiagnostic(
-        'SubScope closed: $name',
-        details: {
-          'type': 'SubScope',
-          'name': name,
-          'id': childScope.scopeId,
-          if (scopeId != null) 'parent': scopeId,
-          'description': 'subscope closed',
-        },
-      );
+      if (!_isSilentObserver) {
+        observer.onScopeClosed(childScope.scopeId ?? name);
+        observer.onDiagnostic(
+          'SubScope closed: $name',
+          details: {
+            'type': 'SubScope',
+            'name': name,
+            'id': childScope.scopeId,
+            if (scopeId != null) 'parent': scopeId,
+            'description': 'subscope closed',
+          },
+        );
+      }
     }
     _scopeMap.remove(name);
   }
@@ -175,30 +187,34 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
-    if (modules.isNotEmpty) {
+    if (!_isSilentObserver && modules.isNotEmpty) {
       observer.onModulesInstalled(
         modules.map((m) => m.runtimeType.toString()).toList(),
         scopeName: scopeId,
       );
     }
     for (var module in modules) {
-      observer.onDiagnostic(
-        'Module installed: ${module.runtimeType}',
-        details: {
-          'type': 'Module',
-          'name': module.runtimeType.toString(),
-          'scope': scopeId,
-          'description': 'module installed',
-        },
-      );
+      if (!_isSilentObserver) {
+        observer.onDiagnostic(
+          'Module installed: ${module.runtimeType}',
+          details: {
+            'type': 'Module',
+            'name': module.runtimeType.toString(),
+            'scope': scopeId,
+            'description': 'module installed',
+          },
+        );
+      }
       module.builder(this);
       // Associate bindings with this scope's observer
       for (final binding in module.bindingSet) {
         binding.observer = observer;
-        binding.logAllDeferred();
+        if (!_isSilentObserver) {
+          binding.logAllDeferred();
+        }
       }
+      _addModuleToIndex(module);
     }
-    _rebuildResolversIndex();
     return this;
   }
 
@@ -212,20 +228,22 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// testScope.dropModules();
   /// ```
   Scope dropModules() {
-    if (_modulesList.isNotEmpty) {
+    if (!_isSilentObserver && _modulesList.isNotEmpty) {
       observer.onModulesRemoved(
         _modulesList.map((m) => m.runtimeType.toString()).toList(),
         scopeName: scopeId,
       );
     }
-    observer.onDiagnostic(
-      'Modules dropped for scope: $scopeId',
-      details: {
-        'type': 'Scope',
-        'name': scopeId,
-        'description': 'modules dropped',
-      },
-    );
+    if (!_isSilentObserver) {
+      observer.onDiagnostic(
+        'Modules dropped for scope: $scopeId',
+        details: {
+          'type': 'Scope',
+          'name': scopeId,
+          'description': 'modules dropped',
+        },
+      );
+    }
     _modulesList.clear();
     _rebuildResolversIndex();
     return this;
@@ -242,6 +260,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// final special = scope.resolve<Service>(named: 'special');
   /// ```
   T resolve<T>({String? named, dynamic params}) {
+    if (_canUseDirectResolvePath) {
+      final result = _tryResolveInternal<T>(named: named, params: params);
+      if (result == null) {
+        throw StateError(
+            'Can\'t resolve dependency `$T`. Maybe you forget register it?');
+      }
+      if (result is Disposable) _disposables.add(result);
+      return result;
+    }
+
     observer.onInstanceRequested(T.toString(), T, scopeName: scopeId);
     T result;
     if (isGlobalCycleDetectionEnabled) {
@@ -315,6 +343,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// final maybeDb = scope.tryResolve<Database>();
   /// ```
   T? tryResolve<T>({String? named, dynamic params}) {
+    if (_canUseDirectResolvePath) {
+      final result = _tryResolveInternal<T>(named: named, params: params);
+      if (result != null && result is Disposable) _disposables.add(result);
+      return result;
+    }
+
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = withGlobalCycleDetection<T?>(T, named, () {
@@ -358,6 +392,21 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// final special = await scope.resolveAsync<Service>(named: "special");
   /// ```
   Future<T> resolveAsync<T>({String? named, dynamic params}) async {
+    if (_canUseDirectResolvePath) {
+      final result =
+          await _tryResolveAsyncInternal<T>(named: named, params: params);
+      if (result == null) {
+        throw StateError(
+            "Can't resolve async dependency `$T`. Maybe you forget register it?");
+      }
+      if (result is Disposable) _disposables.add(result);
+      return result;
+    }
+    return _resolveAsyncWithObserverPath<T>(named: named, params: params);
+  }
+
+  Future<T> _resolveAsyncWithObserverPath<T>(
+      {String? named, dynamic params}) async {
     T result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T>>(T, named, () async {
@@ -413,6 +462,17 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// final user = await scope.tryResolveAsync<User>();
   /// ```
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
+    if (_canUseDirectResolvePath) {
+      final result =
+          await _tryResolveAsyncInternal<T>(named: named, params: params);
+      if (result != null && result is Disposable) _disposables.add(result);
+      return result;
+    }
+    return _tryResolveAsyncWithObserverPath<T>(named: named, params: params);
+  }
+
+  Future<T?> _tryResolveAsyncWithObserverPath<T>(
+      {String? named, dynamic params}) async {
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T?>>(T, named, () async {
@@ -441,12 +501,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
-  Future<T?> _tryResolveAsyncInternal<T>(
-      {String? named, dynamic params}) async {
+  Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) {
     final resolver = _findBindingResolver<T>(named);
     // 1 - Try from own modules; 2 - Fallback to parent
     return resolver?.resolveAsync(params) ??
-        _parentScope?.tryResolveAsync(named: named, params: params);
+        _parentScope?.tryResolveAsync(named: named, params: params) ??
+        Future<T?>.value(null);
   }
 
   /// Looks up the [BindingResolver] for [T] and [named] within this scope.
@@ -454,23 +514,27 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   BindingResolver<T>? _findBindingResolver<T>(String? named) =>
       _bindingResolvers[T]?[named] as BindingResolver<T>?;
 
+  void _addModuleToIndex(Module module) {
+    for (var binding in module.bindingSet) {
+      _bindingResolvers.putIfAbsent(binding.key, () => {});
+      final nameKey = binding.isNamed ? binding.name : null;
+      _bindingResolvers[binding.key]![nameKey] = binding.resolver!;
+    }
+  }
+
   /// Rebuilds the internal index of all [BindingResolver]s from installed modules.
-  /// Called after [installModules] and [dropModules]. Internal use only.
+  /// Called after [dropModules]. Internal use only.
   void _rebuildResolversIndex() {
     _bindingResolvers.clear();
     for (var module in _modulesList) {
-      for (var binding in module.bindingSet) {
-        _bindingResolvers.putIfAbsent(binding.key, () => {});
-        final nameKey = binding.isNamed ? binding.name : null;
-        _bindingResolvers[binding.key]![nameKey] = binding.resolver!;
-      }
+      _addModuleToIndex(module);
     }
   }
 
   /// Tracks resolved [Disposable] instances, to ensure dispose is called automatically.
   /// Internal use only.
   void _trackDisposable(Object? obj) {
-    if (obj is Disposable && !_disposables.contains(obj)) {
+    if (obj is Disposable) {
       _disposables.add(obj);
     }
   }
@@ -487,14 +551,14 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   Future<void> dispose() async {
     // Create copies to avoid concurrent modification
-    final scopesCopy = Map<String, Scope>.from(_scopeMap);
-    for (final subScope in scopesCopy.values) {
+    final scopes = _scopeMap.values.toList();
+    for (final subScope in scopes) {
       await subScope.dispose();
     }
     _scopeMap.clear();
 
-    final disposablesCopy = Set<Disposable>.from(_disposables);
-    for (final d in disposablesCopy) {
+    final disposables = _disposables.toList();
+    for (final d in disposables) {
       await d.dispose();
     }
     _disposables.clear();

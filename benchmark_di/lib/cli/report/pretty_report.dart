@@ -8,6 +8,7 @@ class PrettyReport extends ReportGenerator {
   @override
   final List<String> keys = [
     'benchmark',
+    'phase',
     'chainCount',
     'nestingDepth',
     'mean_us',
@@ -24,7 +25,9 @@ class PrettyReport extends ReportGenerator {
   /// Mappings from internal benchmark IDs to display names.
   static const nameMap = {
     'Universal_UniversalBenchmark.registerSingleton': 'RegisterSingleton',
+    'Universal_UniversalBenchmark.registerLazySingleton': 'RegisterLazySingleton',
     'Universal_UniversalBenchmark.chainSingleton': 'ChainSingleton',
+    'Universal_UniversalBenchmark.chainLazySingleton': 'ChainLazySingleton',
     'Universal_UniversalBenchmark.chainFactory': 'ChainFactory',
     'Universal_UniversalBenchmark.chainAsync': 'AsyncChain',
     'Universal_UniversalBenchmark.named': 'Named',
@@ -36,6 +39,7 @@ class PrettyReport extends ReportGenerator {
   String render(List<Map<String, dynamic>> rows) {
     final headers = [
       'Benchmark',
+      'Phase',
       'Chain Count',
       'Depth',
       'Mean (us)',
@@ -53,6 +57,7 @@ class PrettyReport extends ReportGenerator {
       final readableName = nameMap[r['benchmark']] ?? r['benchmark'];
       return [
         readableName,
+        r['phase'],
         r['chainCount'],
         r['nestingDepth'],
         r['mean_us'],

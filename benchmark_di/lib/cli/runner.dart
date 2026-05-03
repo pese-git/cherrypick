@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:benchmark_di/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
+import 'package:benchmark_di/cli/parser.dart';
 
 /// Holds the results for a single benchmark execution.
 class BenchmarkResult {
@@ -50,17 +51,24 @@ class BenchmarkRunner {
     required UniversalChainBenchmark benchmark,
     required int warmups,
     required int repeats,
+    required ResolvePhase phase,
   }) async {
     final timings = <num>[];
     final rssValues = <int>[];
     for (int i = 0; i < warmups; i++) {
       benchmark.setup();
+      if (phase == ResolvePhase.steadyStateResolve) {
+        benchmark.prewarm();
+      }
       benchmark.run();
       benchmark.teardown();
     }
     final memBefore = ProcessInfo.currentRss;
     for (int i = 0; i < repeats; i++) {
       benchmark.setup();
+      if (phase == ResolvePhase.steadyStateResolve) {
+        benchmark.prewarm();
+      }
       final sw = Stopwatch()..start();
       benchmark.run();
       sw.stop();
@@ -78,17 +86,24 @@ class BenchmarkRunner {
     required UniversalChainAsyncBenchmark benchmark,
     required int warmups,
     required int repeats,
+    required ResolvePhase phase,
   }) async {
     final timings = <num>[];
     final rssValues = <int>[];
     for (int i = 0; i < warmups; i++) {
       await benchmark.setup();
+      if (phase == ResolvePhase.steadyStateResolve) {
+        await benchmark.prewarm();
+      }
       await benchmark.run();
       await benchmark.teardown();
     }
     final memBefore = ProcessInfo.currentRss;
     for (int i = 0; i < repeats; i++) {
       await benchmark.setup();
+      if (phase == ResolvePhase.steadyStateResolve) {
+        await benchmark.prewarm();
+      }
       final sw = Stopwatch()..start();
       await benchmark.run();
       sw.stop();

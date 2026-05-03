@@ -6,11 +6,17 @@ import 'package:benchmark_di/scenarios/universal_scenario.dart';
 
 /// Enum describing all supported Universal DI benchmark types.
 enum UniversalBenchmark {
-  /// Simple singleton registration benchmark
+  /// Simple singleton registration benchmark (eager, where supported)
   registerSingleton,
 
-  /// Chain of singleton dependencies
+  /// Simple lazy singleton registration benchmark
+  registerLazySingleton,
+
+  /// Chain of eager singleton dependencies
   chainSingleton,
+
+  /// Chain of lazy singleton dependencies
+  chainLazySingleton,
 
   /// Chain using factories
   chainFactory,
@@ -25,12 +31,19 @@ enum UniversalBenchmark {
   override,
 }
 
+enum ResolvePhase {
+  firstResolve,
+  steadyStateResolve,
+}
+
 /// Maps [UniversalBenchmark] to the scenario enum for DI chains.
 UniversalScenario toScenario(UniversalBenchmark b) {
   switch (b) {
     case UniversalBenchmark.registerSingleton:
+    case UniversalBenchmark.registerLazySingleton:
       return UniversalScenario.register;
     case UniversalBenchmark.chainSingleton:
+    case UniversalBenchmark.chainLazySingleton:
       return UniversalScenario.chain;
     case UniversalBenchmark.chainFactory:
       return UniversalScenario.chain;
@@ -43,21 +56,21 @@ UniversalScenario toScenario(UniversalBenchmark b) {
   }
 }
 
-/// Maps benchmark to registration mode (singleton/factory/async).
+/// Maps benchmark to registration mode (singleton/lazySingleton/factory/async).
 UniversalBindingMode toMode(UniversalBenchmark b) {
   switch (b) {
     case UniversalBenchmark.registerSingleton:
-      return UniversalBindingMode.singletonStrategy;
     case UniversalBenchmark.chainSingleton:
+    case UniversalBenchmark.named:
+    case UniversalBenchmark.override:
       return UniversalBindingMode.singletonStrategy;
+    case UniversalBenchmark.registerLazySingleton:
+    case UniversalBenchmark.chainLazySingleton:
+      return UniversalBindingMode.lazySingletonStrategy;
     case UniversalBenchmark.chainFactory:
       return UniversalBindingMode.factoryStrategy;
     case UniversalBenchmark.chainAsync:
       return UniversalBindingMode.asyncStrategy;
-    case UniversalBenchmark.named:
-      return UniversalBindingMode.singletonStrategy;
-    case UniversalBenchmark.override:
-      return UniversalBindingMode.singletonStrategy;
   }
 }
 
@@ -98,6 +111,10 @@ class BenchmarkCliConfig {
 
   /// Name of DI implementation ("cherrypick" or "getit")
   final String di;
+
+  /// Which resolve phase(s) to measure.
+  final List<ResolvePhase> phases;
+
   BenchmarkCliConfig({
     required this.benchesToRun,
     required this.chainCounts,
@@ -106,6 +123,7 @@ class BenchmarkCliConfig {
     required this.warmups,
     required this.format,
     required this.di,
+    required this.phases,
   });
 }
 
@@ -119,6 +137,8 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('repeat', abbr: 'r', defaultsTo: '2')
     ..addOption('warmup', abbr: 'w', defaultsTo: '1')
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
+    ..addOption('resolvePhase',
+        defaultsTo: 'all', help: 'Resolve phase: first, steady, or all')
     ..addOption('di',
         defaultsTo: 'cherrypick',
         help: 'DI implementation: cherrypick, getit or riverpod')
@@ -128,12 +148,39 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     print(parser.usage);
     exit(0);
   }
-  final benchName = result['benchmark'] as String;
-  final isAll = benchName == 'all';
+  final benchNameInput = result['benchmark'] as String;
+  final isAll = benchNameInput.trim() == 'all';
   final allBenches = UniversalBenchmark.values;
+
+  String normalizeBenchName(String name) {
+    final n = name.trim().toLowerCase();
+    return switch (n) {
+      'register' || 'registersingleton' || 'registereager' => 'registerSingleton',
+      'registerlazy' || 'registerlazysingleton' || 'registerlazysingle' => 'registerLazySingleton',
+      'chain' || 'chainsingleton' || 'chaineager' => 'chainSingleton',
+      'chainlazy' || 'chainlazysingleton' || 'lazysingleton' => 'chainLazySingleton',
+      'chainfactory' || 'factory' => 'chainFactory',
+      'async' || 'asyncchain' || 'chainasync' => 'chainAsync',
+      'named' => 'named',
+      'override' => 'override',
+      _ => n,
+    };
+  }
+
   final benchesToRun = isAll
       ? allBenches
-      : [parseEnum(benchName, allBenches, UniversalBenchmark.chainSingleton)];
+      : benchNameInput
+          .split(',')
+          .map((n) => parseEnum(normalizeBenchName(n), allBenches,
+              UniversalBenchmark.chainSingleton))
+          .toSet()
+          .toList();
+  final phaseName = (result['resolvePhase'] as String).toLowerCase();
+  final phases = switch (phaseName) {
+    'first' => [ResolvePhase.firstResolve],
+    'steady' => [ResolvePhase.steadyStateResolve],
+    _ => ResolvePhase.values,
+  };
   return BenchmarkCliConfig(
     benchesToRun: benchesToRun,
     chainCounts: parseIntList(result['chainCount'] as String),
@@ -142,5 +189,6 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     warmups: int.tryParse(result['warmup'] as String? ?? "") ?? 1,
     format: result['format'] as String,
     di: result['di'] as String? ?? 'cherrypick',
+    phases: phases,
   );
 }

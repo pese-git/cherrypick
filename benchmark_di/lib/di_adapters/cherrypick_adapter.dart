@@ -59,11 +59,16 @@ class UniversalChainModule extends Module {
 
     switch (scenario) {
       case UniversalScenario.register:
-        // Simple singleton registration.
-        bind<UniversalService>()
-            .toProvide(
-                () => UniversalServiceImpl(value: 'reg', dependency: null))
-            .singleton();
+        if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
+          bind<UniversalService>()
+              .toProvide(
+                  () => UniversalServiceImpl(value: 'reg', dependency: null))
+              .singleton();
+        } else {
+          bind<UniversalService>()
+              .toInstance(
+                  UniversalServiceImpl(value: 'reg', dependency: null));
+        }
         break;
       case UniversalScenario.named:
         // Named factory registration for two distinct objects.
@@ -76,6 +81,8 @@ class UniversalChainModule extends Module {
         break;
       case UniversalScenario.chain:
         // Chain of nested services, with dependency on previous level by name.
+        UniversalService? lastEagerInstance;
+        final Map<String, UniversalService> eagerInstances = {};
         for (var chainIndex = 0; chainIndex < chainCount; chainIndex++) {
           for (var levelIndex = 0; levelIndex < nestingDepth; levelIndex++) {
             final chain = chainIndex + 1;
@@ -84,6 +91,17 @@ class UniversalChainModule extends Module {
             final depName = '${chain}_$level';
             switch (bindingMode) {
               case UniversalBindingMode.singletonStrategy:
+                final instance = UniversalServiceImpl(
+                  value: depName,
+                  dependency: eagerInstances[prevDepName],
+                );
+                bind<UniversalService>()
+                    .toInstance(instance)
+                    .withName(depName);
+                eagerInstances[depName] = instance;
+                lastEagerInstance = instance;
+                break;
+              case UniversalBindingMode.lazySingletonStrategy:
                 bind<UniversalService>()
                     .toProvide(() => UniversalServiceImpl(
                           value: depName,
@@ -116,15 +134,19 @@ class UniversalChainModule extends Module {
             }
           }
         }
-        // Регистрация алиаса без имени (на последний элемент цепочки)
-        final depName = '${chainCount}_$nestingDepth';
-        bind<UniversalService>()
-            .toProvide(
-                () => currentScope.resolve<UniversalService>(named: depName))
-            .singleton();
+        // Register unnamed alias for the last chain element.
+        if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
+          final depName = '${chainCount}_$nestingDepth';
+          bind<UniversalService>()
+              .toProvide(
+                  () => currentScope.resolve<UniversalService>(named: depName))
+              .singleton();
+        } else if (lastEagerInstance != null) {
+          bind<UniversalService>().toInstance(lastEagerInstance);
+        }
         break;
       case UniversalScenario.override:
-        // handled at benchmark level, но алиас нужен прямо в этом scope!
+        // Handled at benchmark level, but alias is needed directly in this scope.
         final depName = '${chainCount}_$nestingDepth';
         bind<UniversalService>()
             .toProvide(
@@ -189,7 +211,7 @@ class CherrypickDIAdapter extends DIAdapter<Scope> {
       await CherryPick.closeRootScope();
       _scope = null;
     }
-    // SubScope teardown не требуется
+    // SubScope teardown is handled by the parent scope.
   }
 
   @override
