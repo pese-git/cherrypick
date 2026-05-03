@@ -233,7 +233,7 @@ class Binding<T> {
   ///
   /// Prefer this over [toProvide] when the provider is async, so the resolver
   /// is type-safe and avoids runtime detection overhead.
-  Binding<T> toProvideAsync(AsyncProvider<T> value) {
+  Binding<T> toProvideAsync(AsyncProviderFactory<T> value) {
     _resolver = ProviderResolver.async<T>(value);
     return this;
   }
@@ -242,7 +242,7 @@ class Binding<T> {
   ///
   /// Prefer this over [toProvideWithParams] when the provider is async, so the resolver
   /// is type-safe and avoids runtime detection overhead.
-  Binding<T> toProvideAsyncWithParams(AsyncProviderWithParams<T> value) {
+  Binding<T> toProvideAsyncWithParams(AsyncProviderFactoryWithParams<T> value) {
     _resolver = ProviderResolver.asyncWithParams<T>(value);
     return this;
   }

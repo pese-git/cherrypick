@@ -14,16 +14,16 @@
 import 'dart:async';
 
 /// Synchronous factory: `T Function()`.
-typedef Provider<T> = T Function();
+typedef ProviderFactory<T> = T Function();
 
 /// Parameterized synchronous factory: `T Function(dynamic)`.
-typedef ProviderWithParams<T> = T Function(dynamic);
+typedef ProviderFactoryWithParams<T> = T Function(dynamic);
 
 /// Asynchronous factory: `Future<T> Function()`.
-typedef AsyncProvider<T> = Future<T> Function();
+typedef AsyncProviderFactory<T> = Future<T> Function();
 
 /// Parameterized asynchronous factory: `Future<T> Function(dynamic)`.
-typedef AsyncProviderWithParams<T> = Future<T> Function(dynamic);
+typedef AsyncProviderFactoryWithParams<T> = Future<T> Function(dynamic);
 
 /// Internal interface for resolvers managed by [Binding].
 abstract class BindingResolver<T> {
@@ -88,7 +88,7 @@ abstract class _BaseProviderResolver<T> implements BindingResolver<T> {
 
 /// Resolves [Binding.toProvide] with a sync `T Function()` provider.
 class SyncProviderResolver<T> extends _BaseProviderResolver<T> {
-  final Provider<T> _provider;
+  final ProviderFactory<T> _provider;
   Object? _cached;
   bool _isCached = false;
 
@@ -113,7 +113,7 @@ class SyncProviderResolver<T> extends _BaseProviderResolver<T> {
 
 /// Resolves [Binding.toProvideWithParams] with a sync `T Function(dynamic)` provider.
 class SyncProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
-  final ProviderWithParams<T> _provider;
+  final ProviderFactoryWithParams<T> _provider;
   Object? _cached;
   bool _isCached = false;
 
@@ -142,7 +142,7 @@ class SyncProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
 
 /// Resolves [Binding.toProvide] with an async `Future<T> Function()` provider.
 class AsyncProviderResolver<T> extends _BaseProviderResolver<T> {
-  final AsyncProvider<T> _provider;
+  final AsyncProviderFactory<T> _provider;
   Future<T>? _cache;
   bool _isCached = false;
 
@@ -171,7 +171,7 @@ class AsyncProviderResolver<T> extends _BaseProviderResolver<T> {
 
 /// Resolves [Binding.toProvideWithParams] with an async `Future<T> Function(dynamic)` provider.
 class AsyncProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
-  final AsyncProviderWithParams<T> _provider;
+  final AsyncProviderFactoryWithParams<T> _provider;
   Future<T>? _cache;
   bool _isCached = false;
 
@@ -342,23 +342,24 @@ class ProviderResolver {
   }
 
   /// Explicit sync resolver without parameters.
-  static BindingResolver<T> sync<T>(Provider<T> provider) {
+  static BindingResolver<T> sync<T>(ProviderFactory<T> provider) {
     return SyncProviderResolver<T>(provider);
   }
 
   /// Explicit sync resolver with parameters.
-  static BindingResolver<T> syncWithParams<T>(ProviderWithParams<T> provider) {
+  static BindingResolver<T> syncWithParams<T>(
+      ProviderFactoryWithParams<T> provider) {
     return SyncProviderWithParamsResolver<T>(provider);
   }
 
   /// Explicit async resolver without parameters.
-  static BindingResolver<T> async<T>(AsyncProvider<T> provider) {
+  static BindingResolver<T> async<T>(AsyncProviderFactory<T> provider) {
     return AsyncProviderResolver<T>(provider);
   }
 
   /// Explicit async resolver with parameters.
   static BindingResolver<T> asyncWithParams<T>(
-      AsyncProviderWithParams<T> provider) {
+      AsyncProviderFactoryWithParams<T> provider) {
     return AsyncProviderWithParamsResolver<T>(provider);
   }
 }
