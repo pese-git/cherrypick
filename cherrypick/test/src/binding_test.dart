@@ -193,6 +193,39 @@ void main() {
       expect(counter, 1);
     });
 
+    test('toProvideAsync singleton retries after a failed initialization',
+        () async {
+      var attempts = 0;
+      final binding = Binding<int>().toProvideAsync(() async {
+        attempts++;
+        if (attempts == 1) {
+          throw StateError('boom');
+        }
+        return attempts;
+      }).singleton();
+
+      await expectLater(binding.resolveAsync(), throwsStateError);
+      // Cache must be invalidated so the second resolve re-runs the provider.
+      expect(await binding.resolveAsync(), 2);
+      expect(attempts, 2);
+    });
+
+    test('FutureOr singleton retries after a failed async initialization',
+        () async {
+      var attempts = 0;
+      final binding = Binding<int>().toProvide(() async {
+        attempts++;
+        if (attempts == 1) {
+          throw StateError('boom');
+        }
+        return attempts;
+      }).singleton();
+
+      await expectLater(binding.resolveAsync(), throwsStateError);
+      expect(await binding.resolveAsync(), 2);
+      expect(attempts, 2);
+    });
+
     test('Resolves toProvideAsyncWithParams value', () async {
       final binding = Binding<int>()
           .toProvideAsyncWithParams((param) async => 5 + (param as int));

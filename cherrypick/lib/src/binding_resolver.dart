@@ -164,6 +164,12 @@ class AsyncProviderResolver<T> extends _BaseProviderResolver<T> {
     if (_singleton) {
       _cache = result;
       _isCached = true;
+      _invalidateCacheOnError(result, () {
+        if (identical(_cache, result)) {
+          _cache = null;
+          _isCached = false;
+        }
+      });
     }
     return result;
   }
@@ -196,6 +202,12 @@ class AsyncProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
     if (_singleton) {
       _cache = result;
       _isCached = true;
+      _invalidateCacheOnError(result, () {
+        if (identical(_cache, result)) {
+          _cache = null;
+          _isCached = false;
+        }
+      });
     }
     return result;
   }
@@ -245,6 +257,14 @@ class FutureOrProviderResolver<T> extends _BaseProviderResolver<T> {
     if (_singleton) {
       _cached = result;
       _isCached = true;
+      if (result is Future<T>) {
+        _invalidateCacheOnError(result, () {
+          if (identical(_cached, result)) {
+            _cached = null;
+            _isCached = false;
+          }
+        });
+      }
     }
     if (result is Future<T>) return result;
     return Future<T>.value(result);
@@ -301,10 +321,29 @@ class FutureOrProviderWithParamsResolver<T> extends _BaseProviderResolver<T> {
     if (_singleton) {
       _cached = result;
       _isCached = true;
+      if (result is Future<T>) {
+        _invalidateCacheOnError(result, () {
+          if (identical(_cached, result)) {
+            _cached = null;
+            _isCached = false;
+          }
+        });
+      }
     }
     if (result is Future<T>) return result;
     return Future<T>.value(result);
   }
+}
+
+/// Attaches a listener that runs [onError] if [future] fails.
+///
+/// Used to invalidate a cached singleton future when its async initialization
+/// throws, so a subsequent resolve can retry instead of forever replaying the
+/// failed future. The listener swallows the error on its own derived future
+/// (it never rethrows), so it does not surface as an unhandled async error;
+/// the original [future] still carries the error to real callers.
+void _invalidateCacheOnError(Future<Object?> future, void Function() onError) {
+  future.then<void>((_) {}, onError: (Object _, StackTrace __) => onError());
 }
 
 /// Factory for creating instance resolvers (sync or async).
