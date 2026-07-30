@@ -226,6 +226,41 @@ void main() {
       expect(attempts, 2);
     });
 
+    test(
+        'toProvideAsyncWithParams singleton retries after a failed '
+        'initialization', () async {
+      var attempts = 0;
+      final binding = Binding<int>().toProvideAsyncWithParams((p) async {
+        attempts++;
+        if (attempts == 1) {
+          throw StateError('boom');
+        }
+        return attempts + (p as int);
+      }).singleton();
+
+      await expectLater(binding.resolveAsync(10), throwsStateError);
+      // Cache invalidated: provider re-runs with the new params on retry.
+      expect(await binding.resolveAsync(20), 22); // attempts(2) + 20
+      expect(attempts, 2);
+    });
+
+    test(
+        'FutureOr singleton with params retries after a failed async '
+        'initialization', () async {
+      var attempts = 0;
+      final binding = Binding<int>().toProvideWithParams((p) async {
+        attempts++;
+        if (attempts == 1) {
+          throw StateError('boom');
+        }
+        return attempts + (p as int);
+      }).singleton();
+
+      await expectLater(binding.resolveAsync(10), throwsStateError);
+      expect(await binding.resolveAsync(20), 22); // attempts(2) + 20
+      expect(attempts, 2);
+    });
+
     test('Resolves toProvideAsyncWithParams value', () async {
       final binding = Binding<int>()
           .toProvideAsyncWithParams((param) async => 5 + (param as int));
