@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cherrypick/cherrypick.dart';
+import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:test/test.dart';
 
 void main() {
