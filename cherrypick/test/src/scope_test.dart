@@ -58,6 +58,15 @@ class ModuleCountingDisposable extends Module {
   }
 }
 
+class ModuleAsyncCountingDisposable extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<CountingDisposable>()
+        .toProvideAsync(() async => CountingDisposable())
+        .singleton();
+  }
+}
+
 class ModuleWithDisposable extends Module {
   @override
   void builder(Scope scope) {
@@ -515,6 +524,60 @@ void main() {
           .resolve<CountingDisposable>();
       await root.dispose();
       expect(d.disposeCount, 1);
+    });
+
+    test(
+        'Disposable owned by root and resolved through a deep parent chain is '
+        'disposed exactly once', () async {
+      await CherryPick.closeRootScope(); // isolate from shared root singleton
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleCountingDisposable()]);
+
+      // Build a deep chain of subscopes below the owning (root) scope.
+      var leaf = root;
+      for (var i = 0; i < 50; i++) {
+        leaf = leaf.openSubScope('lvl$i');
+      }
+
+      // Resolving from the deepest scope walks 50 parents up to the owner.
+      final d = leaf.resolve<CountingDisposable>();
+      // Repeated resolves from different depths must not multiply tracking.
+      final d2 = leaf.resolve<CountingDisposable>();
+      final d3 = root.resolve<CountingDisposable>();
+      expect(identical(d, d2), isTrue);
+      expect(identical(d, d3), isTrue);
+      expect(d.disposeCount, 0);
+
+      await root.dispose();
+
+      // Regression: the parent chain previously re-entered the public
+      // `tryResolve` at every level, registering the same instance in each
+      // scope's disposable set — dispose() ran once per level (51 times).
+      expect(d.disposeCount, 1);
+      await CherryPick.closeRootScope();
+    });
+
+    test(
+        'Async disposable owned by root and resolved through a deep parent '
+        'chain is disposed exactly once', () async {
+      await CherryPick.closeRootScope(); // isolate from shared root singleton
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleAsyncCountingDisposable()]);
+
+      var leaf = root;
+      for (var i = 0; i < 50; i++) {
+        leaf = leaf.openSubScope('lvl$i');
+      }
+
+      final d = await leaf.resolveAsync<CountingDisposable>();
+      final d2 = await leaf.resolveAsync<CountingDisposable>();
+      expect(identical(d, d2), isTrue);
+      expect(d.disposeCount, 0);
+
+      await root.dispose();
+
+      expect(d.disposeCount, 1);
+      await CherryPick.closeRootScope();
     });
   });
 
