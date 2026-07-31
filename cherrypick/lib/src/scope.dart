@@ -273,12 +273,11 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   T resolve<T>({String? named, dynamic params}) {
     if (_canUseDirectResolvePath) {
-      final result = _tryResolveInternal<T>(named: named, params: params);
+      final result = _directResolveSync<T>(named, params);
       if (result == null) {
         throw StateError(
             'Can\'t resolve dependency `$T`. Maybe you forget register it?');
       }
-      if (result is Disposable) _disposables.add(result);
       return result;
     }
 
@@ -309,7 +308,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         rethrow;
       }
     }
-    _trackDisposable(result);
     return result;
   }
 
@@ -365,9 +363,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   T? tryResolve<T>({String? named, dynamic params}) {
     if (_canUseDirectResolvePath) {
-      final result = _tryResolveInternal<T>(named: named, params: params);
-      if (result != null && result is Disposable) _disposables.add(result);
-      return result;
+      return _directResolveSync<T>(named, params);
     }
 
     T? result;
@@ -378,7 +374,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     } else {
       result = _tryResolveWithLocalDetection<T>(named: named, params: params);
     }
-    if (result != null) _trackDisposable(result);
     return result;
   }
 
@@ -395,12 +390,39 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Locates and resolves [T] without cycle detection (direct lookup).
-  /// Returns null if not found. Used internally.
+  /// Returns null if not found. Used internally by the observer/detection path.
+  ///
+  /// A resolved [Disposable] is tracked in the scope that owns the binding
+  /// (where the resolver produced it), exactly once — intermediate scopes on
+  /// the parent chain only forward the lookup.
   T? _tryResolveInternal<T>({String? named, dynamic params}) {
     final resolver = _findBindingResolver<T>(named);
-    // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveSync(params) ??
-        _parentScope?.tryResolve(named: named, params: params);
+    final local = resolver?.resolveSync(params);
+    if (local != null) {
+      if (local is Disposable) _disposables.add(local);
+      return local;
+    }
+    // Fallback to parent (public entry preserves per-scope cycle detection).
+    return _parentScope?.tryResolve(named: named, params: params);
+  }
+
+  /// Fast-path resolution used when observers and cycle detection are disabled.
+  ///
+  /// Walks the parent chain via a direct internal recursion instead of
+  /// re-entering the public [tryResolve] at every level. This avoids the
+  /// per-level fast-path guard re-evaluation and, crucially, tracks a resolved
+  /// [Disposable] exactly once in the scope that owns the binding — the public
+  /// re-entry previously registered the same instance in every scope on the
+  /// chain (causing `dispose()` to run once per level). Returns null if not
+  /// found anywhere in the chain.
+  T? _directResolveSync<T>(String? named, dynamic params) {
+    final resolver = _findBindingResolver<T>(named);
+    final local = resolver?.resolveSync(params);
+    if (local != null) {
+      if (local is Disposable) _disposables.add(local);
+      return local;
+    }
+    return _parentScope?._directResolveSync<T>(named, params);
   }
 
   /// Asynchronously resolves a dependency of type [T].
@@ -414,13 +436,11 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   Future<T> resolveAsync<T>({String? named, dynamic params}) async {
     if (_canUseDirectResolvePath) {
-      final result =
-          await _tryResolveAsyncInternal<T>(named: named, params: params);
+      final result = await _directResolveAsync<T>(named, params);
       if (result == null) {
         throw StateError(
             "Can't resolve async dependency `$T`. Maybe you forget register it?");
       }
-      if (result is Disposable) _disposables.add(result);
       return result;
     }
     return _resolveAsyncWithObserverPath<T>(named: named, params: params);
@@ -438,7 +458,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       result = await _resolveAsyncWithLocalDetection<T>(
           named: named, params: params);
     }
-    _trackDisposable(result);
     return result;
   }
 
@@ -492,10 +511,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
     if (_canUseDirectResolvePath) {
-      final result =
-          await _tryResolveAsyncInternal<T>(named: named, params: params);
-      if (result != null && result is Disposable) _disposables.add(result);
-      return result;
+      return await _directResolveAsync<T>(named, params);
     }
     return _tryResolveAsyncWithObserverPath<T>(named: named, params: params);
   }
@@ -512,7 +528,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       result = await _tryResolveAsyncWithLocalDetection<T>(
           named: named, params: params);
     }
-    if (result != null) _trackDisposable(result);
     return result;
   }
 
@@ -529,13 +544,39 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     }
   }
 
-  /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
+  /// Direct async resolution for [T] without cycle check. Returns null if missing.
+  /// Used internally by the observer/detection path. Tracks a resolved
+  /// [Disposable] once in the owning scope (see [_tryResolveInternal]).
   Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) {
     final resolver = _findBindingResolver<T>(named);
-    // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveAsync(params) ??
-        _parentScope?.tryResolveAsync(named: named, params: params) ??
+    final local = resolver?.resolveAsync(params);
+    if (local != null) {
+      return local.then((value) {
+        if (value != null && value is Disposable) _disposables.add(value);
+        return value;
+      });
+    }
+    // Fallback to parent (public entry preserves per-scope cycle detection).
+    return _parentScope?.tryResolveAsync(named: named, params: params) ??
         Future<T?>.value(null);
+  }
+
+  /// Fast-path async resolution used when observers and cycle detection are
+  /// disabled. Mirrors [_directResolveSync]: recurses into the parent chain
+  /// directly (no public re-entry) and tracks a resolved [Disposable] exactly
+  /// once in the scope that owns the binding.
+  Future<T?> _directResolveAsync<T>(String? named, dynamic params) {
+    final resolver = _findBindingResolver<T>(named);
+    final local = resolver?.resolveAsync(params);
+    if (local != null) {
+      return local.then((value) {
+        if (value != null && value is Disposable) _disposables.add(value);
+        return value;
+      });
+    }
+    final parent = _parentScope;
+    if (parent != null) return parent._directResolveAsync<T>(named, params);
+    return Future<T?>.value(null);
   }
 
   /// Looks up the [BindingResolver] for [T] and [named] within this scope.
@@ -576,14 +617,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     _bindingResolvers.clear();
     for (var module in _modulesList) {
       _addModuleToIndex(module);
-    }
-  }
-
-  /// Tracks resolved [Disposable] instances, to ensure dispose is called automatically.
-  /// Internal use only.
-  void _trackDisposable(Object? obj) {
-    if (obj is Disposable) {
-      _disposables.add(obj);
     }
   }
 
