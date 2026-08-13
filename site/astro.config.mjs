@@ -1,0 +1,94 @@
+// @ts-check
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+
+// https://astro.build/config
+export default defineConfig({
+  site: 'https://cherrypick-di.dev',
+  integrations: [
+    starlight({
+      title: 'CherryPick',
+      description:
+        'Lightweight, modular dependency injection for Dart & Flutter — hierarchical scopes, sync & async providers, code generation.',
+      logo: {
+        light: './src/assets/logo.svg',
+        dark: './src/assets/logo.svg',
+        replacesTitle: false,
+      },
+      favicon: '/favicon.svg',
+      defaultLocale: 'root',
+      locales: {
+        root: { label: 'English', lang: 'en' },
+        ru: { label: 'Русский', lang: 'ru' },
+      },
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/pese-git/cherrypick',
+        },
+        {
+          icon: 'telegram',
+          label: 'Telegram',
+          href: 'https://t.me/+22IVT0vqXBg1NDdi',
+        },
+      ],
+      editLink: {
+        baseUrl: 'https://github.com/pese-git/cherrypick/edit/master/site/',
+      },
+      customCss: ['./src/styles/custom.css'],
+      sidebar: [
+        {
+          label: 'Getting Started',
+          translations: { ru: 'Начало работы' },
+          items: [
+            { label: 'Introduction', translations: { ru: 'Введение' }, slug: 'intro' },
+            { label: 'Key Features', translations: { ru: 'Ключевые возможности' }, slug: 'key-features' },
+            { label: 'Installation', translations: { ru: 'Установка' }, slug: 'installation' },
+            { label: 'Getting Started', translations: { ru: 'Быстрый старт' }, slug: 'getting-started' },
+          ],
+        },
+        {
+          label: 'Guides',
+          translations: { ru: 'Руководства' },
+          items: [
+            { label: 'Dependency Resolution API', translations: { ru: 'API разрешения зависимостей' }, slug: 'dependency-resolution-api' },
+            { label: 'Using Annotations', translations: { ru: 'Аннотации' }, slug: 'using-annotations' },
+            { label: 'Example Application', translations: { ru: 'Пример приложения' }, slug: 'example-application' },
+          ],
+        },
+        {
+          label: 'Core Concepts',
+          translations: { ru: 'Основные концепции' },
+          items: [
+            { label: 'Binding', translations: { ru: 'Binding' }, slug: 'core-concepts/binding' },
+            { label: 'Module', translations: { ru: 'Module' }, slug: 'core-concepts/module' },
+            { label: 'Scope', translations: { ru: 'Scope' }, slug: 'core-concepts/scope' },
+            { label: 'Disposable', translations: { ru: 'Disposable' }, slug: 'core-concepts/disposable' },
+          ],
+        },
+        {
+          label: 'Advanced Features',
+          translations: { ru: 'Продвинутые возможности' },
+          items: [
+            { label: 'Hierarchical Subscopes', translations: { ru: 'Иерархические подскоупы' }, slug: 'advanced-features/hierarchical-subscopes' },
+            { label: 'Logging', translations: { ru: 'Логирование' }, slug: 'advanced-features/logging' },
+            { label: 'Circular Dependency Detection', translations: { ru: 'Обнаружение циклов' }, slug: 'advanced-features/circular-dependency-detection' },
+            { label: 'Performance Improvements', translations: { ru: 'Производительность' }, slug: 'advanced-features/performance-improvements' },
+          ],
+        },
+        {
+          label: 'Help & Reference',
+          translations: { ru: 'Справка' },
+          items: [
+            { label: 'FAQ', translations: { ru: 'FAQ' }, slug: 'faq' },
+            { label: 'Documentation Links', translations: { ru: 'Ссылки на документацию' }, slug: 'documentation-links' },
+            { label: 'Additional Modules', translations: { ru: 'Дополнительные модули' }, slug: 'additional-modules' },
+            { label: 'Contributing', translations: { ru: 'Участие в разработке' }, slug: 'contributing' },
+            { label: 'License', translations: { ru: 'Лицензия' }, slug: 'license' },
+          ],
+        },
+      ],
+    }),
+  ],
+});

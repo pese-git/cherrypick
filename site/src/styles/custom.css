@@ -1,0 +1,65 @@
+/* CherryPick — fresh minimal theme with a cherry/rose accent.
+   Accent scale generated around #e11d48 (rose-600). */
+
+:root {
+  --sl-color-accent-low: #3a0311;
+  --sl-color-accent: #d4234a;
+  --sl-color-accent-high: #f6b8c6;
+
+  /* Slightly warmer neutral grays. */
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #eceef2;
+  --sl-color-gray-2: #c0c2c7;
+  --sl-color-gray-3: #888b96;
+  --sl-color-gray-4: #565861;
+  --sl-color-gray-5: #363841;
+  --sl-color-gray-6: #24262f;
+  --sl-color-black: #17181c;
+
+  --cp-cherry: #e11d48;
+  --cp-leaf: #63b846;
+}
+
+/* Light mode accent tuning. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #ffdfe6;
+  --sl-color-accent: #d01843;
+  --sl-color-accent-high: #6b0d23;
+}
+
+/* Subtle gradient behind the hero on the splash homepage. */
+.hero {
+  --overlay-blurple: transparent;
+}
+
+.hero > .stack {
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* Tagline under the hero title reads a touch softer. */
+.hero .tagline {
+  color: var(--sl-color-gray-2);
+}
+
+/* Cherry-tinted CTA hover. */
+.hero .actions a.primary {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hero .actions a.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -8px var(--cp-cherry);
+}
+
+/* Card grid accent border on hover. */
+.card {
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.card:hover {
+  border-color: var(--sl-color-accent);
+  transform: translateY(-2px);
+}
+
+/* Inline code a little tighter. */
+:not(pre) > code {
+  font-size: 0.875em;
+}
