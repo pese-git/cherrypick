@@ -140,6 +140,13 @@ Please see:
 
 ---
 
+## Migrating to 4.0.0
+
+The `cherrypick` core package changes its resolver/provider public API in 4.0.0.
+See the migration guide: [English](./doc/migration_4.0.0_en.md) · [Русский](./doc/migration_4.0.0_ru.md).
+
+---
+
 ## Contribution & License
 
 - **Contributions:** PRs, issues, and feedback are welcome on [GitHub](https://github.com/pese-git/cherrypick).

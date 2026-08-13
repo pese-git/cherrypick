@@ -6,7 +6,7 @@ sidebar_position: 1
 
 A **Binding** acts as a configuration for how to create or provide a particular dependency. Bindings support:
 
-* Direct instance assignment (`toInstance()`, `toInstanceAsync()`)
+* Direct instance assignment (`toInstance()` — accepts a value or an already running `Future`)
 * Lazy providers (sync/async functions)
 * Provider functions supporting dynamic parameters
 * Named instances for resolving by string key
@@ -19,8 +19,8 @@ void builder(Scope scope) {
   // Provide a direct instance
   bind<String>().toInstance("Hello world");
 
-  // Provide an async direct instance
-  bind<String>().toInstanceAsync(Future.value("Hello world"));
+  // Provide an async direct instance (toInstance accepts FutureOr<T>)
+  bind<String>().toInstance(Future.value("Hello world"));
 
   // Provide a lazy sync instance using a factory
   bind<String>().toProvide(() => "Hello world");

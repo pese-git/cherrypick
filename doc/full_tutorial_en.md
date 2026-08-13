@@ -40,8 +40,9 @@ final config = AppConfig.dev();
 bind<AppConfig>().toInstance(config);
 
 // Register an already running Future/async value
+// (toInstance accepts FutureOr<T>; resolve it with resolveAsync)
 final setupFuture = loadEnvironment();
-bind<Environment>().toInstanceAsync(setupFuture);
+bind<Environment>().toInstance(setupFuture);
 ```
 
 > ⚠️ **Important note about using toInstance in Module**
@@ -87,8 +88,8 @@ bind<Environment>().toInstanceAsync(setupFuture);
 - **toProvide** — regular sync factory
 - **toProvideAsync** — async factory (if you need to await a Future)
 - **toProvideWithParams / toProvideAsyncWithParams** — factories with runtime parameters
-- **toInstance** — registers an already created object as a dependency
-- **toInstanceAsync** — registers an already started Future as an async dependency
+- **toInstance** — registers an already created object (or an already running `Future`) as a dependency
+- ~~**toInstanceAsync**~~ — deprecated since 4.0.0, use `toInstance` (it already accepts `FutureOr<T>`)
 
 ### Named bindings
 

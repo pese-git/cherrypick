@@ -40,8 +40,9 @@ final config = AppConfig.dev();
 bind<AppConfig>().toInstance(config);
 
 // Зарегистрировать уже существующий Future/асинхронное значение
+// (toInstance принимает FutureOr<T>; получать через resolveAsync)
 final setupFuture = loadEnvironment();
-bind<Environment>().toInstanceAsync(setupFuture);
+bind<Environment>().toInstance(setupFuture);
 ```
 
 
@@ -90,8 +91,8 @@ bind<Environment>().toInstanceAsync(setupFuture);
 - **toProvide** — обычная синхронная фабрика.
 - **toProvideAsync** — асинхронная фабрика (например, если нужно дожидаться Future).
 - **toProvideWithParams / toProvideAsyncWithParams** — фабрики с параметрами.
-- **toInstance** — регистрирует уже созданный экземпляр класса как зависимость.
-- **toInstanceAsync** — регистрирует уже запущенный Future, как асинхронную зависимость.
+- **toInstance** — регистрирует уже созданный экземпляр (или уже запущенный `Future`) как зависимость.
+- ~~**toInstanceAsync**~~ — устарел с 4.0.0, используйте `toInstance` (он уже принимает `FutureOr<T>`).
 
 ### Именованные биндинги (Named)
 

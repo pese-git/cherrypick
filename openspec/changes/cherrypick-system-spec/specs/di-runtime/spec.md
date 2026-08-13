@@ -44,6 +44,8 @@
 ### Requirement: Типы bindings
 `Binding` MUST поддерживать прямые инстансы, синхронные провайдеры, асинхронные провайдеры и провайдеры с параметрами, а также именованные bindings.
 
+Публичные методы регистрации: `toInstance` (принимает `FutureOr<T>`), `toProvide`, `toProvideWithParams`, `toProvideAsync`, `toProvideAsyncWithParams`. Начиная с 4.0.0 `toProvideAsync` / `toProvideAsyncWithParams` строго асинхронны и MUST принимать фабрику, возвращающую `Future<T>` (`AsyncProviderFactory<T>` / `AsyncProviderFactoryWithParams<T>`), а не являются алиасами `toProvide`. Метод `toInstanceAsync` DEPRECATED — используйте `toInstance`. Публичны только `BindingResolver` и typedef'ы фабрик (`ProviderFactory`, `ProviderFactoryWithParams`, `AsyncProviderFactory`, `AsyncProviderFactoryWithParams`); конкретные классы резолверов не экспортируются.
+
 #### Scenario: Именованные bindings
 - **WHEN** зарегистрированы два bindings одного типа с разными именами
 - **THEN** resolve с указанным именем возвращает соответствующую реализацию
@@ -77,6 +79,10 @@
 #### Scenario: TryResolve (async)
 - **WHEN** вызывается `tryResolveAsync<T>()` для отсутствующей зависимости
 - **THEN** возвращается `null` без исключения
+
+#### Scenario: Повторная попытка async‑синглтона после сбоя инициализации
+- **WHEN** провайдер async‑синглтона выбрасывает ошибку при первой инициализации
+- **THEN** неуспешный результат не кэшируется, и следующий `resolveAsync<T>()` повторяет попытку инициализации
 
 ### Requirement: Ошибки несоответствия sync/async
 Резолв MUST выбрасывать ошибки при несоответствии sync/async режима.
