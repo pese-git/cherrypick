@@ -11,6 +11,8 @@
 // limitations under the License.
 //
 
+import 'dart:async';
+
 import 'package:cherrypick/src/binding_resolver.dart';
 
 /// {@template binding_docs}
@@ -68,6 +70,8 @@ class Binding<T> {
   BindingResolver<T>? _resolver;
 
   CherryPickObserver? observer;
+
+  bool get _isSilentObserver => observer is SilentCherryPickObserver;
 
   // Deferred logging flags
   bool _createdLogged = false;
@@ -191,10 +195,9 @@ class Binding<T> {
   /// }
   /// ```
   /// This restriction only applies to [toInstance] bindings.
-  // ignore: deprecated_member_use_from_same_package
   /// With [toProvide]/[toProvideAsync] you may freely use `scope.resolve<T>()` in the builder or provider function.
-  Binding<T> toInstance(Instance<T> value) {
-    _resolver = InstanceResolver<T>(value);
+  Binding<T> toInstance(FutureOr<T> value) {
+    _resolver = InstanceResolver.create<T>(value);
     return this;
   }
 
@@ -205,8 +208,8 @@ class Binding<T> {
   /// bind<Api>().toProvide(() => ApiService());
   /// bind<Db>().toProvide(() async => await openDb());
   /// ```
-  Binding<T> toProvide(Provider<T> value) {
-    _resolver = ProviderResolver<T>((_) => value.call(), withParams: false);
+  Binding<T> toProvide(FutureOr<T> Function() value) {
+    _resolver = ProviderResolver.create<T>(value);
     return this;
   }
 
@@ -216,24 +219,32 @@ class Binding<T> {
   /// ```dart
   /// bind<User>().toProvideWithParams((params) => User(name: params["name"]));
   /// ```
-  Binding<T> toProvideWithParams(ProviderWithParams<T> value) {
-    _resolver = ProviderResolver<T>(value, withParams: true);
+  Binding<T> toProvideWithParams(FutureOr<T> Function(dynamic) value) {
+    _resolver = ProviderResolver.createWithParams<T>(value);
     return this;
   }
 
   @Deprecated('Use toInstance instead of toInstanceAsync')
-  Binding<T> toInstanceAsync(Instance<T> value) {
+  Binding<T> toInstanceAsync(FutureOr<T> value) {
     return toInstance(value);
   }
 
-  @Deprecated('Use toProvide instead of toProvideAsync')
-  Binding<T> toProvideAsync(Provider<T> value) {
-    return toProvide(value);
+  /// Asynchronous variant of [toProvide] for providers that return [Future<T>].
+  ///
+  /// Prefer this over [toProvide] when the provider is async, so the resolver
+  /// is type-safe and avoids runtime detection overhead.
+  Binding<T> toProvideAsync(AsyncProviderFactory<T> value) {
+    _resolver = ProviderResolver.async<T>(value);
+    return this;
   }
 
-  @Deprecated('Use toProvideWithParams instead of toProvideAsyncWithParams')
-  Binding<T> toProvideAsyncWithParams(ProviderWithParams<T> value) {
-    return toProvideWithParams(value);
+  /// Asynchronous variant of [toProvideWithParams] for providers that return [Future<T>].
+  ///
+  /// Prefer this over [toProvideWithParams] when the provider is async, so the resolver
+  /// is type-safe and avoids runtime detection overhead.
+  Binding<T> toProvideAsyncWithParams(AsyncProviderFactoryWithParams<T> value) {
+    _resolver = ProviderResolver.asyncWithParams<T>(value);
+    return this;
   }
 
   /// Marks this binding as singleton (will only create and cache one instance per scope).
@@ -281,6 +292,10 @@ class Binding<T> {
   /// ```
   T? resolveSync([dynamic params]) {
     final res = resolver?.resolveSync(params);
+    if (_isSilentObserver) {
+      return res;
+    }
+
     if (res != null) {
       observer?.onDiagnostic(
         'Binding resolved instance: ${T.toString()}',
@@ -313,6 +328,10 @@ class Binding<T> {
   /// ```
   Future<T>? resolveAsync([dynamic params]) {
     final future = resolver?.resolveAsync(params);
+    if (_isSilentObserver) {
+      return future;
+    }
+
     if (future != null) {
       future
           .then((res) => observer?.onDiagnostic(

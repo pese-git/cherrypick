@@ -50,7 +50,14 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
   }
 
   @override
-  void teardown() => _di.teardown();
+  void teardown() {
+    _childDi?.teardown();
+    _di.teardown();
+  }
+
+  void prewarm() {
+    run();
+  }
 
   @override
   void run() {
@@ -59,11 +66,7 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
         _di.resolve<UniversalService>();
         break;
       case UniversalScenario.named:
-        if (_di.runtimeType.toString().contains('GetItAdapter')) {
-          _di.resolve<UniversalService>(named: 'impl2');
-        } else {
-          _di.resolve<UniversalService>(named: 'impl2');
-        }
+        _di.resolve<UniversalService>(named: 'impl2');
         break;
       case UniversalScenario.chain:
         final serviceName = '${chainCount}_$nestingDepth';

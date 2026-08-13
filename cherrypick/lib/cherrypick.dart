@@ -13,7 +13,13 @@ library;
 // limitations under the License.
 //
 
-export 'package:cherrypick/src/binding_resolver.dart';
+export 'package:cherrypick/src/binding_resolver.dart'
+    show
+        BindingResolver,
+        ProviderFactory,
+        ProviderFactoryWithParams,
+        AsyncProviderFactory,
+        AsyncProviderFactoryWithParams;
 export 'package:cherrypick/src/binding.dart';
 export 'package:cherrypick/src/cycle_detector.dart';
 export 'package:cherrypick/src/global_cycle_detector.dart';

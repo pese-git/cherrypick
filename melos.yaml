@@ -60,8 +60,10 @@ scripts:
       scope: ["cherrypick_flutter"]
 
   codegen:
-    run: |
-      melos exec --scope="postly" -- dart run build_runner build --delete-conflicting-outputs
+    description: "Run build for Flutter packages only" 
+    exec: dart run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      scope: ["postly"]
 
   outdated:
     exec: dart pub outdated 
