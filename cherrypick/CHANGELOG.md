@@ -1,3 +1,27 @@
+## 4.0.0-dev.3
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FIX**(test): fix warning.
+ - **FIX**(scope): properly clear binding and module references on dispose.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+ - **DOCS**: sync references after ProviderFactory rename.
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+## 4.0.0-dev.3
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+
 ## 3.0.3
 
  - **DOCS**: sync references after ProviderFactory rename.

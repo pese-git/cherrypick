@@ -1,3 +1,11 @@
+## 4.0.0-dev.3
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+## 4.0.0-dev.3
+
+ - Bump "talker_cherrypick_logger" to `4.0.0-dev.3`.
+
 ## 3.0.3
 
  - Update a dependency to the latest release.

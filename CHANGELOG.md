@@ -3,6 +3,104 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.3`](#cherrypick---v400-dev3)
+ - [`cherrypick_generator` - `v4.0.0-dev.3`](#cherrypick_generator---v400-dev3)
+ - [`cherrypick_flutter` - `v4.0.0-dev.3`](#cherrypick_flutter---v400-dev3)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.3`](#talker_cherrypick_logger---v400-dev3)
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FIX**(test): fix warning.
+ - **FIX**(scope): properly clear binding and module references on dispose.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+ - **DOCS**: sync references after ProviderFactory rename.
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `cherrypick_generator` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
+ - **FIX**: update deps.
+ - **FIX**: add deps.
+ - **FIX**: update deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+
+#### `cherrypick_flutter` - `v4.0.0-dev.3`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `talker_cherrypick_logger` - `v4.0.0-dev.3`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+
+## 2026-08-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.3`](#cherrypick---v400-dev3)
+ - [`cherrypick_generator` - `v4.0.0-dev.3`](#cherrypick_generator---v400-dev3)
+ - [`cherrypick_flutter` - `v4.0.0-dev.3`](#cherrypick_flutter---v400-dev3)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.3`](#talker_cherrypick_logger---v400-dev3)
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+
+#### `cherrypick_generator` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
+ - **FIX**: update deps.
+ - **FIX**: add deps.
+ - **FIX**: update deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+
+#### `cherrypick_flutter` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick_flutter" to `4.0.0-dev.3`.
+
+#### `talker_cherrypick_logger` - `v4.0.0-dev.3`
+
+ - Bump "talker_cherrypick_logger" to `4.0.0-dev.3`.
+
+
 ## 2026-04-28
 
 ### Changes

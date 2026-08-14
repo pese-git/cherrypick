@@ -1,3 +1,12 @@
+## 4.0.0-dev.3
+
+ - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
+ - **FIX**: update deps.
+ - **FIX**: add deps.
+ - **FIX**: update deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+
 ## 4.0.0-dev.2
 
  - **FIX**: update deps.
