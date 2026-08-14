@@ -1,5 +1,9 @@
 ## 4.0.0-dev.3
 
+ - Bump "cherrypick_generator" to `4.0.0-dev.3`.
+
+## 4.0.0-dev.3
+
  - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
  - **FIX**: update deps.
  - **FIX**: add deps.

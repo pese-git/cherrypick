@@ -1,5 +1,9 @@
 ## 4.0.0-dev.3
 
+ - Bump "cherrypick" to `4.0.0-dev.3`.
+
+## 4.0.0-dev.3
+
  - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
  - **FIX**(cherrypick): retry async singleton after failed initialization.
  - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.

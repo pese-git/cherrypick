@@ -24,6 +24,42 @@ Packages with other changes:
 
 #### `cherrypick` - `v4.0.0-dev.3`
 
+ - Bump "cherrypick" to `4.0.0-dev.3`.
+
+#### `cherrypick_generator` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick_generator" to `4.0.0-dev.3`.
+
+#### `cherrypick_flutter` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick_flutter" to `4.0.0-dev.3`.
+
+#### `talker_cherrypick_logger` - `v4.0.0-dev.3`
+
+ - Bump "talker_cherrypick_logger" to `4.0.0-dev.3`.
+
+
+## 2026-08-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.3`](#cherrypick---v400-dev3)
+ - [`cherrypick_generator` - `v4.0.0-dev.3`](#cherrypick_generator---v400-dev3)
+ - [`cherrypick_flutter` - `v4.0.0-dev.3`](#cherrypick_flutter---v400-dev3)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.3`](#talker_cherrypick_logger---v400-dev3)
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.3`
+
  - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
  - **FIX**(cherrypick): retry async singleton after failed initialization.
  - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
