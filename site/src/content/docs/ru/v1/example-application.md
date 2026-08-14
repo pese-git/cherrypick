@@ -1,13 +1,14 @@
 ---
 title: Пример приложения
-slug: ru/v1/example-application
+description: Полное приложение на CherryPick 1.x с API-клиентом, репозиторием и BLoC в разных скоупах.
 ---
 
-Ниже приведён полный пример с модулями, подскоупами, асинхронными провайдерами и разрешением зависимостей.
+Этот пример связывает API-клиент, репозиторий и простой BLoC в корневом скоупе и
+вложенном feature-скоупе. Он показывает совместную работу именованных
+экземпляров, фабричных провайдеров, singleton'ов и дочерних скоупов.
 
 ```dart
 import 'dart:async';
-import 'package:meta/meta.dart';
 import 'package:cherrypick/cherrypick.dart';
 
 class AppModule extends Module {
@@ -20,43 +21,43 @@ class AppModule extends Module {
 
 class FeatureModule extends Module {
   final bool isMock;
+
   FeatureModule({required this.isMock});
+
   @override
   void builder(Scope currentScope) {
-    // Асинхронный провайдер DataRepository с выбором зависимости по имени
     bind<DataRepository>()
         .withName("networkRepo")
-        .toProvideAsync(() async {
-          final client = await Future.delayed(
-            Duration(milliseconds: 100),
-            () => currentScope.resolve<ApiClient>(
+        .toProvide(
+          () => NetworkDataRepository(
+            currentScope.resolve<ApiClient>(
               named: isMock ? "apiClientMock" : "apiClientImpl",
             ),
-          );
-          return NetworkDataRepository(client);
-        })
+          ),
+        )
         .singleton();
 
-    // Вызов асинхронного провайдера для DataBloc
-    bind<DataBloc>().toProvideAsync(
-      () async {
-        final repo = await currentScope.resolveAsync<DataRepository>(
-            named: "networkRepo");
-        return DataBloc(repo);
-      },
+    bind<DataBloc>().toProvide(
+      () => DataBloc(
+        currentScope.resolve<DataRepository>(named: "networkRepo"),
+      ),
     );
   }
 }
 
 void main() async {
-  final scope = CherryPick.openRootScope().installModules([AppModule()]);
-  final featureScope = scope.openSubScope("featureScope")
-    ..installModules([FeatureModule(isMock: true)]);
+  final scope = CherryPick.openRootScope().installModules([
+    AppModule(),
+  ]);
 
-  final dataBloc = await featureScope.resolveAsync<DataBloc>();
+  final subScope = scope
+      .openSubScope("featureScope")
+      .installModules([FeatureModule(isMock: true)]);
+
+  final dataBloc = subScope.resolve<DataBloc>();
   dataBloc.data.listen(
-    (d) => print('Получены данные: $d'),
-    onError: (e) => print('Ошибка: $e'),
+    (d) => print('Received data: $d'),
+    onError: (e) => print('Error: $e'),
     onDone: () => print('DONE'),
   );
 
@@ -65,6 +66,7 @@ void main() async {
 
 class DataBloc {
   final DataRepository _dataRepository;
+
   Stream<String> get data => _dataController.stream;
   final StreamController<String> _dataController = StreamController.broadcast();
 
@@ -90,11 +92,11 @@ abstract class DataRepository {
 class NetworkDataRepository implements DataRepository {
   final ApiClient _apiClient;
   final _token = 'token';
+
   NetworkDataRepository(this._apiClient);
 
   @override
-  Future<String> getData() async =>
-      await _apiClient.sendRequest(
+  Future<String> getData() async => await _apiClient.sendRequest(
         url: 'www.google.com',
         token: _token,
         requestBody: {'type': 'data'},
@@ -102,21 +104,19 @@ class NetworkDataRepository implements DataRepository {
 }
 
 abstract class ApiClient {
-  Future sendRequest({@required String? url, String? token, Map? requestBody});
+  Future sendRequest({String? url, String? token, Map? requestBody});
 }
 
 class ApiClientMock implements ApiClient {
   @override
-  Future sendRequest(
-      {@required String? url, String? token, Map? requestBody}) async {
+  Future sendRequest({String? url, String? token, Map? requestBody}) async {
     return 'Local Data';
   }
 }
 
 class ApiClientImpl implements ApiClient {
   @override
-  Future sendRequest(
-      {@required String? url, String? token, Map? requestBody}) async {
+  Future sendRequest({String? url, String? token, Map? requestBody}) async {
     return 'Network data';
   }
 }

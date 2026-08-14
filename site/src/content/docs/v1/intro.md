@@ -1,41 +1,38 @@
 ---
-title: CherryPick — Dependency Injection for Dart & Flutter
-slug: v1/intro
+title: Introduction
+description: What CherryPick 1.x is and the core building blocks it provides.
 ---
 
-Welcome to the documentation for **CherryPick**, a lightweight and flexible dependency injection library for Dart and Flutter.
+:::caution[Archived version]
+This documents CherryPick **1.x** (1.0.3). For the current release, see the
+[latest documentation](/getting-started/).
+:::
 
-***
+**CherryPick** is a lightweight dependency injection (DI) library for Dart and
+Flutter. It lets you describe how your objects are created and wired together,
+and resolve them on demand through a tree of scopes.
 
-## About CherryPick
+## Core building blocks
 
-CherryPick is a modular DI (Dependency Injection) toolkit designed for:
+CherryPick 1.x is built around three concepts:
 
-* Clean architecture
-* Lightweight and intuitive API
-* Powerful hierarchical scopes
-* Fast synchronous & asynchronous injections
-* Code generation and annotation-based configuration
+- **[Binding](/v1/getting-started/#binding)** — a configurator that describes how
+  a single dependency is created (`toInstance()` / `toProvide()`), optionally
+  named (`withName()`) or shared as a `singleton()`.
+- **[Module](/v1/getting-started/#module)** — a container of bindings. You subclass
+  `Module` and register dependencies inside `builder(Scope currentScope)`.
+- **[Scope](/v1/getting-started/#scope)** — a container that holds the whole
+  dependency tree (scopes, modules, instances). You resolve instances from a
+  scope and open child scopes from it.
 
-Whether you build backend or Flutter apps, CherryPick will help you maintain clear and testable project structure with minimal boilerplate.
+## Features
 
-## Quick Links
+- Root and nested (sub) scopes
+- Named instances
+- Singleton and factory bindings
 
-* [Key Features](/v1/key-features/)
-* [Getting Started](/v1/getting-started/)
-* [Core Concepts](/v1/core-concepts/binding/)
-* [Advanced Features](/v1/advanced-features/hierarchical-subscopes/)
-* [Using Annotations](/v1/using-annotations/)
-* [FAQ](/v1/faq/)
-* [Example Application](/v1/example-application/)
-* [GitHub Repository](https://github.com/pese-git/cherrypick)
+## Next steps
 
-## Installation
-
-See [Installation](/v1/installation/) for instructions on adding CherryPick to your Dart/Flutter project.
-
-***
-
-CherryPick is open-source. Contributions and questions are welcome!
-
-***
+- [Installation](/v1/installation/) — add CherryPick to your project.
+- [Quick Start](/v1/getting-started/) — bindings, modules, and scopes by example.
+- [Example Application](/v1/example-application/) — a complete app.

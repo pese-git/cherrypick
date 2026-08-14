@@ -1,17 +1,29 @@
 ---
 title: Installation
-slug: v1/installation
+description: Add CherryPick 1.x to a Dart or Flutter project.
 ---
 
-Add to your `pubspec.yaml`:
+Add CherryPick to your `pubspec.yaml`:
 
-```yaml
+```yaml title="pubspec.yaml"
 dependencies:
-  cherrypick: ^<latest_version>
+  cherrypick: ^1.0.3
 ```
 
-Then run:
+Then fetch the package:
 
-```shell
+```sh
+# Dart
 dart pub get
+
+# Flutter
+flutter pub get
 ```
+
+Import it where you configure dependencies:
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+```
+
+Next, head to the [Quick Start](/v1/getting-started/).
