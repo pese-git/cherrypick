@@ -5,7 +5,7 @@ slug: ru/v3/core-concepts/binding
 
 **Binding** — это конфигурация, которая определяет, как создавать или предоставлять конкретную зависимость. Binding поддерживает:
 
-* Прямое присваивание экземпляра (`toInstance()` — принимает значение или уже запущенный `Future`)
+* Прямое присваивание экземпляра (`toInstance()`, `toInstanceAsync()`)
 * Ленивые провайдеры (синхронные/асинхронные функции)
 * Провайдеры с поддержкой динамических параметров
 * Именованные экземпляры для получения по строковому ключу
@@ -18,8 +18,8 @@ void builder(Scope scope) {
   // Прямое предоставление экземпляра
   bind<String>().toInstance("Hello world");
 
-  // Асинхронное предоставление экземпляра (toInstance принимает FutureOr<T>)
-  bind<String>().toInstance(Future.value("Hello world"));
+  // Асинхронное предоставление экземпляра
+  bind<String>().toInstanceAsync(Future.value("Hello world"));
 
   // Ленивое создание синхронного экземпляра через фабрику
   bind<String>().toProvide(() => "Hello world");
