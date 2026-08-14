@@ -64,11 +64,16 @@ function yamlQuote(s) {
   return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
+// Pages that are hand-maintained in the site (e.g. rewritten as .mdx) and must
+// not be regenerated as .md, which would create a duplicate-slug conflict.
+const SKIP = new Set(['installation.md']);
+
 let count = 0;
 for (const job of JOBS) {
   for (const file of walk(job.src)) {
-    let text = readFileSync(file, 'utf8');
     const relPath = relative(job.src, file); // e.g. core-concepts/scope.md
+    if (SKIP.has(relPath)) continue;
+    let text = readFileSync(file, 'utf8');
     const fileDirRelative = dirname(relPath) === '.' ? '' : dirname(relPath);
 
     // Strip existing frontmatter, remember non-position keys we care about.
