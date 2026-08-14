@@ -1,0 +1,9 @@
+{
+  "starlightVersions.outdated.label": "Это документация для версии {{label}}.",
+  "starlightVersions.outdated.slug": "Это документация для версии {{slug}}.",
+  "starlightVersions.link.latest": "Перейдите на <a href={{link}}>последнюю версию</a> за актуальной документацией.",
+  "starlightVersions.search.outdated.label": "Поиск ограничен версией {{label}}.",
+  "starlightVersions.search.outdated.slug": "Поиск ограничен версией {{slug}}.",
+  "starlightVersions.search.link.latest": "Перейдите на <a href={{link}}>последнюю версию</a> за актуальными результатами.",
+  "starlightVersions.select.accessibleLabel": "Выбрать версию"
+}
