@@ -209,10 +209,9 @@ class BenchmarkCliRunner {
                 : (timings[count ~/ 2 - 1] + timings[count ~/ 2]) / 2;
             final minVal = timings.first;
             final maxVal = timings.last;
-            final stddev = sqrt(timings
-                    .map((x) => pow(x - mean, 2))
-                    .reduce((a, b) => a + b) /
-                count);
+            final stddev = sqrt(
+                timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) /
+                    count);
             results.add({
               'benchmark': 'Universal_$bench',
               'phase': phase.name,

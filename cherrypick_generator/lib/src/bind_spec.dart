@@ -268,18 +268,14 @@ class BindSpec {
       );
 
       // Get @named value if present.
-      final named = MetadataUtils.getNamedValue(
-        method.metadata.annotations,
-      );
+      final named = MetadataUtils.getNamedValue(method.metadata.annotations);
 
       // Parse each method parameter.
       final params = <BindParameterSpec>[];
       bool hasParams = false;
       for (final p in method.formalParameters) {
         final typeStr = p.type.getDisplayString();
-        final paramNamed = MetadataUtils.getNamedValue(
-          p.metadata.annotations,
-        );
+        final paramNamed = MetadataUtils.getNamedValue(p.metadata.annotations);
         final isParams = MetadataUtils.anyMeta(
           p.metadata.annotations,
           'params',

@@ -53,9 +53,7 @@ class AnnotationValidator {
   ///
   /// Throws [AnnotationValidationException] on any violation.
   static void validateMethodAnnotations(MethodElement method) {
-    final annotations = _getAnnotationNames(
-      method.metadata.annotations,
-    );
+    final annotations = _getAnnotationNames(method.metadata.annotations);
 
     _validateMutuallyExclusiveAnnotations(method, annotations);
     _validateAnnotationCombinations(method, annotations);
@@ -71,9 +69,7 @@ class AnnotationValidator {
   ///
   /// Throws [AnnotationValidationException] if checks fail.
   static void validateFieldAnnotations(FieldElement field) {
-    final annotations = _getAnnotationNames(
-      field.metadata.annotations,
-    );
+    final annotations = _getAnnotationNames(field.metadata.annotations);
 
     _validateInjectFieldAnnotations(field, annotations);
   }
@@ -87,9 +83,7 @@ class AnnotationValidator {
   ///
   /// Throws [AnnotationValidationException] if checks fail.
   static void validateClassAnnotations(ClassElement classElement) {
-    final annotations = _getAnnotationNames(
-      classElement.metadata.annotations,
-    );
+    final annotations = _getAnnotationNames(classElement.metadata.annotations);
 
     _validateModuleClassAnnotations(classElement, annotations);
     _validateInjectableClassAnnotations(classElement, annotations);
@@ -195,9 +189,7 @@ class AnnotationValidator {
   /// Validates extra requirements or syntactic rules for annotation arguments, like @named.
   static void _validateAnnotationParameters(MethodElement method) {
     // Validate @named annotation parameters
-    final namedValue = MetadataUtils.getNamedValue(
-      method.metadata.annotations,
-    );
+    final namedValue = MetadataUtils.getNamedValue(method.metadata.annotations);
     if (namedValue != null) {
       if (namedValue.isEmpty) {
         throw AnnotationValidationException(
@@ -228,9 +220,7 @@ class AnnotationValidator {
 
     // Validate method parameters for @params usage
     for (final param in method.formalParameters) {
-      final paramAnnotations = _getAnnotationNames(
-        param.metadata.annotations,
-      );
+      final paramAnnotations = _getAnnotationNames(param.metadata.annotations);
       if (paramAnnotations.contains('params')) {
         _validateParamsParameter(param, method);
       }
@@ -350,9 +340,7 @@ class AnnotationValidator {
 
     // Check if class has injectable fields
     final injectFields = classElement.fields.where((f) {
-      final fieldAnnotations = _getAnnotationNames(
-        f.metadata.annotations,
-      );
+      final fieldAnnotations = _getAnnotationNames(f.metadata.annotations);
       return fieldAnnotations.contains('inject');
     }).toList();
 

@@ -66,8 +66,7 @@ class UniversalChainModule extends Module {
               .singleton();
         } else {
           bind<UniversalService>()
-              .toInstance(
-                  UniversalServiceImpl(value: 'reg', dependency: null));
+              .toInstance(UniversalServiceImpl(value: 'reg', dependency: null));
         }
         break;
       case UniversalScenario.named:
@@ -95,9 +94,7 @@ class UniversalChainModule extends Module {
                   value: depName,
                   dependency: eagerInstances[prevDepName],
                 );
-                bind<UniversalService>()
-                    .toInstance(instance)
-                    .withName(depName);
+                bind<UniversalService>().toInstance(instance).withName(depName);
                 eagerInstances[depName] = instance;
                 lastEagerInstance = instance;
                 break;

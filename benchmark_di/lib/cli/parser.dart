@@ -155,10 +155,19 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
   String normalizeBenchName(String name) {
     final n = name.trim().toLowerCase();
     return switch (n) {
-      'register' || 'registersingleton' || 'registereager' => 'registerSingleton',
-      'registerlazy' || 'registerlazysingleton' || 'registerlazysingle' => 'registerLazySingleton',
+      'register' ||
+      'registersingleton' ||
+      'registereager' =>
+        'registerSingleton',
+      'registerlazy' ||
+      'registerlazysingleton' ||
+      'registerlazysingle' =>
+        'registerLazySingleton',
       'chain' || 'chainsingleton' || 'chaineager' => 'chainSingleton',
-      'chainlazy' || 'chainlazysingleton' || 'lazysingleton' => 'chainLazySingleton',
+      'chainlazy' ||
+      'chainlazysingleton' ||
+      'lazysingleton' =>
+        'chainLazySingleton',
       'chainfactory' || 'factory' => 'chainFactory',
       'async' || 'asyncchain' || 'chainasync' => 'chainAsync',
       'named' => 'named',

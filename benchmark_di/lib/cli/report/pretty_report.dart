@@ -25,7 +25,8 @@ class PrettyReport extends ReportGenerator {
   /// Mappings from internal benchmark IDs to display names.
   static const nameMap = {
     'Universal_UniversalBenchmark.registerSingleton': 'RegisterSingleton',
-    'Universal_UniversalBenchmark.registerLazySingleton': 'RegisterLazySingleton',
+    'Universal_UniversalBenchmark.registerLazySingleton':
+        'RegisterLazySingleton',
     'Universal_UniversalBenchmark.chainSingleton': 'ChainSingleton',
     'Universal_UniversalBenchmark.chainLazySingleton': 'ChainLazySingleton',
     'Universal_UniversalBenchmark.chainFactory': 'ChainFactory',
