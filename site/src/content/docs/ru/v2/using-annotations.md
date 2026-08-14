@@ -1,96 +1,121 @@
 ---
-title: Использование аннотаций и генерация кода
-slug: ru/v2/using-annotations
+title: Аннотации
+description: Декларативный DI через аннотации и кодогенерацию — модули, провайдеры и field injection.
 ---
 
-CherryPick предоставляет продвинутую эргономику и безопасный DI благодаря **аннотациям Dart** и генерации кода. Это позволяет избавить вас от рутины — просто аннотируйте классы, поля и модули, запускайте генератор и используйте полностью автосвязанный DI!
+CherryPick 2.x поддерживает DI через аннотации, что избавляет от ручного
+связывания. Вы размечаете модули, провайдеры и поля; `cherrypick_generator`
+обрабатывает их и генерирует код регистрации и внедрения.
 
-## Как это работает
+Запускайте генератор при каждом изменении DI-кода:
 
-1. **Аннотируйте** сервисы, провайдеры и поля с помощью `cherrypick_annotations`.
-2. **Генерируйте** код с помощью `cherrypick_generator` и `build_runner`.
-3. **Используйте** автосгенерированные модули и миксины для автоматического внедрения.
-
-***
+```sh
+dart run build_runner build --delete-conflicting-outputs
+```
 
 ## Поддерживаемые аннотации
 
-| Аннотация           | Target         | Описание                                                     |
-|---------------------|---------------|--------------------------------------------------------------|
-| `@injectable()`     | класс         | Включает автоподстановку полей (генерируется mixin)          |
-| `@inject()`         | поле          | Автоподстановка через DI (работает с @injectable)            |
-| `@module()`         | класс         | DI-модуль: методы — провайдеры и сервисы                     |
-| `@provide`          | метод         | Регистрирует как DI-провайдер (можно с параметрами)           |
-| `@instance`         | метод/класс   | Регистрирует новый экземпляр (на каждый resolve, factory)     |
-| `@singleton`        | метод/класс   | Регистрация как синглтон (один экземпляр на скоуп)            |
-| `@named`            | поле/параметр | Использование именованных экземпляров для внедрения/resolve   |
-| `@scope`            | поле/параметр | Внедрение/resolve из другого (именованного) скоупа            |
-| `@params`           | параметр      | Добавляет user-defined параметры во время resolve             |
+| Аннотация | Где | Назначение |
+| --------- | --- | ---------- |
+| `@module()` | класс | Помечает DI-модуль (методы становятся провайдерами) |
+| `@provide()` | метод | Регистрирует тип через метод-провайдер |
+| `@instance()` | метод | Регистрирует готовый экземпляр |
+| `@singleton()` | метод / класс | Цель является singleton |
+| `@named()` | метод / поле | Привязка или получение именованной реализации |
+| `@params()` | параметр | Принимает runtime-параметры для провайдеров |
+| `@injectable()` | класс | Включает field injection; генерируется миксин |
+| `@inject()` | поле | Поле внедряется автоматически |
+| `@scope()` | поле | Получать это поле из именованного скоупа |
 
-***
-
-## Пример Field Injection
+## Связывание в модуле
 
 ```dart
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 
+@module()
+abstract class AppModule extends Module {
+  @singleton()
+  @provide()
+  ApiClient apiClient() => ApiClient();
+
+  @provide()
+  UserService userService(ApiClient api) => UserService(api);
+
+  @singleton()
+  @provide()
+  @named('mock')
+  ApiClient mockApiClient() => ApiClientMock();
+}
+```
+
+Генератор создаёт класс `$AppModule`, реализующий `builder`:
+
+```dart
+class $AppModule extends AppModule {
+  @override
+  void builder(Scope currentScope) {
+    bind<ApiClient>().toProvide(() => apiClient()).singleton();
+    bind<UserService>()
+        .toProvide(() => userService(currentScope.resolve<ApiClient>()));
+    bind<ApiClient>()
+        .toProvide(() => mockApiClient())
+        .withName('mock')
+        .singleton();
+  }
+}
+```
+
+## Field injection
+
+Разметьте класс аннотацией `@injectable()`, а его поля — `@inject()`. Генератор
+создаёт миксин, который получает и присваивает поля.
+
+```dart
 @injectable()
-class ProfilePage with _\$ProfilePage {
+class ProfileBloc with _$ProfileBloc {
   @inject()
   late final AuthService auth;
 
   @inject()
-  @scope('profile')
-  late final ProfileManager manager;
-
-  @inject()
   @named('admin')
-  late final UserService adminUserService;
+  late final UserService adminUser;
+
+  ProfileBloc() {
+    _inject(this); // сгенерированный инжектор
+  }
 }
 ```
 
-* После запуска build\_runner миксин `_ProfilePage` будет сгенерирован для внедрения.
-* Вызовите `myProfilePage.injectFields();` чтобы все зависимости были внедрены автоматически.
-
-## Пример модуля/провайдера
+Сгенерированный миксин (иллюстративно):
 
 ```dart
-@module()
-abstract class AppModule {
-  @singleton
-  AuthService provideAuth(Api api) => AuthService(api);
-
-  @named('logging')
-  @provide
-  Future<Logger> provideLogger(@params Map<String, dynamic> args) async => ...;
+mixin _$ProfileBloc {
+  void _inject(ProfileBloc instance) {
+    instance.auth = CherryPick.openRootScope().resolve<AuthService>();
+    instance.adminUser =
+        CherryPick.openRootScope().resolve<UserService>(named: 'admin');
+  }
 }
 ```
 
-***
+## Подключение
 
-## Шаги использования
+```dart
+void main() {
+  final scope = CherryPick.openRootScope()
+    ..installModules([
+      $AppModule(),
+    ]);
 
-1. Добавьте зависимости в `pubspec.yaml`.
-2. Аннотируйте классы и модули.
-3. Генерируйте код командой build\_runner.
-4. Регистрируйте модули и используйте автосвязь.
+  final bloc = ProfileBloc(); // поля внедрены в конструкторе
+  runApp(MyApp(bloc: bloc));
+}
+```
 
-***
+## Примечания
 
-## Расширенные возможности
-
-* Используйте `@named` для внедрения по ключу.
-* Используйте `@scope` для внедрения из разных скоупов.
-* Используйте `@params` для передачи runtime-параметров.
-
-***
-
-## Советы и FAQ
-
-* После изменений в DI-коде запускайте build\_runner заново.
-* Не редактируйте `.g.dart` вручную.
-* Ошибки некорректных аннотаций определяются автоматически.
-
-***
-
-## Ссылки
+- Провайдеры могут возвращать `Future<T>` (async) или обычное значение (sync).
+- Комбинируйте `@named` и `@scope` на полях/методах для именованных реализаций
+  или именованных скоупов.
+- Не редактируйте сгенерированные `.g.dart` файлы вручную.
+- Неверное использование аннотаций сообщается на этапе сборки, а не в рантайме.

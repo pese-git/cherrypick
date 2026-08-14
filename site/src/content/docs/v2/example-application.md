@@ -1,13 +1,14 @@
 ---
 title: Example Application
-slug: v2/example-application
+description: A complete CherryPick 2.x app wiring an API client, repository, and BLoC across scopes.
 ---
 
-Below is a complete example illustrating modules, subscopes, async providers, and dependency resolution.
+This example wires an API client, a repository, and a simple BLoC across a root
+scope and a nested feature scope, using named instances, factory providers,
+singletons, and sub-scopes.
 
 ```dart
 import 'dart:async';
-import 'package:meta/meta.dart';
 import 'package:cherrypick/cherrypick.dart';
 
 class AppModule extends Module {
@@ -20,40 +21,40 @@ class AppModule extends Module {
 
 class FeatureModule extends Module {
   final bool isMock;
+
   FeatureModule({required this.isMock});
+
   @override
   void builder(Scope currentScope) {
-    // Async provider for DataRepository with named dependency selection
     bind<DataRepository>()
         .withName("networkRepo")
-        .toProvideAsync(() async {
-          final client = await Future.delayed(
-            Duration(milliseconds: 100),
-            () => currentScope.resolve<ApiClient>(
+        .toProvide(
+          () => NetworkDataRepository(
+            currentScope.resolve<ApiClient>(
               named: isMock ? "apiClientMock" : "apiClientImpl",
             ),
-          );
-          return NetworkDataRepository(client);
-        })
+          ),
+        )
         .singleton();
 
-    // Chained async provider for DataBloc
-    bind<DataBloc>().toProvideAsync(
-      () async {
-        final repo = await currentScope.resolveAsync<DataRepository>(
-            named: "networkRepo");
-        return DataBloc(repo);
-      },
+    bind<DataBloc>().toProvide(
+      () => DataBloc(
+        currentScope.resolve<DataRepository>(named: "networkRepo"),
+      ),
     );
   }
 }
 
 void main() async {
-  final scope = CherryPick.openRootScope().installModules([AppModule()]);
-  final featureScope = scope.openSubScope("featureScope")
-    ..installModules([FeatureModule(isMock: true)]);
+  final scope = CherryPick.openRootScope().installModules([
+    AppModule(),
+  ]);
 
-  final dataBloc = await featureScope.resolveAsync<DataBloc>();
+  final subScope = scope
+      .openSubScope("featureScope")
+      .installModules([FeatureModule(isMock: true)]);
+
+  final dataBloc = subScope.resolve<DataBloc>();
   dataBloc.data.listen(
     (d) => print('Received data: $d'),
     onError: (e) => print('Error: $e'),
@@ -65,6 +66,7 @@ void main() async {
 
 class DataBloc {
   final DataRepository _dataRepository;
+
   Stream<String> get data => _dataController.stream;
   final StreamController<String> _dataController = StreamController.broadcast();
 
@@ -90,11 +92,11 @@ abstract class DataRepository {
 class NetworkDataRepository implements DataRepository {
   final ApiClient _apiClient;
   final _token = 'token';
+
   NetworkDataRepository(this._apiClient);
 
   @override
-  Future<String> getData() async =>
-      await _apiClient.sendRequest(
+  Future<String> getData() async => await _apiClient.sendRequest(
         url: 'www.google.com',
         token: _token,
         requestBody: {'type': 'data'},
@@ -102,21 +104,19 @@ class NetworkDataRepository implements DataRepository {
 }
 
 abstract class ApiClient {
-  Future sendRequest({@required String? url, String? token, Map? requestBody});
+  Future sendRequest({String? url, String? token, Map? requestBody});
 }
 
 class ApiClientMock implements ApiClient {
   @override
-  Future sendRequest(
-      {@required String? url, String? token, Map? requestBody}) async {
+  Future sendRequest({String? url, String? token, Map? requestBody}) async {
     return 'Local Data';
   }
 }
 
 class ApiClientImpl implements ApiClient {
   @override
-  Future sendRequest(
-      {@required String? url, String? token, Map? requestBody}) async {
+  Future sendRequest({String? url, String? token, Map? requestBody}) async {
     return 'Network data';
   }
 }

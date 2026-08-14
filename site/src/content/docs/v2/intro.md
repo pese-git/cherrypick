@@ -1,41 +1,42 @@
 ---
-title: CherryPick — Dependency Injection for Dart & Flutter
-slug: v2/intro
+title: Introduction
+description: What CherryPick 2.x offers and how its packages fit together.
 ---
 
-Welcome to the documentation for **CherryPick**, a lightweight and flexible dependency injection library for Dart and Flutter.
+:::caution[Archived version]
+This documents CherryPick **2.x** (2.2.0). For the current release, see the
+[latest documentation](/getting-started/).
+:::
 
-***
+**CherryPick** is a modern dependency injection (DI) toolkit for Dart and
+Flutter. It combines a concise runtime API with optional annotations and code
+generation, so you can wire dependencies by hand or let the generator do it.
 
-## About CherryPick
+## Advantages
 
-CherryPick is a modular DI (Dependency Injection) toolkit designed for:
+- 📦 Simple declarative API for registering and resolving dependencies
+- ⚡️ Full support for both sync and async registrations
+- 🧩 DI via annotations with code generation, including field injection
+- 🏷️ Named bindings for multiple implementations of an interface
+- 🏭 Parameterized bindings for runtime factories (e.g. by ID)
+- 🌲 Flexible scope system for dependency isolation and hierarchy
+- 🕹️ Optional resolution with `tryResolve`
+- 🐞 Clear compile-time errors for invalid annotation or DI configuration
 
-* Clean architecture
-* Lightweight and intuitive API
-* Powerful hierarchical scopes
-* Fast synchronous & asynchronous injections
-* Code generation and annotation-based configuration
+## Packages
 
-Whether you build backend or Flutter apps, CherryPick will help you maintain clear and testable project structure with minimal boilerplate.
+| Package | Purpose |
+| ------- | ------- |
+| [`cherrypick`](https://pub.dev/packages/cherrypick) | Runtime DI core |
+| [`cherrypick_annotations`](https://pub.dev/packages/cherrypick_annotations) | DI annotations |
+| [`cherrypick_generator`](https://pub.dev/packages/cherrypick_generator) | DI code generation |
+| [`cherrypick_flutter`](https://pub.dev/packages/cherrypick_flutter) | Flutter integration (`CherryPickProvider`) |
 
-## Quick Links
+CherryPick is not just for Flutter — all core features work in Dart CLI tools,
+servers, and microservices.
 
-* [Key Features](/v2/key-features/)
-* [Getting Started](/v2/getting-started/)
-* [Core Concepts](/v2/core-concepts/binding/)
-* [Advanced Features](/v2/advanced-features/hierarchical-subscopes/)
-* [Using Annotations](/v2/using-annotations/)
-* [FAQ](/v2/faq/)
-* [Example Application](/v2/example-application/)
-* [GitHub Repository](https://github.com/pese-git/cherrypick)
+## Next steps
 
-## Installation
-
-See [Installation](/v2/installation/) for instructions on adding CherryPick to your Dart/Flutter project.
-
-***
-
-CherryPick is open-source. Contributions and questions are welcome!
-
-***
+- [Installation](/v2/installation/)
+- [Quick Start](/v2/getting-started/) — bindings, modules, and scopes
+- [Bindings](/v2/bindings/) · [Scopes](/v2/scopes/) · [Using Annotations](/v2/using-annotations/)
