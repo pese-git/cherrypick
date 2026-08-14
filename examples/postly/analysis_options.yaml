@@ -9,7 +9,10 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+
 analyzer:
+  errors:
+    experimental_member_use: ignore
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
