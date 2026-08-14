@@ -93,10 +93,3 @@ abstract class AppModule {
 ---
 
 ## Ссылки
-
-<!--
-- [Подробнее про аннотации (en)](https://github.com/pese-git/cherrypick/blob/master/doc/annotations_en.md)
-- [cherrypick_annotations/README.md](https://github.com/pese-git/cherrypick/blob/master/cherrypick_annotations/README.md)
-- [cherrypick_generator/README.md](https://github.com/pese-git/cherrypick/blob/master/cherrypick_generator/README.md)
-- Полный пример: [`examples/postly`](../examples/postly)
--->

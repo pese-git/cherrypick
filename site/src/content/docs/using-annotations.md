@@ -122,10 +122,3 @@ abstract class AppModule {
 ---
 
 ## References
-
-<!--
-- [Full annotation reference (en)](https://github.com/pese-git/cherrypick/blob/master/doc/annotations_en.md)
-- [cherrypick_annotations/README.md](https://github.com/pese-git/cherrypick/blob/master/cherrypick_annotations/README.md)
-- [cherrypick_generator/README.md](https://github.com/pese-git/cherrypick/blob/master/cherrypick_generator/README.md)
-- See the [`examples/postly`](../examples/postly) for a full working DI+annotations app.
--->

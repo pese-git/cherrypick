@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightVersions from 'starlight-versions';
 
 // https://astro.build/config
 export default defineConfig({
@@ -8,6 +9,19 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'CherryPick',
+      plugins: [
+        starlightVersions({
+          // The unversioned docs at the root are the latest (development) line.
+          current: { label: '4.x.x (dev)' },
+          // Archived versions. Add one at a time — the plugin snapshots a single
+          // new version per build run.
+          versions: [
+            { slug: 'v3', label: '3.x.x' },
+            { slug: 'v2', label: '2.x.x' },
+            { slug: 'v1', label: '1.x.x' },
+          ],
+        }),
+      ],
       description:
         'Lightweight, modular dependency injection for Dart & Flutter — hierarchical scopes, sync & async providers, code generation.',
       logo: {

@@ -65,5 +65,3 @@ try {
   print('Цепочка зависимостей: ${e.dependencyChain}');
 }
 ```
-
-<!-- **Подробнее:** смотрите [cycle_detection.ru.md](https://github.com/pese-git/cherrypick/blob/master/doc/cycle_detection.ru.md) -->

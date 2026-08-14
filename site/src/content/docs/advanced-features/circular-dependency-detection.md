@@ -65,5 +65,3 @@ try {
   print('Dependency chain: ${e.dependencyChain}');
 }
 ```
-
-<!-- **More details:** See [cycle_detection.en.md](https://github.com/pese-git/cherrypick/blob/master/doc/cycle_detection.en.md) -->

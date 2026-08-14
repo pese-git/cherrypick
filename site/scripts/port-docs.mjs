@@ -87,6 +87,10 @@ for (const job of JOBS) {
     });
     if (!title) title = relPath.replace(/\.md$/, '');
 
+    // Drop HTML comments: they never render and are invalid MDX, which breaks
+    // the starlight-versions markdown transform when snapshotting versions.
+    text = text.replace(/<!--[\s\S]*?-->[ \t]*\n?/g, '');
+
     text = text.replace(/^\n+/, ''); // trim leading blank lines
 
     // Rewrite markdown links.
