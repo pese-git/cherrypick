@@ -1,4 +1,6 @@
 .DS_Store
+.cocoindex_code/
+.codegraph/
 
 # FVM Version Cache
 .fvm/
