@@ -361,10 +361,79 @@ void main() {
 
   // --------------------------------------------------------------------------
   group('Optional resolution and error handling', () {
+    // Contract: `null` means "no such binding". A binding that IS registered but
+    // cannot be resolved the way it was asked for reports the misuse instead of
+    // hiding it behind a null.
     test("tryResolve returns null for missing dependency", () {
       final observer = MockObserver();
       final scope = Scope(null, observer: observer);
       expect(scope.tryResolve<int>(), isNull);
+    });
+    test("tryResolve throws for an async provider binding", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().toProvideAsync(() async => 'async value');
+          }),
+        ]);
+      expect(() => scope.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolve throws for an async instance binding", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().toInstance(Future.value('async value'));
+          }),
+        ]);
+      expect(() => scope.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolve throws for an async binding inherited from the parent",
+        () {
+      final observer = MockObserver();
+      final parent = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().toProvideAsync(() async => 'async value');
+          }),
+        ]);
+      final child = parent.openSubScope('child');
+      expect(() => child.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolve throws when a parameterized provider gets no params", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<int>().toProvideWithParams((param) => (param as int) * 2);
+          }),
+        ]);
+      expect(scope.tryResolve<int>(params: 3), 6);
+      expect(() => scope.tryResolve<int>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolveAsync throws when a parameterized provider gets no params",
+        () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<int>().toProvideAsyncWithParams((x) async => (x as int) * 3);
+          }),
+        ]);
+      expect(scope.tryResolveAsync<int>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolveAsync propagates an error thrown by the provider", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m
+                .bind<String>()
+                .toProvideAsync(() async => throw ArgumentError('boom'));
+          }),
+        ]);
+      expect(scope.tryResolveAsync<String>(), throwsA(isA<ArgumentError>()));
     });
   });
 

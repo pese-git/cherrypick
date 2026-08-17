@@ -44,6 +44,20 @@ class _DisposableModule extends Module {
   }
 }
 
+class _AsyncStringModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<String>().toProvideAsync(() async => 'async value');
+  }
+}
+
+class _ThrowingAsyncModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<int>().toProvideAsync(() async => throw ArgumentError('boom'));
+  }
+}
+
 class _DisposableService implements Disposable {
   bool disposed = false;
 
@@ -95,6 +109,23 @@ void main() {
 
     test('fast-path missing async dependency throws', () {
       expect(scope.resolveAsync<int>(), throwsA(isA<StateError>()));
+    });
+
+    // The fast-path bypasses the observer and both cycle detectors, so it has
+    // to be checked separately: tryResolve must report a sync/async mismatch
+    // here exactly as it does on the observer path.
+    test('fast-path tryResolve returns null only for a missing binding', () {
+      expect(scope.tryResolve<int>(), isNull);
+    });
+
+    test('fast-path tryResolve throws for an async binding', () {
+      scope.installModules([_AsyncStringModule()]);
+      expect(() => scope.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+
+    test('fast-path tryResolveAsync propagates a provider error', () {
+      scope.installModules([_ThrowingAsyncModule()]);
+      expect(scope.tryResolveAsync<int>(), throwsA(isA<ArgumentError>()));
     });
 
     test('installModules with silent observer skips diagnostics', () {
