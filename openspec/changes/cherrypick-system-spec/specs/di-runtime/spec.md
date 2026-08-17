@@ -41,6 +41,11 @@
 - **WHEN** модули сброшены
 - **THEN** bindings модулей не доступны для резолва в этом scope
 
+#### Scenario: Незавершённый binding
+- **WHEN** модуль объявляет `bind<T>()` без цели (`toInstance` / `toProvide` / `toProvideWithParams` / `toProvideAsync` / `toProvideAsyncWithParams`)
+- **THEN** установка модуля завершается ошибкой с указанием типа, имени (если binding именованный) и модуля
+- **AND** ошибка выбрасывается при установке модуля, а не при резолве
+
 ### Requirement: Типы bindings
 `Binding` MUST поддерживать прямые инстансы, синхронные провайдеры, асинхронные провайдеры и провайдеры с параметрами, а также именованные bindings.
 
