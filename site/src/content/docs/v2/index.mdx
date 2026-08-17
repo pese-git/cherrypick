@@ -1,0 +1,91 @@
+---
+title: CherryPick
+description: Modern dependency injection for Dart & Flutter — annotations, code generation, async providers, named and parameterized bindings.
+template: splash
+hero:
+  tagline: Modern dependency injection for Dart & Flutter. Annotations and code generation, async providers, named and parameterized bindings, hierarchical scopes, and Flutter integration.
+  image:
+    file: ../../../assets/v2/logo.svg
+  actions:
+    - text: Quick Start
+      link: /v2/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/pese-git/cherrypick/tree/cherrypick-v2.2.0
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+:::caution[Archived version]
+This is the documentation for CherryPick **2.x**. For the latest release, see the
+[latest version](/getting-started/).
+:::
+
+## Why CherryPick 2.x?
+
+<CardGrid stagger>
+  <Card title="Sync & async" icon="random">
+    Register and resolve synchronous factories, async providers (`toProvideAsync`), and already-running futures (`toInstanceAsync`).
+  </Card>
+  <Card title="Named & parameterized" icon="setting">
+    Bind multiple implementations under names, and build dependencies from runtime parameters.
+  </Card>
+  <Card title="Annotations & codegen" icon="pencil">
+    Describe modules and field injection with annotations; `cherrypick_generator` writes the wiring.
+  </Card>
+  <Card title="Hierarchical scopes" icon="list-format">
+    Compose a tree of named scopes with dot-notation paths, isolate dependencies, and close whole subtrees.
+  </Card>
+  <Card title="Optional resolution" icon="approve-check">
+    Use `tryResolve` / `tryResolveAsync` to get `null` instead of throwing when a dependency is missing.
+  </Card>
+  <Card title="Flutter integration" icon="puzzle">
+    Expose the DI scope to the widget tree with `CherryPickProvider` — or use the core in pure Dart.
+  </Card>
+</CardGrid>
+
+## Install
+
+<Tabs>
+  <TabItem label="Dart">
+
+```yaml title="pubspec.yaml"
+dependencies:
+  cherrypick: ^2.2.0
+  cherrypick_annotations: ^2.2.0
+
+dev_dependencies:
+  build_runner: ^2.0.0
+  cherrypick_generator: ^2.2.0
+```
+
+  </TabItem>
+  <TabItem label="Flutter">
+
+```yaml title="pubspec.yaml"
+dependencies:
+  cherrypick: ^2.2.0
+  cherrypick_flutter: ^2.2.0
+  cherrypick_annotations: ^2.2.0
+
+dev_dependencies:
+  build_runner: ^2.0.0
+  cherrypick_generator: ^2.2.0
+```
+
+  </TabItem>
+</Tabs>
+
+## Explore
+
+<CardGrid>
+  <LinkCard title="Installation" href="/v2/installation/" description="Add CherryPick 2.x and the code generator." />
+  <LinkCard title="Quick Start" href="/v2/getting-started/" description="Bindings, modules, and scopes by example." />
+  <LinkCard title="Bindings" href="/v2/bindings/" description="Sync, async, named, and parameterized bindings." />
+  <LinkCard title="Scopes" href="/v2/scopes/" description="Named scopes and dependency hierarchy." />
+  <LinkCard title="Using Annotations" href="/v2/using-annotations/" description="DI via annotations and code generation." />
+  <LinkCard title="Flutter Integration" href="/v2/flutter-integration/" description="CherryPickProvider in the widget tree." />
+</CardGrid>

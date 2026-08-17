@@ -1,0 +1,54 @@
+---
+title: CherryPick
+description: A lightweight dependency injection library for Dart & Flutter — bindings, modules, and hierarchical scopes.
+template: splash
+hero:
+  tagline: A lightweight dependency injection library for Dart & Flutter. Simple bindings, modules, and hierarchical scopes with named and singleton instances.
+  image:
+    file: ../../../assets/v1/logo.svg
+  actions:
+    - text: Quick Start
+      link: /v1/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/pese-git/cherrypick/tree/1.0.3
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+:::caution[Archived version]
+This is the documentation for CherryPick **1.x**. For the latest features —
+async providers, runtime parameters, annotations, and code generation — see the
+[latest version](/getting-started/).
+:::
+
+## Building blocks
+
+<CardGrid>
+  <Card title="Binding" icon="setting">
+    Configure how a dependency is created — `toInstance()` for a ready value or `toProvide()` for a factory, with optional `withName()` and `singleton()`.
+  </Card>
+  <Card title="Module" icon="puzzle">
+    A container of bindings. Extend `Module` and register your dependencies inside `builder(Scope currentScope)`.
+  </Card>
+  <Card title="Scope" icon="list-format">
+    A container that holds the whole dependency tree. Resolve instances with `resolve<T>()` and nest scopes with `openSubScope()`.
+  </Card>
+</CardGrid>
+
+## Features
+
+- Root and nested (sub) scopes
+- Named instances
+- Singleton and factory bindings
+
+## Explore
+
+<CardGrid>
+  <LinkCard title="Installation" href="/v1/installation/" description="Add CherryPick 1.x to your project." />
+  <LinkCard title="Quick Start" href="/v1/getting-started/" description="Bindings, modules, and scopes by example." />
+  <LinkCard title="Example Application" href="/v1/example-application/" description="A complete app wiring repositories and a BLoC." />
+</CardGrid>

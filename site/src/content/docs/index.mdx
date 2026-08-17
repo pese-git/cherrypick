@@ -1,0 +1,111 @@
+---
+title: CherryPick
+description: Lightweight, modular dependency injection for Dart & Flutter — hierarchical scopes, sync & async providers, and code generation.
+template: splash
+hero:
+  tagline: A lightweight, flexible dependency injection ecosystem for Dart & Flutter. Clean API, hierarchical scopes, sync & async providers, and zero-boilerplate code generation.
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/pese-git/cherrypick
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Why CherryPick?
+
+<CardGrid stagger>
+  <Card title="Zero-overhead API" icon="rocket">
+    Clean, minimal syntax with strong typing and full control over the binding lifecycle — from transient factories to lazy singletons.
+  </Card>
+  <Card title="Hierarchical scopes" icon="list-format">
+    Compose a tree of scopes and sub-scopes. Resolve dependencies through the hierarchy and dispose them deterministically.
+  </Card>
+  <Card title="Sync & async" icon="random">
+    Register and resolve synchronous providers, async factories, and dependencies that need runtime parameters.
+  </Card>
+  <Card title="Code generation" icon="setting">
+    Annotate your modules and let `cherrypick_generator` write the wiring for you — no manual boilerplate.
+  </Card>
+  <Card title="Highly testable" icon="approve-check">
+    Override bindings and build isolated scope trees so every test gets exactly the graph it needs.
+  </Card>
+  <Card title="Flutter-native" icon="puzzle">
+    Expose DI scopes to the widget tree with `CherryPickProvider` — or use the core library in pure Dart on the server.
+  </Card>
+</CardGrid>
+
+## Install
+
+<Tabs>
+  <TabItem label="Dart">
+
+```yaml title="pubspec.yaml"
+dependencies:
+  cherrypick: ^4.0.0
+  cherrypick_annotations: ^4.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  cherrypick_generator: ^4.0.0
+```
+
+  </TabItem>
+  <TabItem label="Flutter">
+
+```yaml title="pubspec.yaml"
+dependencies:
+  cherrypick: ^4.0.0
+  cherrypick_flutter: ^4.0.0
+  cherrypick_annotations: ^4.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  cherrypick_generator: ^4.0.0
+```
+
+  </TabItem>
+</Tabs>
+
+## A taste of the API
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+// 1. Describe a module.
+class AppModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<ApiClient>().toProvide(() => ApiClient());
+    bind<DataRepository>()
+        .toProvide(() => DataRepository(currentScope.resolve<ApiClient>()))
+        .singleton();
+  }
+}
+
+void main() {
+  // 2. Open a scope and install the module.
+  final scope = CherryPick.openRootScope()..installModules([AppModule()]);
+
+  // 3. Resolve.
+  final repo = scope.resolve<DataRepository>();
+}
+```
+
+## Explore the docs
+
+<CardGrid>
+  <LinkCard title="Installation" href="/installation/" description="Add CherryPick to a Dart or Flutter project." />
+  <LinkCard title="Getting Started" href="/getting-started/" description="Your first module, scope, and resolution." />
+  <LinkCard title="Core Concepts" href="/core-concepts/binding/" description="Bindings, modules, scopes, and disposal." />
+  <LinkCard title="Using Annotations" href="/using-annotations/" description="Generate DI wiring with annotations." />
+  <LinkCard title="Advanced Features" href="/advanced-features/hierarchical-subscopes/" description="Subscopes, logging, and cycle detection." />
+  <LinkCard title="FAQ" href="/faq/" description="Common questions and troubleshooting." />
+</CardGrid>

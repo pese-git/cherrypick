@@ -1,0 +1,54 @@
+---
+title: CherryPick
+description: Лёгкая библиотека внедрения зависимостей для Dart и Flutter — биндинги, модули и иерархические скоупы.
+template: splash
+hero:
+  tagline: Лёгкая библиотека внедрения зависимостей для Dart и Flutter. Простые биндинги, модули и иерархические скоупы с именованными и singleton-экземплярами.
+  image:
+    file: ../../../../assets/v1/logo.svg
+  actions:
+    - text: Быстрый старт
+      link: /ru/v1/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub
+      link: https://github.com/pese-git/cherrypick/tree/1.0.3
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+:::caution[Архивная версия]
+Это документация CherryPick **1.x**. Актуальные возможности — асинхронные
+провайдеры, runtime-параметры, аннотации и кодогенерация — смотрите в
+[последней версии](/ru/getting-started/).
+:::
+
+## Строительные блоки
+
+<CardGrid>
+  <Card title="Binding" icon="setting">
+    Настраивает создание зависимости — `toInstance()` для готового значения или `toProvide()` для фабрики, с опциональными `withName()` и `singleton()`.
+  </Card>
+  <Card title="Module" icon="puzzle">
+    Контейнер биндингов. Наследуйте `Module` и регистрируйте зависимости в `builder(Scope currentScope)`.
+  </Card>
+  <Card title="Scope" icon="list-format">
+    Контейнер всего дерева зависимостей. Получайте экземпляры через `resolve<T>()` и вкладывайте скоупы через `openSubScope()`.
+  </Card>
+</CardGrid>
+
+## Возможности
+
+- Корневые и вложенные (дочерние) скоупы
+- Именованные экземпляры
+- Singleton- и фабричные биндинги
+
+## Разделы
+
+<CardGrid>
+  <LinkCard title="Установка" href="/ru/v1/installation/" description="Добавьте CherryPick 1.x в проект." />
+  <LinkCard title="Быстрый старт" href="/ru/v1/getting-started/" description="Биндинги, модули и скоупы на примерах." />
+  <LinkCard title="Пример приложения" href="/ru/v1/example-application/" description="Полное приложение с репозиториями и BLoC." />
+</CardGrid>

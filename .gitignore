@@ -8,6 +8,8 @@
 .dart_tool/
 .idea/
 .vscode/
+.claude/
+.cocoindex_code/
 
 
 **/*.g.dart

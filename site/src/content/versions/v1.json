@@ -1,0 +1,48 @@
+{
+  "sidebar": [
+    {
+      "label": "Getting Started",
+      "translations": {
+        "ru": "Начало работы"
+      },
+      "items": [
+        {
+          "label": "Introduction",
+          "translations": {
+            "ru": "Введение"
+          },
+          "slug": "intro"
+        },
+        {
+          "label": "Installation",
+          "translations": {
+            "ru": "Установка"
+          },
+          "slug": "installation"
+        },
+        {
+          "label": "Quick Start",
+          "translations": {
+            "ru": "Быстрый старт"
+          },
+          "slug": "getting-started"
+        }
+      ]
+    },
+    {
+      "label": "Guides",
+      "translations": {
+        "ru": "Руководства"
+      },
+      "items": [
+        {
+          "label": "Example Application",
+          "translations": {
+            "ru": "Пример приложения"
+          },
+          "slug": "example-application"
+        }
+      ]
+    }
+  ]
+}

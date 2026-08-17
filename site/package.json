@@ -1,0 +1,20 @@
+{
+  "name": "cherrypick-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Landing page and documentation for CherryPick — Dependency Injection for Dart & Flutter.",
+  "scripts": {
+    "dev": "astro dev --port ${PORT:-4321}",
+    "start": "astro dev --port ${PORT:-4321}",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.7",
+    "astro": "^7.2.2",
+    "sharp": "^0.34.0",
+    "starlight-versions": "^0.9.1"
+  }
+}

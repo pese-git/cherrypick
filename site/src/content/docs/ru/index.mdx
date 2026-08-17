@@ -1,0 +1,111 @@
+---
+title: CherryPick
+description: Лёгкий модульный внедрение зависимостей для Dart и Flutter — иерархические скоупы, синхронные и асинхронные провайдеры, кодогенерация.
+template: splash
+hero:
+  tagline: Лёгкая и гибкая экосистема внедрения зависимостей для Dart и Flutter. Чистый API, иерархические скоупы, синхронные и асинхронные провайдеры, кодогенерация без шаблонного кода.
+  image:
+    file: ../../../assets/logo.svg
+  actions:
+    - text: Начать
+      link: /ru/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: GitHub
+      link: https://github.com/pese-git/cherrypick
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Почему CherryPick?
+
+<CardGrid stagger>
+  <Card title="API без накладных расходов" icon="rocket">
+    Чистый и минимальный синтаксис со строгой типизацией и полным контролем жизненного цикла биндинга — от transient-фабрик до ленивых синглтонов.
+  </Card>
+  <Card title="Иерархические скоупы" icon="list-format">
+    Составляйте дерево скоупов и подскоупов. Разрешайте зависимости по иерархии и детерминированно освобождайте ресурсы.
+  </Card>
+  <Card title="Sync и async" icon="random">
+    Регистрируйте и разрешайте синхронные провайдеры, асинхронные фабрики и зависимости с runtime-параметрами.
+  </Card>
+  <Card title="Кодогенерация" icon="setting">
+    Разметьте модули аннотациями, и `cherrypick_generator` напишет связывание за вас — никакого ручного шаблонного кода.
+  </Card>
+  <Card title="Тестируемость" icon="approve-check">
+    Переопределяйте биндинги и стройте изолированные деревья скоупов, чтобы каждый тест получал нужный граф зависимостей.
+  </Card>
+  <Card title="Нативная поддержка Flutter" icon="puzzle">
+    Пробрасывайте DI-скоупы в дерево виджетов через `CherryPickProvider` — или используйте ядро в чистом Dart на сервере.
+  </Card>
+</CardGrid>
+
+## Установка
+
+<Tabs>
+  <TabItem label="Dart">
+
+```yaml title="pubspec.yaml"
+dependencies:
+  cherrypick: ^4.0.0
+  cherrypick_annotations: ^4.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  cherrypick_generator: ^4.0.0
+```
+
+  </TabItem>
+  <TabItem label="Flutter">
+
+```yaml title="pubspec.yaml"
+dependencies:
+  cherrypick: ^4.0.0
+  cherrypick_flutter: ^4.0.0
+  cherrypick_annotations: ^4.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  cherrypick_generator: ^4.0.0
+```
+
+  </TabItem>
+</Tabs>
+
+## Как выглядит API
+
+```dart
+import 'package:cherrypick/cherrypick.dart';
+
+// 1. Описываем модуль.
+class AppModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<ApiClient>().toProvide(() => ApiClient());
+    bind<DataRepository>()
+        .toProvide(() => DataRepository(currentScope.resolve<ApiClient>()))
+        .singleton();
+  }
+}
+
+void main() {
+  // 2. Открываем скоуп и устанавливаем модуль.
+  final scope = CherryPick.openRootScope()..installModules([AppModule()]);
+
+  // 3. Разрешаем зависимость.
+  final repo = scope.resolve<DataRepository>();
+}
+```
+
+## Изучите документацию
+
+<CardGrid>
+  <LinkCard title="Установка" href="/ru/installation/" description="Добавьте CherryPick в проект Dart или Flutter." />
+  <LinkCard title="Быстрый старт" href="/ru/getting-started/" description="Первый модуль, скоуп и разрешение." />
+  <LinkCard title="Основные концепции" href="/ru/core-concepts/binding/" description="Биндинги, модули, скоупы и освобождение." />
+  <LinkCard title="Аннотации" href="/ru/using-annotations/" description="Генерация DI-связывания через аннотации." />
+  <LinkCard title="Продвинутые возможности" href="/ru/advanced-features/hierarchical-subscopes/" description="Подскоупы, логирование, обнаружение циклов." />
+  <LinkCard title="FAQ" href="/ru/faq/" description="Частые вопросы и решение проблем." />
+</CardGrid>
