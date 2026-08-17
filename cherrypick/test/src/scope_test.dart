@@ -195,6 +195,63 @@ void main() {
   });
 
   // --------------------------------------------------------------------------
+  group('Module installation errors', () {
+    // A bind<T>() whose chain was never finished has no resolver. That is a
+    // configuration mistake and must be reported as one, naming the type and
+    // the module, instead of surfacing as a null-check TypeError.
+    test('installModules reports a binding left without a target', () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
+      expect(
+        () => scope.installModules([
+          _InlineModule((m, s) {
+            m.bind<int>();
+          }),
+        ]),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('int'),
+              contains('_InlineModule'),
+              contains('toProvide'),
+            ),
+          ),
+        ),
+      );
+    });
+    test('the reported message identifies a named binding by its name', () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
+      expect(
+        () => scope.installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().withName('api');
+          }),
+        ]),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('String'), contains('api')),
+          ),
+        ),
+      );
+    });
+    test('a completed binding installs normally', () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<int>().toInstance(1);
+          }),
+        ]);
+      expect(scope.resolve<int>(), 1);
+    });
+  });
+
+  // --------------------------------------------------------------------------
   group('Named Dependencies', () {
     test('Resolve named binding', () {
       final observer = MockObserver();
