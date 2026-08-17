@@ -87,7 +87,12 @@ If your service implements the `Disposable` interface, CherryPick will automatic
 
 **Best practice:**  
 Always finish your work with `await Cherrypick.closeRootScope()` (for the root scope) or `await scope.closeSubScope('feature')` (for subscopes).  
-These methods will automatically await `dispose()` on all resolved objects implementing `Disposable`, ensuring safe and complete cleanup (sync and async). 
+These methods await `dispose()` on every `Disposable` created by a binding **declared in the scope being closed**, ensuring safe and complete cleanup (sync and async).
+
+**Ownership:** resolving through a subscope does not transfer ownership. If a
+binding lives in the root scope, its instances are released when the *root*
+closes, even when they were resolved via `subScope.resolve<T>()`. To tie a
+resource to a subscope's lifetime, declare its binding in that subscope. 
 
 Manual `await scope.dispose()` is available if you manage scopes yourself.
 

@@ -257,7 +257,7 @@ final service = scope.tryResolve<OptionalService>(); // returns null if not exis
 ## Automatic resource management: Disposable and dispose
 
 CherryPick makes it easy to clean up resources for your singleton services and other objects registered in DI.  
-If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was resolved via DI.  
+If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was created by a binding declared in that scope (resolving a parent's dependency through a subscope leaves it owned by the parent).  
 This ensures safe and graceful resource management (including any async resource cleanup: streams, DB connections, sockets, etc.).
 
 ### Example

@@ -254,8 +254,28 @@ If you bind an object implementing `Disposable` as a singleton or provide it via
 #### Key Points
 - Supports both synchronous and asynchronous cleanup (dispose may return `void` or `Future`).
 - All `Disposable` instances from the current scope and subscopes will be disposed in the correct order.
+- An instance is owned by the scope that **declares its binding**, not by the scope you called `resolve()` on.
 - Prevents resource leaks and enforces robust cleanup.
 - No manual wiring needed once your class implements `Disposable`.
+
+#### Ownership
+
+Resolving a parent's dependency through a subscope does not transfer ownership:
+
+```dart
+final root = CherryPick.openRootScope()
+  ..installModules([AppModule()]);        // Database is declared here
+final feature = root.openSubScope('feature');
+
+final db = feature.resolve<Database>();   // resolved through the subscope...
+await root.closeSubScope('feature');      // ...but NOT disposed here
+
+await CherryPick.closeRootScope();        // disposed here
+```
+
+Keep in mind that a binding declared in a long-lived scope and *not* marked
+`.singleton()` accumulates one instance per resolve in that scope until it
+closes. Declare a binding in the scope whose lifetime matches the resource.
 
 #### Minimal Sync Example
 ```dart
