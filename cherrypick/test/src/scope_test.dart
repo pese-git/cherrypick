@@ -118,6 +118,27 @@ void main() {
       final scope = Scope(null, observer: observer);
       expect(scope.parentScope, null);
     });
+    // scopeId keys the per-scope entries of GlobalCycleDetector and prefixes
+    // every global resolution key, so two scopes sharing an id would share a
+    // resolution stack and could report a cycle that does not exist.
+    test('Scope ids are unique even when scopes are created in a tight loop',
+        () {
+      final observer = MockObserver();
+      final ids = <String>{};
+      for (var i = 0; i < 5000; i++) {
+        ids.add(Scope(null, observer: observer).scopeId!);
+      }
+      expect(ids, hasLength(5000));
+    });
+    test('SubScope ids are unique across a wide scope tree', () {
+      final observer = MockObserver();
+      final root = Scope(null, observer: observer);
+      final ids = <String>{root.scopeId!};
+      for (var i = 0; i < 2000; i++) {
+        ids.add(root.openSubScope('child_$i').scopeId!);
+      }
+      expect(ids, hasLength(2001));
+    });
     test('Can open and retrieve the same subScope by key', () {
       final observer = MockObserver();
       final scope = Scope(null, observer: observer);
