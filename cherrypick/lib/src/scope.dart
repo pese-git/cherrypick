@@ -156,6 +156,9 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// Ensures all [Disposable] objects and internal modules
   /// in the subscope are properly cleaned up. Also removes any global cycle detectors associated with the subscope.
   ///
+  /// Only objects created by bindings declared in the subscope are disposed:
+  /// dependencies inherited from this scope remain owned by it. See [dispose].
+  ///
   /// Example:
   /// ```dart
   /// await rootScope.closeSubScope('feature');
@@ -625,6 +628,16 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   /// This method should always be called when a scope is no longer needed
   /// to guarantee timely resource cleanup (files, sockets, streams, handles, etc).
+  ///
+  /// A [Disposable] is tracked by — and therefore disposed by — the scope whose
+  /// binding created it, not the scope [resolve] was called on. Resolving a
+  /// parent's dependency through a subscope leaves it owned by the parent, so
+  /// it stays alive until the parent is disposed.
+  ///
+  /// Note that a binding declared in a long-lived scope and not marked
+  /// `singleton()` accumulates one tracked instance per resolve until that
+  /// scope is disposed. Declare bindings in the scope whose lifetime matches
+  /// the resource.
   ///
   /// Example:
   /// ```dart

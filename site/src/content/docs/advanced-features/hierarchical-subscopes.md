@@ -10,6 +10,8 @@ CherryPick supports a hierarchical structure of scopes, allowing you to create c
 - Dependencies registered in a subscope override those from parent scopes when resolved.
 - If a dependency is not found in the current subscope, the resolution process automatically searches parent scopes up the hierarchy.
 - Subscopes can have their own modules, lifetime, and disposable objects.
+- Resolving through a subscope does not make it the owner: a `Disposable` is
+  disposed by the scope that declares its binding (see [Disposable](../core-concepts/disposable/)).
 - You can nest subscopes to any depth, modeling features, flows, or components independently.
 
 ## Example
@@ -40,4 +42,4 @@ final dialogManager = dialogScope.resolve<DialogManager>();
 - Provide and override services for specific navigation stacks or platform-specific branches.
 - Manage the lifetime and disposal of groups of dependencies independently (e.g., per-user, per-session, per-component).
 
-**Tip:** Always close subscopes when they are no longer needed to release resources and trigger cleanup of Disposable dependencies.
+**Tip:** Always close subscopes when they are no longer needed to release resources and trigger cleanup of Disposable dependencies. Note that this releases what the subscope itself declares — to tie a resource to a subscope's lifetime, declare its binding there rather than in a parent.
