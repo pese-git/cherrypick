@@ -58,6 +58,15 @@ class ModuleCountingDisposable extends Module {
   }
 }
 
+class ModuleAsyncCountingDisposable extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<CountingDisposable>()
+        .toProvideAsync(() async => CountingDisposable())
+        .singleton();
+  }
+}
+
 class ModuleWithDisposable extends Module {
   @override
   void builder(Scope scope) {
@@ -355,6 +364,37 @@ void main() {
       expect(identical(d, d2), isFalse);
       await root.closeSubScope('feature');
       expect(d2.disposeCount, 1);
+    });
+    test('Closing subScope does not dispose instances owned by the parent',
+        () async {
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleCountingDisposable()]);
+      final sub = root.openSubScope('feature');
+
+      // Resolved through the subscope, but the binding lives in the root.
+      final fromSub = sub.resolve<CountingDisposable>();
+      await root.closeSubScope('feature');
+
+      expect(fromSub.disposeCount, 0,
+          reason: 'parent-owned singleton must survive its child scope');
+      expect(identical(root.resolve<CountingDisposable>(), fromSub), isTrue);
+
+      await root.dispose();
+      expect(fromSub.disposeCount, 1);
+    });
+    test('Closing subScope does not dispose parent instances resolved async',
+        () async {
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleAsyncCountingDisposable()]);
+      final sub = root.openSubScope('feature');
+
+      final fromSub = await sub.resolveAsync<CountingDisposable>();
+      await root.closeSubScope('feature');
+
+      expect(fromSub.disposeCount, 0);
+
+      await root.dispose();
+      expect(fromSub.disposeCount, 1);
     });
     test('Dispose for all nested subScopes on root disposeAsync', () async {
       final root = CherryPick.openRootScope();

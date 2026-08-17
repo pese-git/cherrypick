@@ -266,7 +266,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         throw StateError(
             'Can\'t resolve dependency `$T`. Maybe you forget register it?');
       }
-      if (result is Disposable) _disposables.add(result);
       return result;
     }
 
@@ -297,7 +296,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         rethrow;
       }
     }
-    _trackDisposable(result);
     return result;
   }
 
@@ -344,21 +342,15 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   T? tryResolve<T>({String? named, dynamic params}) {
     if (_canUseDirectResolvePath) {
-      final result = _tryResolveInternal<T>(named: named, params: params);
-      if (result != null && result is Disposable) _disposables.add(result);
-      return result;
+      return _tryResolveInternal<T>(named: named, params: params);
     }
 
-    T? result;
     if (isGlobalCycleDetectionEnabled) {
-      result = withGlobalCycleDetection<T?>(T, named, () {
+      return withGlobalCycleDetection<T?>(T, named, () {
         return _tryResolveWithLocalDetection<T>(named: named, params: params);
       });
-    } else {
-      result = _tryResolveWithLocalDetection<T>(named: named, params: params);
     }
-    if (result != null) _trackDisposable(result);
-    return result;
+    return _tryResolveWithLocalDetection<T>(named: named, params: params);
   }
 
   /// Attempts to resolve [T] using the local cycle detector. Returns null if not found or cycle.
@@ -375,11 +367,18 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   /// Locates and resolves [T] without cycle detection (direct lookup).
   /// Returns null if not found. Used internally.
+  ///
+  /// Instances created by a binding of *this* scope are tracked here, so a
+  /// [Disposable] is always owned by the scope that declares its binding.
+  /// When resolution falls through to the parent, the parent tracks it.
   T? _tryResolveInternal<T>({String? named, dynamic params}) {
-    final resolver = _findBindingResolver<T>(named);
     // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveSync(params) ??
-        _parentScope?.tryResolve(named: named, params: params);
+    final resolved = _findBindingResolver<T>(named)?.resolveSync(params);
+    if (resolved != null) {
+      _trackDisposable(resolved);
+      return resolved;
+    }
+    return _parentScope?.tryResolve(named: named, params: params);
   }
 
   /// Asynchronously resolves a dependency of type [T].
@@ -399,7 +398,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         throw StateError(
             "Can't resolve async dependency `$T`. Maybe you forget register it?");
       }
-      if (result is Disposable) _disposables.add(result);
       return result;
     }
     return _resolveAsyncWithObserverPath<T>(named: named, params: params);
@@ -407,18 +405,14 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   Future<T> _resolveAsyncWithObserverPath<T>(
       {String? named, dynamic params}) async {
-    T result;
     if (isGlobalCycleDetectionEnabled) {
-      result = await withGlobalCycleDetection<Future<T>>(T, named, () async {
+      return await withGlobalCycleDetection<Future<T>>(T, named, () async {
         return await _resolveAsyncWithLocalDetection<T>(
             named: named, params: params);
       });
-    } else {
-      result = await _resolveAsyncWithLocalDetection<T>(
-          named: named, params: params);
     }
-    _trackDisposable(result);
-    return result;
+    return await _resolveAsyncWithLocalDetection<T>(
+        named: named, params: params);
   }
 
   /// Resolves [T] asynchronously using local cycle detector. Throws if not found.
@@ -463,28 +457,21 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// ```
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
     if (_canUseDirectResolvePath) {
-      final result =
-          await _tryResolveAsyncInternal<T>(named: named, params: params);
-      if (result != null && result is Disposable) _disposables.add(result);
-      return result;
+      return await _tryResolveAsyncInternal<T>(named: named, params: params);
     }
     return _tryResolveAsyncWithObserverPath<T>(named: named, params: params);
   }
 
   Future<T?> _tryResolveAsyncWithObserverPath<T>(
       {String? named, dynamic params}) async {
-    T? result;
     if (isGlobalCycleDetectionEnabled) {
-      result = await withGlobalCycleDetection<Future<T?>>(T, named, () async {
+      return await withGlobalCycleDetection<Future<T?>>(T, named, () async {
         return await _tryResolveAsyncWithLocalDetection<T>(
             named: named, params: params);
       });
-    } else {
-      result = await _tryResolveAsyncWithLocalDetection<T>(
-          named: named, params: params);
     }
-    if (result != null) _trackDisposable(result);
-    return result;
+    return await _tryResolveAsyncWithLocalDetection<T>(
+        named: named, params: params);
   }
 
   /// Attempts to resolve [T] asynchronously using local cycle detector. Returns null if missing.
@@ -501,11 +488,23 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
+  ///
+  /// Mirrors [_tryResolveInternal]: instances produced by a binding of this
+  /// scope are tracked here, resolutions delegated to the parent are tracked
+  /// by the parent.
   Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) {
-    final resolver = _findBindingResolver<T>(named);
     // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveAsync(params) ??
-        _parentScope?.tryResolveAsync(named: named, params: params) ??
+    final future = _findBindingResolver<T>(named)?.resolveAsync(params);
+    if (future != null) {
+      // Track on a side branch instead of returning a derived future: the
+      // caller keeps awaiting the original, so no extra link is added to its
+      // await chain. This listener is registered before the caller's, so the
+      // instance is always tracked first. The derived future swallows errors
+      // (the original still delivers them to real callers).
+      future.then<void>(_trackDisposableRef, onError: _ignoreError);
+      return future;
+    }
+    return _parentScope?.tryResolveAsync(named: named, params: params) ??
         Future<T?>.value(null);
   }
 
@@ -538,6 +537,13 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       _disposables.add(obj);
     }
   }
+
+  /// Cached tear-off of [_trackDisposable], so attaching the async tracking
+  /// listener does not allocate a closure on every resolve.
+  late final void Function(Object?) _trackDisposableRef = _trackDisposable;
+
+  /// Shared no-op error handler for the async tracking listener.
+  static void _ignoreError(Object _, StackTrace __) {}
 
   /// Asynchronously disposes this [Scope], all tracked [Disposable] objects, and recursively
   /// all its child subscopes.
