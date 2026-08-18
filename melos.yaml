@@ -11,6 +11,7 @@ packages:
   - talker_cherrypick_logger
   - examples/client_app
   - examples/postly
+  - examples/market_pulse
 
 scripts:
   clean_all:
@@ -54,16 +55,16 @@ scripts:
       scope: ["cherrypick", "cherrypick_annotations", "cherrypick_generator"]
 
   test:flutter:
-    description: "Run tests for Flutter packages only"  
+    description: "Run tests for Flutter packages only"
     exec: flutter test --reporter=compact
     packageFilters:
-      scope: ["cherrypick_flutter"]
+      scope: ["cherrypick_flutter", "market_pulse"]
 
   codegen:
     description: "Run build for Flutter packages only" 
     exec: dart run build_runner build --delete-conflicting-outputs
     packageFilters:
-      scope: ["postly"]
+      scope: ["postly", "market_pulse"]
 
   outdated:
     exec: dart pub outdated 
