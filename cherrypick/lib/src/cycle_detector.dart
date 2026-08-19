@@ -11,6 +11,7 @@
 // limitations under the License.
 //
 
+import 'dart:async';
 import 'dart:collection';
 import 'package:cherrypick/src/observer.dart';
 
@@ -36,6 +37,46 @@ class CircularDependencyException implements Exception {
   }
 }
 
+/// One link of a resolution chain: a dependency key and the chain it extends.
+///
+/// Chains are immutable and shared — extending one allocates a single link that
+/// points at the existing chain instead of copying it, so nesting a resolve
+/// costs the same whatever the depth. Links are only ever materialised into a
+/// [List] for diagnostics and for the exception message.
+class _ChainLink {
+  final String key;
+  final _ChainLink? parent;
+
+  _ChainLink(this.key, this.parent);
+
+  /// Whether [candidate] is anywhere in this chain.
+  bool contains(String candidate) {
+    for (_ChainLink? link = this; link != null; link = link.parent) {
+      if (link.key == candidate) return true;
+    }
+    return false;
+  }
+
+  /// The chain outermost first.
+  List<String> toList() {
+    final keys = <String>[];
+    for (_ChainLink? link = this; link != null; link = link.parent) {
+      keys.add(link.key);
+    }
+    return keys.reversed.toList();
+  }
+}
+
+/// Builds the key a dependency is tracked under: its type, plus the qualifier
+/// when the binding is named.
+///
+/// Shared so the generic ([CycleDetector.startResolving]) and reified
+/// ([CycleDetectionMixin.withCycleDetection]) entry points cannot drift apart.
+String _dependencyKeyFor(Type type, String? named) {
+  final typeName = type.toString();
+  return named != null ? '$typeName@$named' : typeName;
+}
+
 /// Circular dependency detector for CherryPick DI containers.
 ///
 /// Tracks dependency resolution chains to detect and prevent infinite recursion caused by cycles.
@@ -58,10 +99,30 @@ class CircularDependencyException implements Exception {
 /// ```
 class CycleDetector {
   final CherryPickObserver _observer;
+
+  /// Chain bracketed by hand through [startResolving] / [finishResolving].
+  ///
+  /// That API hands the bracketing to the caller, so its chain has to live in
+  /// the detector. [runGuarded] does not use it — see [_chainZoneKey].
   final Set<String> _resolutionStack = HashSet<String>();
   final List<String> _resolutionHistory = [];
 
+  /// Zone key under which [runGuarded] keeps the chain it is resolving.
+  ///
+  /// The chain belongs in the [Zone] rather than in a field because a
+  /// resolution is not confined to one synchronous call: an async provider
+  /// suspends at every `await`, and a field-based stack must be popped when the
+  /// provider *returns its future* — which happens before it has resolved
+  /// anything at all. A zone value survives that suspension, is inherited by
+  /// every continuation the resolution spawns, and stays invisible to other
+  /// resolutions running concurrently beside it.
+  final Object _chainZoneKey = Object();
+
   CycleDetector({required CherryPickObserver observer}) : _observer = observer;
+
+  /// Chain of the resolution running on this call path, innermost link first.
+  /// Null outside [runGuarded].
+  _ChainLink? get _zoneChain => Zone.current[_chainZoneKey] as _ChainLink?;
 
   /// Starts tracking dependency resolution for type [T] and optional [named] qualifier.
   ///
@@ -75,17 +136,7 @@ class CycleDetector {
         'stackSize': _resolutionStack.length,
       },
     );
-    if (_resolutionStack.contains(dependencyKey)) {
-      final cycleStartIndex = _resolutionHistory.indexOf(dependencyKey);
-      final cycle = _resolutionHistory.sublist(cycleStartIndex)
-        ..add(dependencyKey);
-      _observer.onCycleDetected(cycle);
-      _observer.onError('Cycle detected for $dependencyKey', null, null);
-      throw CircularDependencyException(
-        'Circular dependency detected for $dependencyKey',
-        cycle,
-      );
-    }
+    _throwIfResolving(dependencyKey);
     _resolutionStack.add(dependencyKey);
     _resolutionHistory.add(dependencyKey);
   }
@@ -106,7 +157,59 @@ class CycleDetector {
     }
   }
 
-  /// Clears all resolution state and resets the cycle detector.
+  /// Runs [action] with [dependencyKey] appended to the zone-scoped resolution
+  /// chain, throwing [CircularDependencyException] if it is already there.
+  ///
+  /// Unlike [startResolving] / [finishResolving] there is no pop: the chain is
+  /// carried by a forked [Zone], so it covers the whole logical resolution —
+  /// including everything that happens after an `await` inside [action] — and
+  /// unwinds by itself once that zone falls out of use. This is what makes
+  /// detection work for asynchronous providers, and why two resolutions running
+  /// at the same time cannot be mistaken for a cycle in each other.
+  ///
+  /// [action] may return a value or a [Future]; nothing is awaited here, since
+  /// the zone, not the call, is what delimits the chain.
+  R runGuarded<R>(String dependencyKey, R Function() action) {
+    final chain = _zoneChain;
+    if (_resolutionStack.contains(dependencyKey) ||
+        (chain?.contains(dependencyKey) ?? false)) {
+      _throwCycle(dependencyKey);
+    }
+    return Zone.current.fork(zoneValues: {
+      _chainZoneKey: _ChainLink(dependencyKey, chain)
+    }).run(action);
+  }
+
+  /// Throws [CircularDependencyException] if [dependencyKey] is already being
+  /// resolved — in the manually bracketed chain or in the zone-scoped one.
+  void _throwIfResolving(String dependencyKey) {
+    if (_resolutionStack.contains(dependencyKey) ||
+        (_zoneChain?.contains(dependencyKey) ?? false)) {
+      _throwCycle(dependencyKey);
+    }
+  }
+
+  /// Reports the cycle ending at [dependencyKey] and throws.
+  Never _throwCycle(String dependencyKey) {
+    final chain = currentResolutionChain;
+    final cycleStart = chain.indexOf(dependencyKey);
+    final cycle = [
+      ...cycleStart < 0 ? chain : chain.sublist(cycleStart),
+      dependencyKey,
+    ];
+    _observer.onCycleDetected(cycle);
+    _observer.onError('Cycle detected for $dependencyKey', null, null);
+    throw CircularDependencyException(
+      'Circular dependency detected for $dependencyKey',
+      cycle,
+    );
+  }
+
+  /// Clears the manually bracketed resolution state.
+  ///
+  /// Chains created by [runGuarded] are scoped to their zone and unwind on
+  /// their own, so there is nothing to clear for them — and nothing this could
+  /// clear, since a zone value is not reachable from outside its zone.
   void clear() {
     _observer.onDiagnostic(
       'CycleDetector clear',
@@ -122,18 +225,21 @@ class CycleDetector {
   /// Returns true if dependency [T] (and [named], if specified) is being resolved right now.
   bool isResolving<T>({String? named}) {
     final dependencyKey = _createDependencyKey<T>(named);
-    return _resolutionStack.contains(dependencyKey);
+    return _resolutionStack.contains(dependencyKey) ||
+        (_zoneChain?.contains(dependencyKey) ?? false);
   }
 
   /// Gets the current dependency resolution chain (for diagnostics or debugging).
+  ///
+  /// Concatenates the manually bracketed chain with the zone-scoped chain of
+  /// the resolution running on this call path, so reading it from inside a
+  /// provider — including after an `await` — shows how that provider was
+  /// reached.
   List<String> get currentResolutionChain =>
-      List.unmodifiable(_resolutionHistory);
+      List.unmodifiable([..._resolutionHistory, ...?_zoneChain?.toList()]);
 
   /// Returns a unique string key for type [T] (+name).
-  String _createDependencyKey<T>(String? named) {
-    final typeName = T.toString();
-    return named != null ? '$typeName@$named' : typeName;
-  }
+  String _createDependencyKey<T>(String? named) => _dependencyKeyFor(T, named);
 }
 
 /// Mixin for adding circular dependency detection support to custom DI containers/classes.
@@ -199,39 +305,14 @@ mixin CycleDetectionMixin {
     String? named,
     T Function() action,
   ) {
-    if (_cycleDetector == null) {
+    final detector = _cycleDetector;
+    if (detector == null) {
       return action();
     }
-
-    final dependencyKey = named != null
-        ? '${dependencyType.toString()}@$named'
-        : dependencyType.toString();
-
-    if (_cycleDetector!._resolutionStack.contains(dependencyKey)) {
-      final cycleStartIndex =
-          _cycleDetector!._resolutionHistory.indexOf(dependencyKey);
-      final cycle = _cycleDetector!._resolutionHistory.sublist(cycleStartIndex)
-        ..add(dependencyKey);
-      observer.onCycleDetected(cycle);
-      observer.onError('Cycle detected for $dependencyKey', null, null);
-      throw CircularDependencyException(
-        'Circular dependency detected for $dependencyKey',
-        cycle,
-      );
-    }
-
-    _cycleDetector!._resolutionStack.add(dependencyKey);
-    _cycleDetector!._resolutionHistory.add(dependencyKey);
-
-    try {
-      return action();
-    } finally {
-      _cycleDetector!._resolutionStack.remove(dependencyKey);
-      if (_cycleDetector!._resolutionHistory.isNotEmpty &&
-          _cycleDetector!._resolutionHistory.last == dependencyKey) {
-        _cycleDetector!._resolutionHistory.removeLast();
-      }
-    }
+    return detector.runGuarded(
+      _dependencyKeyFor(dependencyType, named),
+      action,
+    );
   }
 
   /// Gets the current active dependency resolution chain.
