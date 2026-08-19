@@ -349,7 +349,7 @@ void main() {
           }),
         ]);
       expect(await scope.resolveAsync<int>(params: 2), 6);
-      expect(() => scope.resolveAsync<int>(), throwsA(isA<StateError>()));
+      await expectLater(scope.resolveAsync<int>(), throwsA(isA<StateError>()));
     });
     test('tryResolveAsync returns null for missing', () async {
       final observer = MockObserver();
