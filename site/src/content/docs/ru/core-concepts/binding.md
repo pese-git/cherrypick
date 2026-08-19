@@ -40,6 +40,26 @@ void builder(Scope scope) {
 }
 ```
 
+Каждый `bind<T>()` обязательно нужно завершить одной из целей выше. Сам по себе
+`bind<T>()` не регистрирует ничего, что можно было бы получить через resolve,
+поэтому установка такого модуля выбросит `StateError` с указанием типа, имени
+(для именованного биндинга) и модуля:
+
+```dart
+class NetworkModule extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<String>().withName('baseUrl'); // цели нет — резолв невозможен
+  }
+}
+
+scope.installModules([NetworkModule()]);
+// StateError: Binding for `String` named 'baseUrl' in module NetworkModule has
+// no target, so it can never be resolved. Complete it with toInstance(),
+// toProvide(), toProvideWithParams(), toProvideAsync() or
+// toProvideAsyncWithParams().
+```
+
 > ⚠️ **Важное примечание об использовании `toInstance` в `builder` модуля:**
 >
 > Если вы регистрируете цепочку зависимостей через `toInstance` внутри `builder` модуля, **не вызывайте** `scope.resolve<T>()` для типов, которые также регистрируются в том же builder — в момент их регистрации.

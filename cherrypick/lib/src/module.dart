@@ -48,6 +48,12 @@ abstract class Module {
   ///
   /// Typically used within [builder] to register all needed dependency bindings.
   ///
+  /// Every `bind<T>()` must be completed with a target — [Binding.toInstance],
+  /// [Binding.toProvide], [Binding.toProvideWithParams],
+  /// [Binding.toProvideAsync] or [Binding.toProvideAsyncWithParams]. A binding
+  /// left without one can never be resolved, and installing the module throws
+  /// a [StateError] naming the type and this module.
+  ///
   /// Example:
   /// ```dart
   /// bind<Api>().toProvide(() => MockApi());

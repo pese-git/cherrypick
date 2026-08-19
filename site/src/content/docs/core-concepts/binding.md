@@ -40,6 +40,26 @@ void builder(Scope scope) {
 }
 ```
 
+Every `bind<T>()` must be completed with one of the targets above. `bind<T>()`
+on its own registers nothing that can be resolved, so installing such a module
+throws a `StateError` naming the type, the name (for a named binding) and the
+module:
+
+```dart
+class NetworkModule extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<String>().withName('baseUrl'); // no target — never resolvable
+  }
+}
+
+scope.installModules([NetworkModule()]);
+// StateError: Binding for `String` named 'baseUrl' in module NetworkModule has
+// no target, so it can never be resolved. Complete it with toInstance(),
+// toProvide(), toProvideWithParams(), toProvideAsync() or
+// toProvideAsyncWithParams().
+```
+
 > ⚠️ **Important note about using `toInstance` in Module `builder`:**
 >
 > If you register a chain of dependencies via `toInstance` inside a Module's `builder`, **do not** call `scope.resolve<T>()` for types that are also being registered in the same builder — at the moment they are registered.

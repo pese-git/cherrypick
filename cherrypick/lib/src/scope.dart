@@ -13,6 +13,7 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:cherrypick/src/binding.dart';
 import 'package:cherrypick/src/cycle_detector.dart';
 import 'package:cherrypick/src/disposable.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
@@ -180,6 +181,10 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   /// Each module registers bindings and configuration for dependencies.
   /// After calling this, bindings are immediately available for resolve/tryResolve.
+  ///
+  /// Throws [StateError] if a module declares a `bind<T>()` without completing
+  /// it with a target (`toInstance`, `toProvide`, …): such a binding could
+  /// never be resolved, so it is reported here rather than at resolve time.
   ///
   /// Example:
   /// ```dart
@@ -516,10 +521,29 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   void _addModuleToIndex(Module module) {
     for (var binding in module.bindingSet) {
+      final resolver =
+          binding.resolver ?? _reportIncompleteBinding(binding, module);
       _bindingResolvers.putIfAbsent(binding.key, () => {});
       final nameKey = binding.isNamed ? binding.name : null;
-      _bindingResolvers[binding.key]![nameKey] = binding.resolver!;
+      _bindingResolvers[binding.key]![nameKey] = resolver;
     }
+  }
+
+  /// Reports a `bind<T>()` whose chain was never completed with a target.
+  ///
+  /// Such a binding carries no resolver, so nothing could ever be resolved
+  /// from it. It is a configuration mistake, and naming the type, the module
+  /// and the missing call is far more useful than the null-check failure that
+  /// indexing it would otherwise produce.
+  Never _reportIncompleteBinding(Binding binding, Module module) {
+    final name = binding.isNamed ? " named '${binding.name}'" : '';
+    final message =
+        'Binding for `${binding.key}`$name in module ${module.runtimeType} '
+        'has no target, so it can never be resolved. Complete it with '
+        'toInstance(), toProvide(), toProvideWithParams(), toProvideAsync() '
+        'or toProvideAsyncWithParams().';
+    observer.onError(message, null, null);
+    throw StateError(message);
   }
 
   /// Rebuilds the internal index of all [BindingResolver]s from installed modules.
