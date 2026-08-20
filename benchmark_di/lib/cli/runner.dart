@@ -4,12 +4,25 @@ import 'package:benchmark_di/benchmarks/universal_chain_benchmark.dart';
 import 'package:benchmark_di/benchmarks/universal_chain_async_benchmark.dart';
 import 'package:benchmark_di/cli/parser.dart';
 
-/// RSS процесса до первой регистрации.
+int? _baselineRssKb;
+
+/// Снимает RSS процесса до первой регистрации. Вызывается первой строкой
+/// прогона.
 ///
 /// Пустой Dart-процесс занимает порядка 169 MB под VM и JIT-код. Без
 /// вычитания этого основания таблицы памяти показывают рантайм, а не
 /// контейнер: разница между DI тонет в общем фоне.
-final int processBaselineRssKb = (ProcessInfo.currentRss / 1024).round();
+///
+/// Ленивый `final` здесь не годится: Dart инициализирует его при первом
+/// обращении, то есть уже после прогона, и «baseline» получался бы замером
+/// финального состояния.
+void captureProcessBaseline() {
+  _baselineRssKb ??= (ProcessInfo.currentRss / 1024).round();
+}
+
+/// RSS процесса до первой регистрации.
+int get processBaselineRssKb =>
+    _baselineRssKb ?? (ProcessInfo.currentRss / 1024).round();
 
 /// Holds the results for a single benchmark execution.
 class BenchmarkResult {

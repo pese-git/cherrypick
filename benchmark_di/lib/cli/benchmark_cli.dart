@@ -29,6 +29,8 @@ import 'package:kiwi/kiwi.dart';
 class BenchmarkCliRunner {
   /// Runs benchmarks based on CLI [args], configuring different test scenarios.
   Future<void> run(List<String> args) async {
+    // Первой строкой: baseline памяти должен быть снят до любых регистраций.
+    captureProcessBaseline();
     final config = parseBenchmarkCli(args);
     final results = <Map<String, dynamic>>[];
     // DI implementations that do not support async scenarios
