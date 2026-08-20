@@ -38,8 +38,7 @@ Future<int> instancesCreatedOnFirstResolve<T>(
     return UniversalServiceImpl.createdCount;
   } finally {
     UniversalServiceImpl.countingEnabled = false;
-    // TODO(Task 5): станет await, когда teardown вернёт Future.
-    adapter.teardown();
+    await adapter.teardown();
   }
 }
 

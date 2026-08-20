@@ -44,12 +44,12 @@ class GetItAdapter extends DIAdapter<GetIt> {
       _getIt.getAsync<T>(instanceName: named);
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     if (_isSubScope && _scopePushed) {
-      _getIt.popScope();
+      await _getIt.popScope();
       _scopePushed = false;
     } else {
-      _getIt.reset();
+      await _getIt.reset();
     }
   }
 

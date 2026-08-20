@@ -105,7 +105,7 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
   }
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     _container.clear();
   }
 

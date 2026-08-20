@@ -23,7 +23,11 @@ abstract class DIAdapter<TContainer> {
   Future<T> resolveAsync<T extends Object>({String? named});
 
   /// Уничтожает/отчищает DI-контейнер.
-  void teardown();
+  ///
+  /// Асинхронный: cherrypick освобождает Disposable-зависимости через await,
+  /// и синхронный вызов оставлял бы контейнер частично живым к следующей
+  /// итерации — модули накапливались в одном и том же scope.
+  Future<void> teardown();
 
   /// Открывает дочерний scope и возвращает новый адаптер (если поддерживается).
   DIAdapter<TContainer> openSubScope(String name);

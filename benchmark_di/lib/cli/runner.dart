@@ -61,7 +61,7 @@ class BenchmarkRunner {
         benchmark.prewarm();
       }
       benchmark.run();
-      benchmark.teardown();
+      await benchmark.teardownAsync();
     }
     final memBefore = ProcessInfo.currentRss;
     for (int i = 0; i < repeats; i++) {
@@ -74,7 +74,7 @@ class BenchmarkRunner {
       sw.stop();
       timings.add(sw.elapsedMicroseconds);
       rssValues.add(ProcessInfo.currentRss);
-      benchmark.teardown();
+      await benchmark.teardownAsync();
     }
     return BenchmarkResult.collect(
         timings: timings, rssValues: rssValues, memBefore: memBefore);
@@ -96,7 +96,7 @@ class BenchmarkRunner {
         await benchmark.prewarm();
       }
       await benchmark.run();
-      await benchmark.teardown();
+      await benchmark.teardownAsync();
     }
     final memBefore = ProcessInfo.currentRss;
     for (int i = 0; i < repeats; i++) {
@@ -109,7 +109,7 @@ class BenchmarkRunner {
       sw.stop();
       timings.add(sw.elapsedMicroseconds);
       rssValues.add(ProcessInfo.currentRss);
-      await benchmark.teardown();
+      await benchmark.teardownAsync();
     }
     return BenchmarkResult.collect(
         timings: timings, rssValues: rssValues, memBefore: memBefore);

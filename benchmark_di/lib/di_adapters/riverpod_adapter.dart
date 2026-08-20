@@ -54,7 +54,7 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
   }
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     _container?.dispose();
     _container = null;
     _namedProviders.clear();

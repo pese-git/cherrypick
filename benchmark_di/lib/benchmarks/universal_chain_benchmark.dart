@@ -51,8 +51,19 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
 
   @override
   void teardown() {
-    _childDi?.teardown();
-    _di.teardown();
+    // BenchmarkBase требует синхронную сигнатуру. Раннер её не использует —
+    // он вызывает teardownAsync, чтобы дождаться освобождения контейнера.
+    // Пустое тело оставлено, чтобы наследуемый measure() из benchmark_harness
+    // не падал, если его когда-нибудь вызовут.
+  }
+
+  /// Освобождает контейнер и ждёт завершения.
+  ///
+  /// Без ожидания CherryPick.closeRootScope() не успевает обнулить root scope
+  /// до следующего setup(), и модули накапливаются в одном scope.
+  Future<void> teardownAsync() async {
+    await _childDi?.teardown();
+    await _di.teardown();
   }
 
   void prewarm() {

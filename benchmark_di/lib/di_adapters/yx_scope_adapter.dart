@@ -28,7 +28,7 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
   }
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     _scope = UniversalYxScopeContainer();
   }
 
