@@ -3,6 +3,13 @@
 _Benchmark suite for cherrypick DI container, get_it, and other DI solutions._
 
 
+
+> **Before changing the measurement apparatus** read [METHODOLOGY.md](METHODOLOGY.md).
+> Every decision there is documented together with the measurement that caused
+> it. Several of them look like unnecessary complexity — batching, one process
+> per scenario, median instead of mean, containers refusing a scenario instead of
+> silently substituting it — and would be reverted without that document.
+
 ## How to produce publishable numbers
 
 ```shell
