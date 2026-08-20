@@ -347,8 +347,17 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   /// Attempts to resolve a dependency of type [T], optionally by name and with params.
   ///
-  /// Returns the resolved dependency, or `null` if not found.
-  /// Does not throw if missing (unlike [resolve]).
+  /// Returns the resolved dependency, or `null` when no such binding is
+  /// registered in this scope or its parents — unlike [resolve], a missing
+  /// binding is not an error.
+  ///
+  /// A binding that *is* registered but cannot be resolved synchronously still
+  /// throws, so a misuse is reported instead of being hidden behind a `null`:
+  /// an async instance or provider directs you to [resolveAsync], and a
+  /// parameterized provider invoked without `params` reports the missing
+  /// arguments. Errors raised by the provider itself propagate unchanged.
+  ///
+  /// In short: `null` means "not registered", never "failed".
   ///
   /// Example:
   /// ```dart
@@ -467,7 +476,15 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Attempts to asynchronously resolve a dependency of type [T].
-  /// Returns the dependency or null if not present (never throws).
+  ///
+  /// Returns the dependency, or `null` when no such binding is registered in
+  /// this scope or its parents.
+  ///
+  /// Failures while resolving a registered binding are not swallowed: an error
+  /// thrown by the provider, a detected cycle, or a parameterized provider
+  /// invoked without `params` all propagate to the caller.
+  ///
+  /// In short: `null` means "not registered", never "failed".
   ///
   /// Example:
   /// ```dart
