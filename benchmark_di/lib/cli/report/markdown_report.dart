@@ -8,18 +8,21 @@ class MarkdownReport extends ReportGenerator {
   @override
   final List<String> keys = [
     'benchmark',
+    'di',
     'phase',
     'chainCount',
     'nestingDepth',
-    'mean_us',
-    'median_us',
-    'stddev_us',
-    'min_us',
-    'max_us',
+    'median_ns',
+    'min_ns',
+    'p95_ns',
+    'mad_ns',
+    'ops_per_sample',
     'trials',
     'memory_diff_kb',
     'delta_peak_kb',
-    'peak_rss_kb'
+    'peak_rss_kb',
+    'baseline_rss_kb',
+    'rss_over_baseline_kb'
   ];
 
   /// Friendly display names for each benchmark type.
@@ -40,35 +43,39 @@ class MarkdownReport extends ReportGenerator {
   String render(List<Map<String, dynamic>> rows) {
     final headers = [
       'Benchmark',
+      'DI',
       'Phase',
       'Chain Count',
       'Depth',
-      'Mean (us)',
-      'Median',
-      'Stddev',
-      'Min',
-      'Max',
+      'Median (ns)',
+      'Min (ns)',
+      'p95 (ns)',
+      'MAD (ns)',
+      'Ops',
       'N',
       'ΔRSS(KB)',
       'ΔPeak(KB)',
-      'PeakRSS(KB)'
+      'PeakRSS(KB)',
+      'RSS-base(KB)'
     ];
     final dataRows = rows.map((r) {
       final readableName = nameMap[r['benchmark']] ?? r['benchmark'];
       return [
         readableName,
+        r['di'],
         r['phase'],
         r['chainCount'],
         r['nestingDepth'],
-        r['mean_us'],
-        r['median_us'],
-        r['stddev_us'],
-        r['min_us'],
-        r['max_us'],
+        r['median_ns'],
+        r['min_ns'],
+        r['p95_ns'],
+        r['mad_ns'],
+        r['ops_per_sample'],
         r['trials'],
         r['memory_diff_kb'],
         r['delta_peak_kb'],
         r['peak_rss_kb'],
+        r['rss_over_baseline_kb'],
       ].map((cell) => cell.toString()).toList();
     }).toList();
 
@@ -91,14 +98,17 @@ class MarkdownReport extends ReportGenerator {
       > `Phase` – `firstResolve` or `steadyStateResolve`  
       > `Chain Count` – Number of independent chains  
       > `Depth` – Depth of each chain  
-      > `Mean (us)` – Average time per run (microseconds)  
-      > `Median` – Median time per run  
-      > `Stddev` – Standard deviation  
-      > `Min`, `Max` – Min/max run time  
-      > `N` – Number of measurements  
+      > `DI` – Container under test  
+      > `Median (ns)` – Median nanoseconds per resolve  
+      > `Min (ns)` – Fastest sample; closest to the cost without scheduler noise  
+      > `p95 (ns)` – 95th percentile  
+      > `MAD (ns)` – Median absolute deviation; outlier-resistant spread  
+      > `Ops` – Resolves per sample (1 in the first-resolve phase)  
+      > `N` – Number of samples  
       > `ΔRSS(KB)` – Change in process memory (KB)  
       > `ΔPeak(KB)` – Change in peak RSS (KB)  
       > `PeakRSS(KB)` – Max observed RSS memory (KB)  
+      > `RSS-base(KB)` – Peak RSS minus the process baseline (~169 MB of VM and JIT code)  
       ''';
 
     return '$legend\n\n${([headerLine, divider] + lines).join('\n')}';

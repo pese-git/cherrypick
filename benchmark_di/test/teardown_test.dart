@@ -40,6 +40,7 @@ void main() {
       warmups: 1,
       repeats: 2,
       phase: ResolvePhase.firstResolve,
+      opsPerSample: 1,
     );
 
     expect(benchmark.seenScopes, hasLength(3));

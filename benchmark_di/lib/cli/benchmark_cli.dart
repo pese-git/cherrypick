@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:benchmark_di/cli/report/markdown_report.dart';
 import 'package:benchmark_di/di_adapters/yx_scope_adapter.dart';
 import 'package:benchmark_di/di_adapters/yx_scope_universal_container.dart';
@@ -58,6 +56,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<GetIt>(
@@ -72,6 +71,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else if (config.di == 'kiwi') {
@@ -88,6 +88,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<KiwiContainer>(
@@ -102,6 +103,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else if (config.di == 'riverpod') {
@@ -119,6 +121,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<
@@ -134,6 +137,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else if (config.di == 'yx_scope') {
@@ -151,6 +155,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync =
@@ -166,6 +171,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else {
@@ -182,6 +188,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<Scope>(
@@ -196,37 +203,42 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             }
             final timings = benchResult.timings;
             if (timings.isEmpty) continue; // skip failed scenarios
-            timings.sort();
-            final count = timings.length;
-            final mean = timings.reduce((a, b) => a + b) / count;
-            final median = count.isOdd
-                ? timings[count ~/ 2]
-                : (timings[count ~/ 2 - 1] + timings[count ~/ 2]) / 2;
-            final minVal = timings.first;
-            final maxVal = timings.last;
-            final stddev = sqrt(
-                timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) /
-                    count);
+            final sorted = [...timings]..sort();
+            final count = sorted.length;
+            final median = _median(sorted);
+            final p95 = sorted[((count - 1) * 0.95).round()];
+            // Медианное абсолютное отклонение: устойчиво к выбросам, которых
+            // в этих замерах больше, чем полезного сигнала. Среднее и stddev
+            // по такому распределению описывают в основном самый неудачный
+            // замер, а не поведение контейнера.
+            final mad =
+                _median(sorted.map((x) => (x - median).abs()).toList()..sort());
+
             results.add({
               'benchmark': 'Universal_$bench',
+              'di': config.di,
               'phase': phase.name,
               'chainCount': c,
               'nestingDepth': d,
-              'mean_us': mean.toStringAsFixed(2),
-              'median_us': median.toStringAsFixed(2),
-              'stddev_us': stddev.toStringAsFixed(2),
-              'min_us': minVal.toStringAsFixed(2),
-              'max_us': maxVal.toStringAsFixed(2),
-              'trials': timings.length,
-              'timings_us': timings.map((t) => t.toStringAsFixed(2)).toList(),
+              'median_ns': median.toStringAsFixed(1),
+              'min_ns': sorted.first.toStringAsFixed(1),
+              'p95_ns': p95.toStringAsFixed(1),
+              'mad_ns': mad.toStringAsFixed(1),
+              'ops_per_sample': benchResult.opsPerSample,
+              'trials': count,
+              'timings_ns': sorted.map((t) => t.toStringAsFixed(1)).toList(),
               'memory_diff_kb': benchResult.memoryDiffKb,
               'delta_peak_kb': benchResult.deltaPeakKb,
               'peak_rss_kb': benchResult.peakRssKb,
+              'baseline_rss_kb': benchResult.baselineRssKb,
+              'rss_over_baseline_kb':
+                  benchResult.peakRssKb - benchResult.baselineRssKb,
             });
           }
         }
@@ -242,3 +254,8 @@ class BenchmarkCliRunner {
         PrettyReport().render(results));
   }
 }
+
+/// Медиана отсортированного списка.
+double _median(List<double> sorted) => sorted.length.isOdd
+    ? sorted[sorted.length ~/ 2]
+    : (sorted[sorted.length ~/ 2 - 1] + sorted[sorted.length ~/ 2]) / 2;

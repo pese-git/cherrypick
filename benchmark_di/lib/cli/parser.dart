@@ -143,6 +143,9 @@ class BenchmarkCliConfig {
   /// Which resolve phase(s) to measure.
   final List<ResolvePhase> phases;
 
+  /// Сколько резолвов укладывается в один замер фазы steady-state.
+  final int opsPerSample;
+
   BenchmarkCliConfig({
     required this.benchesToRun,
     required this.chainCounts,
@@ -152,6 +155,7 @@ class BenchmarkCliConfig {
     required this.format,
     required this.di,
     required this.phases,
+    required this.opsPerSample,
   });
 }
 
@@ -165,6 +169,9 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('repeat', abbr: 'r', defaultsTo: '2')
     ..addOption('warmup', abbr: 'w', defaultsTo: '1')
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
+    ..addOption('opsPerSample',
+        defaultsTo: '1000',
+        help: 'Сколько резолвов в одном замере фазы steady (first — всегда 1)')
     ..addOption('resolvePhase',
         defaultsTo: 'all', help: 'Resolve phase: first, steady, or all')
     ..addOption('di',
@@ -234,5 +241,7 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     format: result['format'] as String,
     di: di,
     phases: phases,
+    opsPerSample:
+        parseIntList(result['opsPerSample'] as String, 'opsPerSample').first,
   );
 }
