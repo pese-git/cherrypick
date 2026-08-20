@@ -11,7 +11,6 @@
 // limitations under the License.
 //
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:cherrypick/src/binding.dart';
 import 'package:cherrypick/src/cycle_detector.dart';
@@ -97,14 +96,22 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   // index for fast binding lookup
   final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
 
+  /// Counts every scope created in this isolate, making [_generateScopeId]
+  /// collision-free by construction.
+  static int _scopeSequence = 0;
+
   /// Generates a unique identifier string for this scope instance.
   ///
   /// Used internally for diagnostics, logging and global scope tracking.
+  ///
+  /// The id must be unique: [GlobalCycleDetector] keys its per-scope detectors
+  /// by it and prefixes every global resolution key with it, so two scopes
+  /// sharing an id would share a resolution stack. The sequence number — not
+  /// the timestamp, which is only there to make logs readable — is what
+  /// guarantees uniqueness.
   String _generateScopeId() {
-    final random = Random();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final randomPart = random.nextInt(10000);
-    return 'scope_${timestamp}_$randomPart';
+    return 'scope_${timestamp}_${++_scopeSequence}';
   }
 
   /// Opens a named child [Scope] (subscope) as a descendant of the current scope.

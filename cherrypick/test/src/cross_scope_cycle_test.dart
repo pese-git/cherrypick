@@ -46,6 +46,21 @@ void main() {
       );
     });
 
+    test('nested resolve of the same type in two scopes is not a cycle', () {
+      // Global resolution keys are prefixed with the scope id, so two scopes
+      // are only told apart by that id. Here the same type is being resolved
+      // in scope B while the resolve in scope A is still on the stack: the
+      // keys must differ ([A]PlainService vs [B]PlainService), otherwise the
+      // second resolve looks like a re-entry and is reported as a cycle.
+      CherryPick.openGlobalSafeRootScope();
+      CherryPick.openGlobalSafeScope(scopeName: 'sibling_a')
+          .installModules([PlainServiceModule()]);
+      final b = CherryPick.openGlobalSafeScope(scopeName: 'sibling_b')
+        ..installModules([DelegatingPlainModule()]);
+
+      expect(b.resolve<PlainService>(), isA<PlainService>());
+    });
+
     test(
         'current implementation limitation - may not detect cross-scope cycles',
         () {
@@ -87,6 +102,27 @@ class CrossScopeServiceA {
 class CrossScopeServiceB {
   final CrossScopeServiceA serviceA;
   CrossScopeServiceB(this.serviceA);
+}
+
+class PlainService {}
+
+class PlainServiceModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<PlainService>().toProvide(() => PlainService());
+  }
+}
+
+/// Resolves the same type from a *different* scope while its own resolve is
+/// still in flight, so both resolution keys are on the global stack at once.
+class DelegatingPlainModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<PlainService>().toProvide(
+      () =>
+          CherryPick.openScope(scopeName: 'sibling_a').resolve<PlainService>(),
+    );
+  }
 }
 
 class ParentScopeModule extends Module {
