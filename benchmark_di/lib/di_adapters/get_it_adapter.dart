@@ -59,6 +59,9 @@ class GetItAdapter extends DIAdapter<GetIt> {
 
   @override
   Future<void> waitForAsyncReady() async {
+    // registerLazySingletonAsync не участвует в allReady: прогрев обеспечивает
+    // prewarm() в раннере, одинаково для всех адаптеров. Вызов оставлен —
+    // он корректен, если в сценарии появятся eager-async привязки.
     await _getIt.allReady();
   }
 
@@ -73,11 +76,17 @@ class GetItAdapter extends DIAdapter<GetIt> {
       return (getIt) {
         switch (scenario) {
           case UniversalScenario.asyncChain:
+            // registerSingletonAsync инициализирует ВСЕ зарегистрированные
+            // async-синглтоны сразу, независимо от того, что резолвит бенчмарк.
+            // При chainCount=100/depth=100 это 10 000 объектов против 100 у
+            // ленивых контейнеров. registerLazySingletonAsync строит только
+            // запрошенную цепочку — та же семантика, что у
+            // toProvideAsync().singleton() в cherrypick.
             for (int chain = 1; chain <= chainCount; chain++) {
               for (int level = 1; level <= nestingDepth; level++) {
                 final prevDepName = '${chain}_${level - 1}';
                 final depName = '${chain}_$level';
-                getIt.registerSingletonAsync<UniversalService>(
+                getIt.registerLazySingletonAsync<UniversalService>(
                   () async {
                     final prev = level > 1
                         ? await getIt.getAsync<UniversalService>(
@@ -148,7 +157,8 @@ class GetItAdapter extends DIAdapter<GetIt> {
                     );
                     break;
                   case UniversalBindingMode.asyncStrategy:
-                    getIt.registerSingletonAsync<UniversalService>(
+                    // Ленивая регистрация — см. комментарий в ветке asyncChain.
+                    getIt.registerLazySingletonAsync<UniversalService>(
                       () async => UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
