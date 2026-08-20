@@ -2,6 +2,22 @@
 
 _Benchmark suite for cherrypick DI container, get_it, and other DI solutions._
 
+
+## How to produce publishable numbers
+
+```shell
+./tool/run_matrix.sh
+```
+
+The script runs every (DI, scenario) pair in its own process, in both JIT and
+AOT modes. Do not assemble tables by hand: numbers from `--benchmark=all` are
+unusable for memory comparison, because process RSS is inherited between
+scenarios.
+
+Every result row carries `runtime_mode` and `cycle_detection`. A report without
+those fields is considered invalid — JIT and AOT reorder the containers, and the
+cherrypick fast path only applies with cycle detection off.
+
 ## Overview
 
 benchmark_di is a flexible benchmarking suite to compare DI containers (like cherrypick and get_it) on synthetic, deep, and real-world dependency scenarios – chains, factories, async, named, override, etc.

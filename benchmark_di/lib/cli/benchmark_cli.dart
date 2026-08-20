@@ -32,6 +32,18 @@ class BenchmarkCliRunner {
     // Первой строкой: baseline памяти должен быть снят до любых регистраций.
     captureProcessBaseline();
     final config = parseBenchmarkCli(args);
+
+    // Фаст-путь cherrypick (_canUseDirectResolvePath) включается только при
+    // silent observer и выключенном детекторе циклов. Это значения по
+    // умолчанию, но документация называет enableCycleDetection рекомендованным,
+    // поэтому конфигурация обязана попадать в отчёт и управляться флагом —
+    // иначе публикуется лучший из двух режимов без указания, какой именно.
+    if (config.cycleDetection) {
+      CherryPick.enableGlobalCycleDetection();
+    }
+    // dart compile exe собирает в product-режиме, dart run — нет.
+    const runtimeMode = bool.fromEnvironment('dart.vm.product') ? 'aot' : 'jit';
+
     final results = <Map<String, dynamic>>[];
     // DI implementations that do not support async scenarios
     const asyncUnsupported = {'kiwi', 'yx_scope'};
@@ -240,6 +252,8 @@ class BenchmarkCliRunner {
             results.add({
               'benchmark': 'Universal_$bench',
               'di': config.di,
+              'runtime_mode': runtimeMode,
+              'cycle_detection': config.cycleDetection ? 'on' : 'off',
               'phase': phase.name,
               'chainCount': c,
               'nestingDepth': d,

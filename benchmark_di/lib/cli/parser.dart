@@ -149,6 +149,9 @@ class BenchmarkCliConfig {
   /// Сколько резолвов укладывается в один замер фазы steady-state.
   final int opsPerSample;
 
+  /// Включать ли глобальный детектор циклов cherrypick перед замером.
+  final bool cycleDetection;
+
   BenchmarkCliConfig({
     required this.benchesToRun,
     required this.chainCounts,
@@ -159,6 +162,7 @@ class BenchmarkCliConfig {
     required this.di,
     required this.phases,
     required this.opsPerSample,
+    required this.cycleDetection,
   });
 }
 
@@ -180,6 +184,9 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('di',
         defaultsTo: 'cherrypick',
         help: 'DI implementation: cherrypick, getit or riverpod')
+    ..addFlag('cycleDetection',
+        defaultsTo: false,
+        help: 'Включить глобальный детектор циклов cherrypick перед замером')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
   final result = parser.parse(args);
   if (result['help'] == true) {
@@ -246,5 +253,6 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     phases: phases,
     opsPerSample:
         parseIntList(result['opsPerSample'] as String, 'opsPerSample').first,
+    cycleDetection: result['cycleDetection'] as bool,
   );
 }
