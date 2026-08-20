@@ -69,6 +69,8 @@ Switch DI with the CLI option: `--di`
 - `--format, -f` — Output: `pretty`, `csv`, `json`, `markdown`
 - `--help, -h` — Usage
 
+> Short flags take a space (`-c 100`), not an equals sign (`-c=100`). With `-c=100` the value arrives as `=100` and the run is rejected with exit code 64 instead of printing an empty table.
+
 ### Run Examples
 
 - **All benchmarks for cherrypick:**

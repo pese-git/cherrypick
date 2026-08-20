@@ -74,20 +74,48 @@ UniversalBindingMode toMode(UniversalBenchmark b) {
   }
 }
 
-/// Utility to parse a string into its corresponding enum value [T].
-T parseEnum<T>(String value, List<T> values, T defaultValue) {
-  return values.firstWhere(
-    (v) => v.toString().split('.').last.toLowerCase() == value.toLowerCase(),
-    orElse: () => defaultValue,
-  );
+/// Ошибка конфигурации командной строки. Бросается вместо тихого возврата
+/// пустого списка — пустая матрица означала бы отчёт без единого замера.
+class BenchmarkCliException implements Exception {
+  final String message;
+  BenchmarkCliException(this.message);
+  @override
+  String toString() => 'BenchmarkCliException: $message';
 }
 
-/// Parses comma-separated integer list from [s].
-List<int> parseIntList(String s) => s
-    .split(',')
-    .map((e) => int.tryParse(e.trim()) ?? 0)
-    .where((x) => x > 0)
-    .toList();
+/// Строго разбирает значение перечисления [T]. Без fallback: подмена опечатки
+/// на chainSingleton давала бы отчёт с чужими числами под чужим именем.
+T parseEnumStrict<T>(String value, List<T> values, String optionName) {
+  for (final v in values) {
+    if (v.toString().split('.').last.toLowerCase() == value.toLowerCase()) {
+      return v;
+    }
+  }
+  final known = values.map((v) => v.toString().split('.').last).join(', ');
+  throw BenchmarkCliException(
+      'Опция --$optionName: неизвестное значение "$value". Допустимые: $known.');
+}
+
+/// Разбирает список положительных целых из [s]. Любой невалидный элемент —
+/// ошибка: "-c=100" приходит сюда как "=100", и молчаливый пропуск такого
+/// значения оставлял бы пользователя с пустой таблицей и кодом возврата 0.
+List<int> parseIntList(String s, String optionName) {
+  final parts = s.split(',').map((e) => e.trim()).toList();
+  final result = <int>[];
+  for (final part in parts) {
+    final value = int.tryParse(part);
+    if (value == null || value <= 0) {
+      throw BenchmarkCliException(
+          'Опция --$optionName: "$part" не является положительным целым. '
+          'Короткие флаги пишутся через пробел: -c 100, а не -c=100.');
+    }
+    result.add(value);
+  }
+  if (result.isEmpty) {
+    throw BenchmarkCliException('Опция --$optionName не может быть пустой.');
+  }
+  return result;
+}
 
 /// CLI config describing what and how to benchmark.
 class BenchmarkCliConfig {
@@ -176,12 +204,19 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     };
   }
 
+  const knownDi = {'cherrypick', 'getit', 'riverpod', 'kiwi', 'yx_scope'};
+  final di = result['di'] as String? ?? 'cherrypick';
+  if (!knownDi.contains(di)) {
+    throw BenchmarkCliException(
+        'Опция --di: неизвестное значение "$di". Допустимые: ${knownDi.join(', ')}.');
+  }
+
   final benchesToRun = isAll
       ? allBenches
       : benchNameInput
           .split(',')
-          .map((n) => parseEnum(normalizeBenchName(n), allBenches,
-              UniversalBenchmark.chainSingleton))
+          .map((n) =>
+              parseEnumStrict(normalizeBenchName(n), allBenches, 'benchmark'))
           .toSet()
           .toList();
   final phaseName = (result['resolvePhase'] as String).toLowerCase();
@@ -192,12 +227,12 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
   };
   return BenchmarkCliConfig(
     benchesToRun: benchesToRun,
-    chainCounts: parseIntList(result['chainCount'] as String),
-    nestDepths: parseIntList(result['nestingDepth'] as String),
+    chainCounts: parseIntList(result['chainCount'] as String, 'chainCount'),
+    nestDepths: parseIntList(result['nestingDepth'] as String, 'nestingDepth'),
     repeats: int.tryParse(result['repeat'] as String? ?? "") ?? 2,
     warmups: int.tryParse(result['warmup'] as String? ?? "") ?? 1,
     format: result['format'] as String,
-    di: result['di'] as String? ?? 'cherrypick',
+    di: di,
     phases: phases,
   );
 }
