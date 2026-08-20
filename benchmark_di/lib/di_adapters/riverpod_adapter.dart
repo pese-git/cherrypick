@@ -119,7 +119,11 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
                     providers[depName] as rp.ProviderBase<UniversalService>));
             break;
           case UniversalScenario.override:
-            // handled at benchmark level
+            // Ребёнок переопределяет только алиас; цепочка остаётся у родителя.
+            final depName = '${chainCount}_$nestingDepth';
+            providers['UniversalService'] = rp.Provider<UniversalService>(
+                (ref) => ref.watch(
+                    providers[depName] as rp.ProviderBase<UniversalService>));
             break;
           case UniversalScenario.asyncChain:
             for (int chain = 1; chain <= chainCount; chain++) {

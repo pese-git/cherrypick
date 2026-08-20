@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:benchmark_di/cli/report/markdown_report.dart';
 import 'package:benchmark_di/di_adapters/yx_scope_adapter.dart';
 import 'package:benchmark_di/di_adapters/yx_scope_universal_container.dart';
@@ -35,9 +37,22 @@ class BenchmarkCliRunner {
       for (final bench in config.benchesToRun) {
         final scenario = toScenario(bench);
         final mode = toMode(bench);
+        // Пропуск неподдерживаемого сценария сообщается в stderr: молчаливая
+        // пустая таблица однажды уже привела к публикации числа для сценария,
+        // который инструмент выполнить не может (yx_scope/chainAsync = 87.2us).
         if (asyncUnsupported.contains(config.di) &&
             scenario == UniversalScenario.asyncChain) {
-          continue; // Skip async benchmarks for DI that does not support them
+          stderr.writeln(
+              'пропущено: ${config.di}/$bench — контейнер не поддерживает '
+              'асинхронные привязки');
+          continue;
+        }
+        if (hierarchyUnsupported.contains(config.di) &&
+            scenario == UniversalScenario.override) {
+          stderr.writeln(
+              'пропущено: ${config.di}/$bench — контейнер не поддерживает '
+              'иерархию scope');
+          continue;
         }
         for (final c in config.chainCounts) {
           for (final d in config.nestDepths) {

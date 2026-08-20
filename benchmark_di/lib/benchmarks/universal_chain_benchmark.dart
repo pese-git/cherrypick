@@ -30,12 +30,16 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
           bindingMode: UniversalBindingMode.singletonStrategy,
           scenario: UniversalScenario.chain,
         ));
+        // Родитель держит всю цепочку; ребёнок переопределяет только
+        // последнее звено. Так резолв проходит через границу scope, а не
+        // остаётся внутри полной копии графа — раньше ребёнок регистрировал
+        // копию всей цепочки, и override повторял chainSingleton.
         _childDi = _di.openSubScope('child');
         _childDi!.setupDependencies(_childDi!.universalRegistration(
           chainCount: chainCount,
           nestingDepth: nestingDepth,
           bindingMode: UniversalBindingMode.singletonStrategy,
-          scenario: UniversalScenario.chain,
+          scenario: UniversalScenario.override,
         ));
         break;
       default:

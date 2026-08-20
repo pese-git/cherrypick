@@ -58,6 +58,12 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
         throw UnsupportedError(
             'YxScope does not support async dependencies or async binding scenarios.');
       }
+      if (scenario == UniversalScenario.override) {
+        throw UnsupportedError(
+            'yx_scope-адаптер не реализует дочерние scope: openSubScope '
+            'возвращает независимый контейнер, сценарий override был бы '
+            'плоским резолвом под чужим именем.');
+      }
       return (scope) {
         switch (scenario) {
           case UniversalScenario.register:

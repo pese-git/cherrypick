@@ -174,11 +174,15 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.override:
-            // handled at benchmark level
+            // Ребёнок регистрирует только алиас последнего звена; сама цепочка
+            // остаётся у родителя и резолвится через границу scope.
+            final depName = '${chainCount}_$nestingDepth';
+            getIt.registerLazySingleton<UniversalService>(
+              () => getIt<UniversalService>(instanceName: depName),
+            );
             break;
         }
-        if (scenario == UniversalScenario.chain ||
-            scenario == UniversalScenario.override) {
+        if (scenario == UniversalScenario.chain) {
           final depName = '${chainCount}_$nestingDepth';
           if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
             getIt.registerLazySingleton<UniversalService>(

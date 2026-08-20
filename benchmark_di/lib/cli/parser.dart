@@ -31,6 +31,9 @@ enum UniversalBenchmark {
   override,
 }
 
+/// Контейнеры без иерархии scope: сценарий override для них не запускается.
+const hierarchyUnsupported = {'kiwi', 'yx_scope'};
+
 enum ResolvePhase {
   firstResolve,
   steadyStateResolve,
