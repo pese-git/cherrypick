@@ -402,7 +402,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     final resolver = _findBindingResolver<T>(named);
     final local = resolver?.resolveSync(params);
     if (local != null) {
-      if (local is Disposable) _disposables.add(local);
+      _trackDisposable(local);
       return local;
     }
     // Fallback to parent (public entry preserves per-scope cycle detection).
@@ -422,7 +422,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     final resolver = _findBindingResolver<T>(named);
     final local = resolver?.resolveSync(params);
     if (local != null) {
-      if (local is Disposable) _disposables.add(local);
+      _trackDisposable(local);
       return local;
     }
     return _parentScope?._directResolveSync<T>(named, params);
@@ -555,7 +555,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     final local = resolver?.resolveAsync(params);
     if (local != null) {
       return local.then((value) {
-        if (value != null && value is Disposable) _disposables.add(value);
+        _trackDisposable(value);
         return value;
       });
     }
@@ -573,7 +573,7 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     final local = resolver?.resolveAsync(params);
     if (local != null) {
       return local.then((value) {
-        if (value != null && value is Disposable) _disposables.add(value);
+        _trackDisposable(value);
         return value;
       });
     }
@@ -586,6 +586,12 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// Returns null if none found. Internal use only.
   BindingResolver<T>? _findBindingResolver<T>(String? named) =>
       _bindingResolvers[T]?[named] as BindingResolver<T>?;
+
+  void _trackDisposable(Object? value) {
+    if (value is Disposable) {
+      _disposables.add(value);
+    }
+  }
 
   void _addModuleToIndex(Module module) {
     for (var binding in module.bindingSet) {
