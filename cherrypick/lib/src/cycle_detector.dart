@@ -14,6 +14,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'package:cherrypick/src/observer.dart';
+import 'package:cherrypick/src/resolution_chain.dart';
 
 /// Exception thrown when a circular dependency is detected during dependency resolution.
 ///
@@ -34,36 +35,6 @@ class CircularDependencyException implements Exception {
   String toString() {
     final chain = dependencyChain.join(' -> ');
     return 'CircularDependencyException: $message\nDependency chain: $chain';
-  }
-}
-
-/// One link of a resolution chain: a dependency key and the chain it extends.
-///
-/// Chains are immutable and shared — extending one allocates a single link that
-/// points at the existing chain instead of copying it, so nesting a resolve
-/// costs the same whatever the depth. Links are only ever materialised into a
-/// [List] for diagnostics and for the exception message.
-class _ChainLink {
-  final String key;
-  final _ChainLink? parent;
-
-  _ChainLink(this.key, this.parent);
-
-  /// Whether [candidate] is anywhere in this chain.
-  bool contains(String candidate) {
-    for (_ChainLink? link = this; link != null; link = link.parent) {
-      if (link.key == candidate) return true;
-    }
-    return false;
-  }
-
-  /// The chain outermost first.
-  List<String> toList() {
-    final keys = <String>[];
-    for (_ChainLink? link = this; link != null; link = link.parent) {
-      keys.add(link.key);
-    }
-    return keys.reversed.toList();
   }
 }
 
@@ -122,7 +93,8 @@ class CycleDetector {
 
   /// Chain of the resolution running on this call path, innermost link first.
   /// Null outside [runGuarded].
-  _ChainLink? get _zoneChain => Zone.current[_chainZoneKey] as _ChainLink?;
+  ResolutionChain? get _zoneChain =>
+      Zone.current[_chainZoneKey] as ResolutionChain?;
 
   /// Starts tracking dependency resolution for type [T] and optional [named] qualifier.
   ///
@@ -176,7 +148,7 @@ class CycleDetector {
       _throwCycle(dependencyKey);
     }
     return Zone.current.fork(zoneValues: {
-      _chainZoneKey: _ChainLink(dependencyKey, chain)
+      _chainZoneKey: ResolutionChain(dependencyKey, chain)
     }).run(action);
   }
 
