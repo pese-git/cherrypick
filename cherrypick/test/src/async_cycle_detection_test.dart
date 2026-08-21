@@ -116,6 +116,92 @@ void main() {
         throwsA(isA<CircularDependencyException>()),
       );
     });
+
+    test('detects a cycle between two sibling subscopes', () async {
+      late Scope a, b;
+      final root = CherryPick.openRootScope();
+      a = root.openSubScope('a')..enableCycleDetection();
+      b = root.openSubScope('b')..enableCycleDetection();
+      a.installModules([SiblingAModule(() => b)]);
+      b.installModules([SiblingBModule(() => a)]);
+
+      // Neither sibling is an ancestor of the other, so no single scope sees
+      // both halves of the cycle. The chain is carried by the zone, which
+      // follows the resolution into the neighbour and back regardless.
+      await expectLater(
+        a.resolveAsync<AsyncA>().timeout(_guard),
+        throwsA(isA<CircularDependencyException>()),
+      );
+    });
+
+    test('detects a sibling cycle with cross-scope detection only', () async {
+      late Scope a, b;
+      final root = CherryPick.openRootScope()..enableGlobalCycleDetection();
+      // Opened after arming, so both inherit cross-scope detection.
+      a = root.openSubScope('a');
+      b = root.openSubScope('b');
+      a.installModules([SiblingAModule(() => b)]);
+      b.installModules([SiblingBModule(() => a)]);
+
+      await expectLater(
+        a.resolveAsync<AsyncA>().timeout(_guard),
+        throwsA(isA<CircularDependencyException>().having(
+          (e) => e.dependencyChain,
+          'dependencyChain',
+          hasLength(greaterThan(2)),
+        )),
+      );
+    });
+
+    test('one armed scope on the cycle is enough, entered from the other',
+        () async {
+      late Scope a, b;
+      final root = CherryPick.openRootScope();
+      a = root.openSubScope('a')..enableCycleDetection();
+      b = root.openSubScope('b'); // deliberately left unarmed
+      a.installModules([SiblingAModule(() => b)]);
+      b.installModules([SiblingBModule(() => a)]);
+
+      // Entering through the unarmed sibling still trips a's detector: a real
+      // cycle re-enters every node on it, including the guarded one.
+      await expectLater(
+        b.resolveAsync<AsyncB>().timeout(_guard),
+        throwsA(isA<CircularDependencyException>()),
+      );
+    });
+
+    test('detects a cycle between cousin scopes two levels deep', () async {
+      late Scope x, y;
+      final root = CherryPick.openRootScope()..enableGlobalCycleDetection();
+      x = root.openSubScope('left').openSubScope('x');
+      y = root.openSubScope('right').openSubScope('y');
+      x.installModules([SiblingAModule(() => y)]);
+      y.installModules([SiblingBModule(() => x)]);
+
+      await expectLater(
+        x.resolveAsync<AsyncA>().timeout(_guard),
+        throwsA(isA<CircularDependencyException>()),
+      );
+    });
+
+    test('siblings sharing a parent dependency is not a cycle', () async {
+      final root = CherryPick.openRootScope()
+        ..enableCycleDetection()
+        ..enableGlobalCycleDetection();
+      root.installModules([LeafModule()]);
+      final a = root.openSubScope('a')..installModules([InheritsLeafModule()]);
+      final b = root.openSubScope('b')..installModules([InheritsLeafModule()]);
+
+      // Both siblings reach the same parent binding. The keys repeat across
+      // the two resolutions but never within one, so this must not be read as
+      // a cycle — including on a second pass through the first sibling.
+      await expectLater(
+          a.resolveAsync<Left>().timeout(_guard), completion(isA<Left>()));
+      await expectLater(
+          b.resolveAsync<Left>().timeout(_guard), completion(isA<Left>()));
+      await expectLater(
+          a.resolveAsync<Left>().timeout(_guard), completion(isA<Left>()));
+    });
   });
 
   group('concurrent resolutions must not see each other', () {
@@ -294,6 +380,52 @@ class ChildSideModule extends Module {
     bind<AsyncA>().toProvideAsync(() async {
       await Future<void>.delayed(Duration.zero);
       return AsyncA(await _root.resolveAsync<AsyncB>());
+    });
+  }
+}
+
+/// One half of a cycle that closes between two scopes on different branches:
+/// binds [AsyncA] here and reaches into the neighbour for [AsyncB].
+///
+/// The neighbour is supplied lazily because the two scopes are wired to each
+/// other, so neither exists when the first module is built.
+class SiblingAModule extends Module {
+  final Scope Function() _neighbour;
+
+  SiblingAModule(this._neighbour);
+
+  @override
+  void builder(Scope currentScope) {
+    bind<AsyncA>().toProvideAsync(() async {
+      await Future<void>.delayed(Duration.zero);
+      return AsyncA(await _neighbour().resolveAsync<AsyncB>());
+    });
+  }
+}
+
+/// The mirror half of [SiblingAModule], closing the cycle back on itself.
+class SiblingBModule extends Module {
+  final Scope Function() _neighbour;
+
+  SiblingBModule(this._neighbour);
+
+  @override
+  void builder(Scope currentScope) {
+    bind<AsyncB>().toProvideAsync(() async {
+      await Future<void>.delayed(Duration.zero);
+      return AsyncB(await _neighbour().resolveAsync<AsyncA>());
+    });
+  }
+}
+
+/// Sibling-side binding that reaches up to a dependency owned by the parent —
+/// the shape that must not be mistaken for a cycle when two siblings do it.
+class InheritsLeafModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    bind<Left>().toProvideAsync(() async {
+      await Future<void>.delayed(Duration.zero);
+      return Left(await currentScope.resolveAsync<Leaf>());
     });
   }
 }
