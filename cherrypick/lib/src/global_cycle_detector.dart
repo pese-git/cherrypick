@@ -11,8 +11,10 @@
 // limitations under the License.
 //
 
+import 'dart:async';
 import 'dart:collection';
 import 'package:cherrypick/cherrypick.dart';
+import 'package:cherrypick/src/resolution_chain.dart';
 
 /// GlobalCycleDetector detects and prevents circular dependencies across an entire DI scope hierarchy.
 ///
@@ -39,9 +41,23 @@ class GlobalCycleDetector {
 
   final CherryPickObserver _observer;
 
-  // Global set and chain history for all resolutions
+  /// Chain bracketed by hand through [startGlobalResolving] /
+  /// [finishGlobalResolving]. [withGlobalCycleDetection] uses the zone-scoped
+  /// chain instead — see [_chainZoneKey].
   final Set<String> _globalResolutionStack = HashSet<String>();
   final List<String> _globalResolutionHistory = [];
+
+  /// Zone key under which [withGlobalCycleDetection] keeps the cross-scope
+  /// chain it is resolving.
+  ///
+  /// A single detector serves the whole scope tree, so a field-based stack is
+  /// shared by every resolution in the process at once: one async resolution
+  /// suspending at an `await` would leave its entries visible to unrelated
+  /// resolutions, and the pop that removes them runs as soon as the provider
+  /// returns its future rather than when it completes. Keeping the chain in the
+  /// [Zone] ties it to one logical resolution instead — it follows that
+  /// resolution across scopes and across `await`s, and no other sees it.
+  final Object _chainZoneKey = Object();
 
   // Map of active detectors for subscopes (rarely used directly)
   final Map<String, CycleDetector> _scopeDetectors =
@@ -49,6 +65,11 @@ class GlobalCycleDetector {
 
   GlobalCycleDetector._internal({required CherryPickObserver observer})
       : _observer = observer;
+
+  /// Cross-scope chain of the resolution running on this call path, outermost
+  /// first. Empty outside [withGlobalCycleDetection].
+  ResolutionChain? get _zoneChain =>
+      Zone.current[_chainZoneKey] as ResolutionChain?;
 
   /// Returns the singleton global detector instance, initializing it if needed.
   static GlobalCycleDetector get instance {
@@ -70,19 +91,7 @@ class GlobalCycleDetector {
   void startGlobalResolving<T>({String? named, String? scopeId}) {
     final dependencyKey = _createDependencyKeyFromType(T, named, scopeId);
 
-    if (_globalResolutionStack.contains(dependencyKey)) {
-      final cycleStartIndex = _globalResolutionHistory.indexOf(dependencyKey);
-      final cycle = _globalResolutionHistory.sublist(cycleStartIndex)
-        ..add(dependencyKey);
-      _observer.onCycleDetected(cycle, scopeName: scopeId);
-      _observer.onError(
-          'Global circular dependency detected for $dependencyKey', null, null);
-      throw CircularDependencyException(
-        'Global circular dependency detected for $dependencyKey',
-        cycle,
-      );
-    }
-
+    _throwIfResolving(dependencyKey, scopeId);
     _globalResolutionStack.add(dependencyKey);
     _globalResolutionHistory.add(dependencyKey);
   }
@@ -108,32 +117,40 @@ class GlobalCycleDetector {
   ) {
     final dependencyKey =
         _createDependencyKeyFromType(dependencyType, named, scopeId);
-
-    if (_globalResolutionStack.contains(dependencyKey)) {
-      final cycleStartIndex = _globalResolutionHistory.indexOf(dependencyKey);
-      final cycle = _globalResolutionHistory.sublist(cycleStartIndex)
-        ..add(dependencyKey);
-      _observer.onCycleDetected(cycle, scopeName: scopeId);
-      _observer.onError(
-          'Global circular dependency detected for $dependencyKey', null, null);
-      throw CircularDependencyException(
-        'Global circular dependency detected for $dependencyKey',
-        cycle,
-      );
+    final chain = _zoneChain;
+    if (_globalResolutionStack.contains(dependencyKey) ||
+        (chain?.contains(dependencyKey) ?? false)) {
+      _throwCycle(dependencyKey, scopeId);
     }
+    return Zone.current.fork(zoneValues: {
+      _chainZoneKey: ResolutionChain(dependencyKey, chain)
+    }).run(action);
+  }
 
-    _globalResolutionStack.add(dependencyKey);
-    _globalResolutionHistory.add(dependencyKey);
-
-    try {
-      return action();
-    } finally {
-      _globalResolutionStack.remove(dependencyKey);
-      if (_globalResolutionHistory.isNotEmpty &&
-          _globalResolutionHistory.last == dependencyKey) {
-        _globalResolutionHistory.removeLast();
-      }
+  /// Throws [CircularDependencyException] if [dependencyKey] is already being
+  /// resolved — in the manually bracketed chain or in the zone-scoped one.
+  void _throwIfResolving(String dependencyKey, String? scopeId) {
+    if (_globalResolutionStack.contains(dependencyKey) ||
+        (_zoneChain?.contains(dependencyKey) ?? false)) {
+      _throwCycle(dependencyKey, scopeId);
     }
+  }
+
+  /// Reports the cross-scope cycle ending at [dependencyKey] and throws.
+  Never _throwCycle(String dependencyKey, String? scopeId) {
+    final chain = globalResolutionChain;
+    final cycleStart = chain.indexOf(dependencyKey);
+    final cycle = [
+      ...cycleStart < 0 ? chain : chain.sublist(cycleStart),
+      dependencyKey,
+    ];
+    _observer.onCycleDetected(cycle, scopeName: scopeId);
+    _observer.onError(
+        'Global circular dependency detected for $dependencyKey', null, null);
+    throw CircularDependencyException(
+      'Global circular dependency detected for $dependencyKey',
+      cycle,
+    );
   }
 
   /// Get per-scope detector (not usually needed by consumers).
@@ -150,14 +167,21 @@ class GlobalCycleDetector {
   /// Returns true if dependency [T] is currently being resolved in the global scope.
   bool isGloballyResolving<T>({String? named, String? scopeId}) {
     final dependencyKey = _createDependencyKeyFromType(T, named, scopeId);
-    return _globalResolutionStack.contains(dependencyKey);
+    return _globalResolutionStack.contains(dependencyKey) ||
+        (_zoneChain?.contains(dependencyKey) ?? false);
   }
 
   /// Get current global dependency resolution chain (for debugging or diagnostics).
-  List<String> get globalResolutionChain =>
-      List.unmodifiable(_globalResolutionHistory);
+  ///
+  /// Concatenates the manually bracketed chain with the zone-scoped chain of
+  /// the resolution running on this call path.
+  List<String> get globalResolutionChain => List.unmodifiable(
+      [..._globalResolutionHistory, ...?_zoneChain?.toList()]);
 
-  /// Clears all global and per-scope state in this detector.
+  /// Clears the manually bracketed chain and every per-scope detector.
+  ///
+  /// Chains created by [withGlobalCycleDetection] are scoped to their zone and
+  /// unwind on their own, so there is nothing here to clear for them.
   void clear() {
     _globalResolutionStack.clear();
     _globalResolutionHistory.clear();
