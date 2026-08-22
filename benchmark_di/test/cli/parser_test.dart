@@ -39,6 +39,36 @@ void main() {
       );
     });
 
+    test('неизвестная фаза резолва — ошибка', () {
+      expect(
+        () => parseBenchmarkCli(['--resolvePhase=frist']),
+        throwsA(isA<BenchmarkCliException>()),
+      );
+    });
+
+    test('repeat должен быть положительным целым', () {
+      expect(
+        () => parseBenchmarkCli(['--repeat=wat']),
+        throwsA(isA<BenchmarkCliException>()),
+      );
+      expect(
+        () => parseBenchmarkCli(['--repeat=0']),
+        throwsA(isA<BenchmarkCliException>()),
+      );
+    });
+
+    test('warmup должен быть неотрицательным целым', () {
+      expect(
+        () => parseBenchmarkCli(['--warmup=wat']),
+        throwsA(isA<BenchmarkCliException>()),
+      );
+      expect(
+        () => parseBenchmarkCli(['--warmup=-1']),
+        throwsA(isA<BenchmarkCliException>()),
+      );
+      expect(parseBenchmarkCli(['--warmup=0']).warmups, 0);
+    });
+
     test('корректная конфигурация разбирается', () {
       final config = parseBenchmarkCli([
         '--di=getit',

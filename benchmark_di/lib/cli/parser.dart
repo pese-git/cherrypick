@@ -120,6 +120,22 @@ List<int> parseIntList(String s, String optionName) {
   return result;
 }
 
+/// Разбирает одно целое значение с нижней границей.
+int parseSingleInt(String s, String optionName, {required int min}) {
+  if (s.contains(',')) {
+    throw BenchmarkCliException(
+        'Опция --$optionName принимает одно целое значение, а не список: "$s".');
+  }
+  final value = int.tryParse(s.trim());
+  if (value == null || value < min) {
+    final description =
+        min == 0 ? 'неотрицательным целым' : 'целым числом не меньше $min';
+    throw BenchmarkCliException(
+        'Опция --$optionName: "$s" должно быть $description.');
+  }
+  return value;
+}
+
 /// CLI config describing what and how to benchmark.
 class BenchmarkCliConfig {
   /// Benchmarks enabled to run (scenarios).
@@ -240,19 +256,23 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
   final phases = switch (phaseName) {
     'first' => [ResolvePhase.firstResolve],
     'steady' => [ResolvePhase.steadyStateResolve],
-    _ => ResolvePhase.values,
+    'all' => ResolvePhase.values,
+    _ => throw BenchmarkCliException(
+        'Опция --resolvePhase: неизвестное значение "$phaseName". '
+        'Допустимые: first, steady, all.'),
   };
   return BenchmarkCliConfig(
     benchesToRun: benchesToRun,
     chainCounts: parseIntList(result['chainCount'] as String, 'chainCount'),
     nestDepths: parseIntList(result['nestingDepth'] as String, 'nestingDepth'),
-    repeats: int.tryParse(result['repeat'] as String? ?? "") ?? 2,
-    warmups: int.tryParse(result['warmup'] as String? ?? "") ?? 1,
+    repeats: parseSingleInt(result['repeat'] as String, 'repeat', min: 1),
+    warmups: parseSingleInt(result['warmup'] as String, 'warmup', min: 0),
     format: result['format'] as String,
     di: di,
     phases: phases,
-    opsPerSample:
-        parseIntList(result['opsPerSample'] as String, 'opsPerSample').first,
+    opsPerSample: parseSingleInt(
+        result['opsPerSample'] as String, 'opsPerSample',
+        min: 1),
     cycleDetection: result['cycleDetection'] as bool,
   );
 }

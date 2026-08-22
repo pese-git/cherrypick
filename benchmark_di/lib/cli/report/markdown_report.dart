@@ -93,22 +93,22 @@ class MarkdownReport extends ReportGenerator {
     final lines = dataRows.map(rowToLine).toList();
 
     final legend = '''
-      > **Legend:**  
-      > `Benchmark` – Test name  
-      > `Phase` – `firstResolve` or `steadyStateResolve`  
-      > `Chain Count` – Number of independent chains  
-      > `Depth` – Depth of each chain  
-      > `DI` – Container under test  
-      > `Median (ns)` – Median nanoseconds per resolve  
-      > `Min (ns)` – Fastest sample; closest to the cost without scheduler noise  
-      > `p95 (ns)` – 95th percentile  
-      > `MAD (ns)` – Median absolute deviation; outlier-resistant spread  
-      > `Ops` – Resolves per sample (1 in the first-resolve phase)  
-      > `N` – Number of samples  
-      > `ΔRSS(KB)` – Change in process memory (KB)  
-      > `ΔPeak(KB)` – Change in peak RSS (KB)  
-      > `PeakRSS(KB)` – Max observed RSS memory (KB)  
-      > `RSS-base(KB)` – Peak RSS minus the process baseline (~169 MB of VM and JIT code)  
+      > **Legend:**
+      > `Benchmark` – Test name
+      > `Phase` – `firstResolve` or `steadyStateResolve`
+      > `Chain Count` – Number of independent chains
+      > `Depth` – Depth of each chain
+      > `DI` – Container under test
+      > `Median (ns)` – Median nanoseconds per resolve
+      > `Min (ns)` – Fastest sample; closest to the cost without scheduler noise
+      > `p95 (ns)` – 95th percentile
+      > `MAD (ns)` – Median absolute deviation; outlier-resistant spread
+      > `Ops` – Resolves per sample (1 in the first-resolve phase)
+      > `N` – Number of samples
+      > `ΔRSS(KB)` – Change in process memory (KB)
+      > `ΔPeak(KB)` – Change in peak RSS (KB)
+      > `PeakRSS(KB)` – Max observed RSS memory (KB)
+      > `RSS-base(KB)` – Peak RSS minus the process baseline (~169 MB of VM and JIT code)
       ''';
 
     return '$legend\n\n${([headerLine, divider] + lines).join('\n')}';
