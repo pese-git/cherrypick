@@ -398,16 +398,10 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// A resolved [Disposable] is tracked in the scope that owns the binding
   /// (where the resolver produced it), exactly once — intermediate scopes on
   /// the parent chain only forward the lookup.
-  T? _tryResolveInternal<T>({String? named, dynamic params}) {
-    final resolver = _findBindingResolver<T>(named);
-    final local = resolver?.resolveSync(params);
-    if (local != null) {
-      _trackDisposable(local);
-      return local;
-    }
-    // Fallback to parent (public entry preserves per-scope cycle detection).
-    return _parentScope?.tryResolve(named: named, params: params);
-  }
+  T? _tryResolveInternal<T>({String? named, dynamic params}) =>
+      _resolveLocalSync<T>(named, params) ??
+      // Fallback to parent (public entry preserves per-scope cycle detection).
+      _parentScope?.tryResolve(named: named, params: params);
 
   /// Fast-path resolution used when observers and cycle detection are disabled.
   ///
@@ -418,15 +412,9 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// re-entry previously registered the same instance in every scope on the
   /// chain (causing `dispose()` to run once per level). Returns null if not
   /// found anywhere in the chain.
-  T? _directResolveSync<T>(String? named, dynamic params) {
-    final resolver = _findBindingResolver<T>(named);
-    final local = resolver?.resolveSync(params);
-    if (local != null) {
-      _trackDisposable(local);
-      return local;
-    }
-    return _parentScope?._directResolveSync<T>(named, params);
-  }
+  T? _directResolveSync<T>(String? named, dynamic params) =>
+      _resolveLocalSync<T>(named, params) ??
+      _parentScope?._directResolveSync<T>(named, params);
 
   /// Asynchronously resolves a dependency of type [T].
   ///
@@ -550,42 +538,54 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// Direct async resolution for [T] without cycle check. Returns null if missing.
   /// Used internally by the observer/detection path. Tracks a resolved
   /// [Disposable] once in the owning scope (see [_tryResolveInternal]).
-  Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) {
-    final resolver = _findBindingResolver<T>(named);
-    final local = resolver?.resolveAsync(params);
-    if (local != null) {
-      return local.then((value) {
-        _trackDisposable(value);
-        return value;
-      });
-    }
-    // Fallback to parent (public entry preserves per-scope cycle detection).
-    return _parentScope?.tryResolveAsync(named: named, params: params) ??
-        Future<T?>.value(null);
-  }
+  Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) =>
+      _resolveLocalAsync<T>(named, params) ??
+      // Fallback to parent (public entry preserves per-scope cycle detection).
+      _parentScope?.tryResolveAsync(named: named, params: params) ??
+      Future<T?>.value(null);
 
   /// Fast-path async resolution used when observers and cycle detection are
   /// disabled. Mirrors [_directResolveSync]: recurses into the parent chain
   /// directly (no public re-entry) and tracks a resolved [Disposable] exactly
   /// once in the scope that owns the binding.
-  Future<T?> _directResolveAsync<T>(String? named, dynamic params) {
-    final resolver = _findBindingResolver<T>(named);
-    final local = resolver?.resolveAsync(params);
-    if (local != null) {
-      return local.then((value) {
-        _trackDisposable(value);
-        return value;
-      });
-    }
-    final parent = _parentScope;
-    if (parent != null) return parent._directResolveAsync<T>(named, params);
-    return Future<T?>.value(null);
-  }
+  Future<T?> _directResolveAsync<T>(String? named, dynamic params) =>
+      _resolveLocalAsync<T>(named, params) ??
+      _parentScope?._directResolveAsync<T>(named, params) ??
+      Future<T?>.value(null);
 
   /// Looks up the [BindingResolver] for [T] and [named] within this scope.
   /// Returns null if none found. Internal use only.
   BindingResolver<T>? _findBindingResolver<T>(String? named) =>
       _bindingResolvers[T]?[named] as BindingResolver<T>?;
+
+  /// Resolves [T] from this scope's own bindings only, tracking a resolved
+  /// [Disposable] here — this scope owns the binding that produced it.
+  ///
+  /// Returns null when this scope has no matching binding, which is the signal
+  /// callers use to fall back to the parent chain.
+  T? _resolveLocalSync<T>(String? named, dynamic params) {
+    final local = _findBindingResolver<T>(named)?.resolveSync(params);
+    if (local != null) {
+      _trackDisposable(local);
+    }
+    return local;
+  }
+
+  /// Async counterpart of [_resolveLocalSync].
+  ///
+  /// Returns null (not a null-completing future) when this scope has no
+  /// matching binding, so callers can distinguish "nothing here, ask the
+  /// parent" from "the local binding resolved to null".
+  Future<T?>? _resolveLocalAsync<T>(String? named, dynamic params) {
+    final local = _findBindingResolver<T>(named)?.resolveAsync(params);
+    if (local == null) {
+      return null;
+    }
+    return local.then((value) {
+      _trackDisposable(value);
+      return value;
+    });
+  }
 
   void _trackDisposable(Object? value) {
     if (value is Disposable) {
