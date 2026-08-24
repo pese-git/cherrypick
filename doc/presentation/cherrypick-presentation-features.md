@@ -3,7 +3,7 @@ marp: true
 theme: default
 paginate: true
 size: 16:9
-header: 'CherryPick DI — возможности и практика'
+header: 'Binding, Module, Scope'
 footer: 'cherrypick-di.dev · github.com/pese-git/cherrypick'
 style: |
   /* Та же система плотности, что в сравнительной колоде: базовый кегль
@@ -48,7 +48,7 @@ style: |
 
 <!--
 =====================================================================
-CHERRYPICK DI — ВОЗМОЖНОСТИ И ПРАКТИКА
+BINDING, MODULE, SCOPE (CherryPick DI)
 Обучающая колода: 28 основных слайдов + 5 резервных
 
 ДЛЯ КОГО: разработчик, который выходит на проект с CherryPick, или
@@ -76,9 +76,9 @@ CHERRYPICK DI — ВОЗМОЖНОСТИ И ПРАКТИКА
 =====================================================================
 -->
 
-# CherryPick DI
+# Binding, Module, Scope
 
-## Дерево скоупов для Dart и Flutter: возможности и практика
+## Больше в CherryPick DI знать нечего
 
 **Сергей Пеньковский**
 [ЗАМЕНИТЬ: событие, дата]
