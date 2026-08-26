@@ -1,3 +1,7 @@
+## 4.0.0-dev.4
+
+ - Update a dependency to the latest release.
+
 ## 4.0.0-dev.3
 
  - **DOCS**: add Netlify deployment status badge to README files.
