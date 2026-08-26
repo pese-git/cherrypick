@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.4`](#cherrypick---v400-dev4)
+ - [`cherrypick_generator` - `v4.0.0-dev.4`](#cherrypick_generator---v400-dev4)
+ - [`cherrypick_flutter` - `v4.0.0-dev.4`](#cherrypick_flutter---v400-dev4)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.4`](#talker_cherrypick_logger---v400-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v4.0.0-dev.4`
+ - `talker_cherrypick_logger` - `v4.0.0-dev.4`
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.4`
+
+ - **REFACTOR**(scope): extract local resolve into shared sync/async helpers.
+ - **REFACTOR**(scope): deduplicate disposable tracking.
+ - **REFACTOR**(cherrypick): share one chain representation between both detectors.
+ - **PERF**(cherrypick): resolve parent chain internally, track disposable once in owner.
+ - **FIX**(cherrypick): keep the resolution chain alive across await boundaries.
+ - **FIX**(scope): report an incomplete binding instead of a null-check failure.
+ - **FIX**(scope): make scope ids collision-free.
+ - **DOCS**: document that a scope disposes only what its bindings created.
+ - **DOCS**(scope): state that tryResolve returns null only for a missing binding.
+
+#### `cherrypick_generator` - `v4.0.0-dev.4`
+
+ - **FIX**(cherrypick_generator): add upper bound to analyzer dependency.
+
+
 ## 2026-08-14
 
 ### Changes

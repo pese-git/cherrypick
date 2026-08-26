@@ -1,3 +1,15 @@
+## 4.0.0-dev.4
+
+ - **REFACTOR**(scope): extract local resolve into shared sync/async helpers.
+ - **REFACTOR**(scope): deduplicate disposable tracking.
+ - **REFACTOR**(cherrypick): share one chain representation between both detectors.
+ - **PERF**(cherrypick): resolve parent chain internally, track disposable once in owner.
+ - **FIX**(cherrypick): keep the resolution chain alive across await boundaries.
+ - **FIX**(scope): report an incomplete binding instead of a null-check failure.
+ - **FIX**(scope): make scope ids collision-free.
+ - **DOCS**: document that a scope disposes only what its bindings created.
+ - **DOCS**(scope): state that tryResolve returns null only for a missing binding.
+
 ## 4.0.0-dev.3
 
  - Bump "cherrypick" to `4.0.0-dev.3`.
