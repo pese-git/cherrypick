@@ -4,7 +4,7 @@ theme: default
 paginate: true
 size: 16:9
 header: 'Binding, Module, Scope'
-footer: 'CherryPick DI · cherrypick-di.dev · github.com/pese-git/cherrypick'
+footer: 'CherryPick DI · cherrypick-di.netlify.app · github.com/pese-git/cherrypick'
 style: |
   section {
     font-size: 24px;
@@ -465,7 +465,7 @@ class ProfileScreen extends StatelessWidget {
 
 ---
 
-# Три рецепта, которые нужны всем
+# Три сценария из практики
 
 **Логаут — одной строкой**
 ```dart
@@ -544,7 +544,7 @@ root.openSubScope('session-b')..installModules([SessionModule(userB)]);
 
 # Куда дальше
 
-**Документация** · `cherrypick-di.dev` — полный гайд, аннотации, детект циклов
+**Документация** · `cherrypick-di.netlify.app` — полный гайд, аннотации, детект циклов
 
 **Пример приложения** · `examples/market_pulse` в репозитории:
 дерево скоупов, кодогенерация, наблюдатель, тесты времени жизни.
@@ -872,7 +872,7 @@ session.installModules([PaymentsModule(), OrdersModule(), ChatModule()]);
 <!--
 Заметки спикера · 1,5 мин
 
-— Не читайте таблицу вслух. Дайте посмотреть, назовите две строки
+— Не читать таблицу вслух. Дай посмотреть, назовите две строки
    про валидацию: генератор падает с внятным сообщением, а не
    генерирует битый код.
 -->
@@ -896,7 +896,7 @@ Apache 2.0: форкается без разрешения
 <!--
 Заметки спикера · 1,5 мин
 
-— Говорите ровным тоном, без самоуничижения и без оправданий.
+— Говорить ровным тоном, без самоуничижения и без оправданий.
    Это не извинения — это описание сделки.
 — Первый пункт: тесты + детект циклов в dev-сборке снимают большинство
    случаев на практике. Но гарантии компилятора это не заменяет.
