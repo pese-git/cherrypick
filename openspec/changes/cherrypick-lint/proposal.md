@@ -41,5 +41,7 @@ CherryPick DI содержит ряд API-контрактов, нарушени
 
 ## Open Questions
 
-- Нужен ли `avoid_experimental_scope_api` как `warning` или `info`? Методы помечены `@experimental` но активно используются в примерах.
-- Следует ли правилу `avoid_unawaited_scope_dispose` срабатывать только на `Scope.dispose()` или на любой `Disposable.dispose()`?
+_Все вопросы закрыты._
+
+- ~~Нужен ли `avoid_experimental_scope_api` как `warning` или `info`?~~ → **`info`**: методы активно используются в примерах, `warning` был бы слишком шумным.
+- ~~Следует ли `avoid_unawaited_scope_dispose` срабатывать на любой `Disposable.dispose()`?~~ → **Только `Scope.dispose()`**: пользовательские синхронные `Disposable` возвращают `void`, правило не должно на них срабатывать.
