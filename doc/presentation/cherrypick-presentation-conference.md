@@ -3,7 +3,7 @@ marp: true
 theme: default
 paginate: true
 size: 16:9
-header: 'Кто решает, когда умрёт ваш сервис'
+header: 'Binding, Module, Scope'
 footer: 'CherryPick DI · cherrypick-di.dev · github.com/pese-git/cherrypick'
 style: |
   section {
