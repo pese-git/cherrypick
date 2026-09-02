@@ -66,7 +66,7 @@ BINDING, MODULE, SCOPE (CherryPick DI)
   • 20 минут на митапе для своих — слайды 3-5, 10-14, 27
 
 ВСЕ 23 DART-ФРАГМЕНТА ПРОВЕРЕНЫ компиляцией против cherrypick
-4.0.0-dev.3: `dart analyze` — ноль ошибок, три предупреждения
+4.0.0-dev.4: `dart analyze` — ноль ошибок, три предупреждения
 `experimental_member_use` на openScope/closeScope. Если правите код
 на слайдах — собирайте проверочный файл заново, на глаз не смотрите:
 в прошлой колоде именно так нашёлся невалидный пример кодогенерации.
@@ -254,7 +254,7 @@ class OrderModule extends Module {
 final repo = scope.resolve<OrderRepo>(params: 'order-42');
 ```
 
-**Зачем:** объект, которому нужен аргумент, известный только в рантайме — id заказа, символ инструмента, номер счёта
+**Зачем:** объект, которому нужен аргумент, известный только в рантайме — id заказа, номер счёта
 
 > Это то, что в типизированных DI выражается тяжелее всего.
 > Цена — `params` имеет тип `dynamic`
@@ -295,8 +295,11 @@ final db = await scope.resolveAsync<Database>();
 Заметки спикера · 1,5 мин
 
 — Пара обязательна: объявили асинхронно — резолвите асинхронно.
-— В 4.0 поведение стало строже: `toProvideAsync` принимает только
-   `Future<T>`, а не `FutureOr<T>`. Это из миграционного гайда.
+— `toProvide` принимает `FutureOr<T> Function()`, поэтому
+   `toProvide(() async => ...)` технически работает, но использует
+   рантайм-детект типа. `toProvideAsync` принимает строго `Future<T>`:
+   типобезопасно и без оверхеда. Для async-биндингов всегда
+   предпочитайте `toProvideAsync`.
 — Полезная деталь 4.0: если async-синглтон упал при инициализации,
    следующий resolveAsync попробует создать его заново, а не вернёт
    ту же ошибку навсегда.
@@ -326,6 +329,10 @@ final db = await scope.tryResolveAsync<Database>();
 — Правило, которое стоит закрепить в команде: `tryResolve` только там,
    где отсутствие зависимости — штатный сценарий. Во всех остальных
    местах `resolve`, потому что тихий null уезжает в прод.
+— ТОЧНОСТЬ (уточнено в dev.4): `tryResolve` возвращает `null` строго
+   только если биндинг не зарегистрирован. Если биндинг зарегистрирован,
+   но resolver не настроен (незавершённый биндинг) — это `StateError`,
+   а не null. Не прячьте ошибки конфигурации за `tryResolve`.
 -->
 
 ---
@@ -455,6 +462,10 @@ class OrderTracker implements Disposable {
 — Что действительно даёт Disposable — ДЕТЕРМИНИРОВАННОЕ закрытие
    ресурса. Сокет соберётся сборщиком, но `disconnect()` до этого
    никто не позовёт.
+— УТОЧНЕНИЕ dev.4 (задокументировано): скоуп dispose-ит только те
+   объекты, которые создали ЕГО СОБСТВЕННЫЕ биндинги. Если зависимость
+   разрешена через родительский скоуп — она зарегистрирована там и
+   dispose-ится там. Дочерний скоуп её не трогает.
 — ИМЯ МЕТОДА: у CherryPick это `dispose()`. У `get_it` в похожем
    интерфейсе — `onDispose()`. Если переходите с get_it, это первое,
    на чём спотыкаются.
@@ -687,19 +698,27 @@ class ProfileScreen with _$ProfileScreen {
 # Циклические зависимости
 
 ```dart
-// A зависит от B, B зависит от A — падение по стеку при первом resolve
-CherryPick.enableGlobalCycleDetection();
+// A зависит от B, B зависит от A — внятное исключение с цепочкой A → B → A
 
+// Вариант 1: включить оба детектора для конкретного скоупа сразу
 final scope = CherryPick.openGlobalSafeScope(scopeName: 'session');
+
+// Вариант 2: включить раздельно
+scope.enableCycleDetection();        // локальный (внутри скоупа)
+scope.enableGlobalCycleDetection();  // кросс-скоуп (через границы)
 ```
 
 **Два уровня:**
 
-**Локальный** — цикл внутри одного скоупа. `scope.enableCycleDetection()`
+**Локальный** — цикл внутри одного скоупа.
+`scope.enableCycleDetection()` или `CherryPick.enableGlobalCycleDetection()` (для всех)
 
-**Глобальный** — цикл через границы скоупов. `CherryPick.enableGlobalCycleDetection()`
+**Кросс-скоуп** — цикл через границы скоупов.
+`scope.enableGlobalCycleDetection()` или `CherryPick.enableGlobalCrossScopeCycleDetection()` (для всех)
 
-**Что получите вместо падения:** внятное исключение с цепочкой `A → B → A`
+**`openGlobalSafeScope`** — включает оба детектора в одном вызове
+
+**Что получите вместо стек-оверфлоу:** исключение с цепочкой `A → B → A`
 
 <!--
 Заметки спикера · 1,5 мин
@@ -707,11 +726,17 @@ final scope = CherryPick.openGlobalSafeScope(scopeName: 'session');
 — По умолчанию детект ВЫКЛЮЧЕН, и это осознанно: он стоит времени
    на каждом резолве. Включайте в debug-сборке и в тестах, в проде
    выключайте.
+— ВАЖНО — неочевидная номенклатура API: `CherryPick.enableGlobalCycleDetection()`
+   включает ЛОКАЛЬНЫЙ детект сразу на всех текущих и новых скоупах.
+   А `CherryPick.enableGlobalCrossScopeCycleDetection()` — кросс-скоуп.
+   На уровне одного Scope: `enableCycleDetection()` = локальный,
+   `enableGlobalCycleDetection()` = кросс-скоуп.
 — Честно скажите про сравнение: у yx_scope это статический линтер,
    он ловит циклы до запуска. Здесь — рантайм. Это цена
    динамического резолвинга.
-— `CherryPick.getCurrentResolutionChain()` покажет текущую цепочку
-   резолвинга — полезно, когда падает глубоко.
+— `CherryPick.getCurrentResolutionChain(scopeName: '...')` покажет
+   текущую цепочку резолвинга — полезно, когда падает глубоко.
+   В dev.4 цепочка корректно сохраняется через async-границы.
 -->
 
 ---
@@ -950,16 +975,29 @@ root.openSubScope('session-b')..installModules([SessionModule(userB)]);
 
 | | |
 |---|---|
-| `resolve<T>({named, params})` | бросает, если нет |
-| `tryResolve<T>({named, params})` | вернёт `null` |
+| `resolve<T>({named, params})` | бросает, если биндинга нет |
+| `tryResolve<T>({named, params})` | `null` только если биндинга нет |
 | `resolveAsync<T>` / `tryResolveAsync<T>` | асинхронные пары |
 | `openSubScope(name)` | открыть или получить дочерний |
 | `closeSubScope(name)` | закрыть вместе с поддеревом |
 | `installModules([...])` / `dropModules()` | поставить и снять модули |
 | `dispose()` | закрыть сам скоуп |
-| `enableCycleDetection()` | локальный детект циклов |
+| `enableCycleDetection()` | локальный детект (внутри скоупа) |
+| `enableGlobalCycleDetection()` | кросс-скоуп детект (через границы) |
 
-**Статические хелперы:** `openRootScope`, `openScope(scopeName:)`, `closeScope(scopeName:)`, `closeRootScope`, `openSafeScope`, `openGlobalSafeScope`, `setGlobalObserver`, `enableGlobalCycleDetection`, `getGlobalResolutionChain`
+**Статические хелперы CherryPick:**
+
+| | |
+|---|---|
+| `openRootScope()` / `closeRootScope()` | корневой скоуп |
+| `openScope(scopeName:)` / `closeScope(scopeName:)` | по пути `@experimental` |
+| `openSafeScope(scopeName:)` | с локальным детектом |
+| `openGlobalSafeScope(scopeName:)` | с локальным + кросс-скоуп детектом |
+| `setGlobalObserver(observer)` | глобальный наблюдатель |
+| `enableGlobalCycleDetection()` | локальный детект для всех скоупов |
+| `enableGlobalCrossScopeCycleDetection()` | кросс-скоуп детект для всех |
+| `getCurrentResolutionChain({scopeName})` | текущая цепочка резолвинга |
+| `getGlobalResolutionChain()` | цепочка кросс-скоуп детектора |
 
 ---
 
