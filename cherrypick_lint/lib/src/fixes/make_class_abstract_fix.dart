@@ -16,7 +16,7 @@ class MakeClassAbstractFix extends DartFix {
       if (node.abstractKeyword != null) return;
 
       final changeBuilder = reporter.createChangeBuilder(
-        message: 'Сделать класс abstract',
+        message: 'Make class abstract',
         priority: 10,
       );
       changeBuilder.addDartFileEdit((builder) {

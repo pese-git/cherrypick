@@ -21,7 +21,7 @@ class ReplaceExtendsWithImplementsFix extends DartFix {
       }
 
       final changeBuilder = reporter.createChangeBuilder(
-        message: 'Заменить на implements CherryPickObserver',
+        message: 'Replace with implements CherryPickObserver',
         priority: 10,
       );
       changeBuilder.addDartFileEdit((builder) {

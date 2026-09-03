@@ -137,17 +137,17 @@ analyzer:
 
 | Код | Триггер | Quick fix |
 |-----|---------|-----------|
-| `avoid_unawaited_close_sub_scope` | `scope.closeSubScope(...)` без `await` | Добавить `await` |
-| `avoid_unawaited_close_scope` | `CherryPick.closeScope(...)` без `await` | Добавить `await` |
-| `avoid_unawaited_scope_dispose` | `scope.dispose()` где приёмник имеет тип `Scope` — без `await` | Добавить `await` |
+| `avoid_unawaited_close_sub_scope` | `scope.closeSubScope(...)` без `await` | Add await |
+| `avoid_unawaited_close_scope` | `CherryPick.closeScope(...)` без `await` | Add await |
+| `avoid_unawaited_scope_dispose` | `scope.dispose()` где приёмник имеет тип `Scope` — без `await` | Add await |
 
 ### Группа 2 — аннотационные правила (severity: error)
 
 | Код | Триггер | Quick fix |
 |-----|---------|-----------|
-| `module_must_be_abstract` | `@module` на не-`abstract` классе | Сделать класс `abstract` |
+| `module_must_be_abstract` | `@module` на не-`abstract` классе | Make class abstract |
 | `module_method_missing_binding` | публичный метод в `@module`-классе без `@provide` / `@instance` | — |
-| `inject_field_must_be_late_final` | `@inject`-поле без `late final` | Добавить `late final` |
+| `inject_field_must_be_late_final` | `@inject`-поле без `late final` | Add late final |
 | `named_value_must_not_be_empty` | `@named('')` или `@named("")` | — |
 | `params_requires_provide` | `@params` на методе без `@provide` | — |
 
@@ -155,7 +155,7 @@ analyzer:
 
 | Код | Триггер | Quick fix |
 |-----|---------|-----------|
-| `avoid_extends_silent_observer` | `extends SilentCherryPickObserver` | Заменить на `implements CherryPickObserver` |
+| `avoid_extends_silent_observer` | `extends SilentCherryPickObserver` | Replace with implements CherryPickObserver |
 | `avoid_experimental_scope_api` | вызов `CherryPick.openScope` / `CherryPick.closeScope` | Предложить `openSubScope` / `closeSubScope` |
 
 ## Архитектура плагина

@@ -25,7 +25,7 @@
 #### Scenario: Вызов без await
 - **WHEN** в коде присутствует выражение `scope.closeSubScope(name)` и оно не обёрнуто в `await`
 - **THEN** репортируется `avoid_unawaited_close_sub_scope` с severity `warning`
-- **AND** предлагается quick fix «Добавить await»
+- **AND** предлагается quick fix «Add await»
 
 #### Scenario: Корректный вызов с await
 - **WHEN** выражение имеет вид `await scope.closeSubScope(name)`
@@ -44,7 +44,7 @@
 #### Scenario: Статический вызов без await
 - **WHEN** в коде присутствует выражение `CherryPick.closeScope(...)` без `await`
 - **THEN** репортируется `avoid_unawaited_close_scope` с severity `warning`
-- **AND** предлагается quick fix «Добавить await»
+- **AND** предлагается quick fix «Add await»
 
 #### Scenario: Корректный вызов
 - **WHEN** выражение имеет вид `await CherryPick.closeScope(...)`
@@ -61,7 +61,7 @@
 #### Scenario: dispose() без await на Scope
 - **WHEN** в коде присутствует `scope.dispose()` где статический тип `scope` — `Scope`, и вызов не обёрнут в `await`
 - **THEN** репортируется `avoid_unawaited_scope_dispose` с severity `warning`
-- **AND** предлагается quick fix «Добавить await»
+- **AND** предлагается quick fix «Add await»
 
 #### Scenario: dispose() на пользовательском Disposable
 - **WHEN** вызывается `myService.dispose()` где `myService` не имеет статического типа `Scope`
@@ -82,7 +82,7 @@
 #### Scenario: @module на конкретном классе
 - **WHEN** класс аннотирован `@module()` и не имеет модификатора `abstract`
 - **THEN** репортируется `module_must_be_abstract` с severity `error`
-- **AND** предлагается quick fix «Сделать класс abstract»
+- **AND** предлагается quick fix «Make class abstract»
 
 #### Scenario: @module на abstract классе
 - **WHEN** класс аннотирован `@module()` и объявлен как `abstract class`
@@ -117,7 +117,7 @@
 #### Scenario: @inject поле без late final
 - **WHEN** поле аннотировано `@inject()` и не является одновременно `late` и `final`
 - **THEN** репортируется `inject_field_must_be_late_final` с severity `error`
-- **AND** предлагается quick fix «Добавить late final»
+- **AND** предлагается quick fix «Add late final»
 
 #### Scenario: Корректное поле
 - **WHEN** поле аннотировано `@inject()` и объявлено как `late final`
@@ -166,7 +166,7 @@
 #### Scenario: extends SilentCherryPickObserver
 - **WHEN** класс объявлен как `class Foo extends SilentCherryPickObserver`
 - **THEN** репортируется `avoid_extends_silent_observer` с severity `warning`
-- **AND** предлагается quick fix «Заменить на implements CherryPickObserver»
+- **AND** предлагается quick fix «Replace with implements CherryPickObserver»
 
 #### Scenario: implements CherryPickObserver
 - **WHEN** класс объявлен как `class Foo implements CherryPickObserver`

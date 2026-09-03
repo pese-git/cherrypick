@@ -19,7 +19,7 @@ class AddLateFinalFix extends DartFix {
       if (fields.isLate && fields.isFinal) return;
 
       final changeBuilder = reporter.createChangeBuilder(
-        message: 'Добавить late final',
+        message: 'Add late final',
         priority: 10,
       );
       changeBuilder.addDartFileEdit((builder) {

@@ -17,7 +17,7 @@ class AddAwaitFix extends DartFix {
       if (!analysisError.sourceRange.intersects(node.sourceRange)) return;
 
       final changeBuilder = reporter.createChangeBuilder(
-        message: 'Добавить await',
+        message: 'Add await',
         priority: 10,
       );
       changeBuilder.addDartFileEdit((builder) {
