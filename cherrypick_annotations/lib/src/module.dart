@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks an abstract Dart class as a dependency injection module for CherryPick code generation.
 ///
 /// Use `@module()` on your abstract class to indicate it provides DI bindings (via provider methods).
@@ -43,7 +41,6 @@ import 'package:meta/meta.dart';
 /// ```
 ///
 /// See also: [@provide], [@singleton], [@instance], [@named]
-@experimental
 final class module {
   /// Creates a [module] annotation for use on a DI module class.
   const module();

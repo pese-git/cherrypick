@@ -18,7 +18,6 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  meta: ^1.15.0
   # path: ^1.8.0
 
 dev_dependencies:

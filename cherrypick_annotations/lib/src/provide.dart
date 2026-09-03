@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks a method or class as a dependency provider (factory/provider) for CherryPick module code generation.
 ///
 /// Use `@provide` on any method inside a `@module()` annotated class when you want that method
@@ -37,7 +35,6 @@ import 'package:meta/meta.dart';
 /// ```
 ///
 /// See also: [@singleton], [@instance], [@params], [@named]
-@experimental
 final class provide {
   /// Creates a [provide] annotation for marking provider methods/classes in DI modules.
   const provide();

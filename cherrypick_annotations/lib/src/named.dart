@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Assigns a name or key identifier to a class, field, factory method or parameter
 /// for use in multi-registration scenarios (named dependencies) in CherryPick DI.
 ///
@@ -52,7 +50,6 @@ import 'package:meta/meta.dart';
 ///   UserScreen(@named('current') User user);
 /// }
 /// ```
-@experimental
 final class named {
   /// The assigned name or identifier for the dependency, provider, or parameter.
   final String value;

@@ -14,7 +14,6 @@
 import 'package:cherrypick/src/scope.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/observer.dart';
-import 'package:meta/meta.dart';
 
 Scope? _rootScope;
 
@@ -225,7 +224,6 @@ class CherryPick {
   /// ```dart
   /// final apiScope = CherryPick.openScope(scopeName: 'network.super.api');
   /// ```
-  @experimental
   static Scope openScope({String scopeName = '', String separator = '.'}) {
     if (scopeName.isEmpty) {
       return openRootScope();
@@ -255,7 +253,6 @@ class CherryPick {
   /// ```dart
   /// CherryPick.closeScope(scopeName: 'network.super.api');
   /// ```
-  @experimental
   static Future<void> closeScope(
       {String scopeName = '', String separator = '.'}) async {
     if (scopeName.isEmpty) {

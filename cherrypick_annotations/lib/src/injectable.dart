@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks a class as injectable, enabling automatic field injection by CherryPick's code generator.
 ///
 /// Use `@injectable()` on a class whose fields (marked with `@inject`) you want to be automatically injected from the DI [Scope].
@@ -37,7 +35,6 @@ import 'package:meta/meta.dart';
 /// ```
 ///
 /// After running the generator, the mixin (`_\$ProfileScreen`) will be available to help auto-inject all [@inject] fields in your widget/service/controller.
-@experimental
 final class injectable {
   /// Creates an [injectable] annotation for classes.
   const injectable();

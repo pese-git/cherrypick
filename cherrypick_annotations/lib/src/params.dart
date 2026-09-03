@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks a parameter in a provider method to receive dynamic runtime arguments when resolving a dependency.
 ///
 /// Use `@params()` in a DI module/factory method when the value must be supplied by the user/code at injection time,
@@ -36,7 +34,6 @@ import 'package:meta/meta.dart';
 /// ```dart
 /// final manager = scope.resolve<UserManager>(params: {'userId': myId});
 /// ```
-@experimental
 final class params {
   /// Marks a method/constructor parameter as supplied at runtime by the caller.
   const params();

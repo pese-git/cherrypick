@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks a provider method or class to always create a new instance (factory) in CherryPick DI.
 ///
 /// Use `@instance()` to annotate methods or classes in your DI module/class
@@ -43,7 +41,6 @@ import 'package:meta/meta.dart';
 /// ```
 ///
 /// See also: [@singleton]
-@experimental
 final class instance {
   /// Creates an [instance] annotation for classes or providers.
   const instance();

@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks a field for dependency injection by CherryPick's code generator.
 ///
 /// Use `@inject()` on fields within a class marked with `@injectable()`.
@@ -36,7 +34,6 @@ import 'package:meta/meta.dart';
 /// // After running build_runner, call:
 /// // LoginScreen().injectFields();
 /// ```
-@experimental
 final class inject {
   /// Creates an [inject] annotation for field injection.
   const inject();
