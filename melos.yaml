@@ -28,6 +28,7 @@ scripts:
     steps:
       - codegen
       - analyze
+      - lint:custom_lint
       - format
       - test
     description: Run all steps.
@@ -35,11 +36,30 @@ scripts:
   lint:all:
     steps:
       - analyze
+      - lint:custom_lint
       - format
     description: Run all static analysis checks.
 
   analyze:
     exec: dart analyze
+    packageFilters:
+      # dart analyze intermittently crashes the analysis server on these two
+      # packages under the FVM-pinned Dart 3.10.0 (Flutter 3.38.1) — a bug in
+      # the SDK's built-in analyzer_plugin bridge loading custom_lint_builder
+      # 0.8.1, not a defect in cherrypick_lint itself. See lint:custom_lint
+      # below for the actual correctness check on this package, and
+      # cherrypick_lint/README.md for details.
+      ignore: ["cherrypick_lint", "cherrypick_lint_example"]
+
+  lint:custom_lint:
+    description: >
+      Verify cherrypick_lint's rules via its real testing mechanism
+      (dart analyze does not surface custom_lint diagnostics, and crashes
+      intermittently on this package under the pinned Dart 3.10.0 — see the
+      `analyze` script above).
+    exec: dart run custom_lint
+    packageFilters:
+      scope: ["cherrypick_lint_example"]
 
   format:
     exec: dart format lib

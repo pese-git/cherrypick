@@ -86,3 +86,13 @@ dart pub get
 dart run custom_lint          # verify every expect_lint is fulfilled
 dart run custom_lint --fix    # try quick fixes against real violations
 ```
+
+> **Note:** `dart analyze` on this package or `example/` can intermittently
+> crash with `Bad state: The analysis server crashed unexpectedly` under
+> Dart 3.10.0 (Flutter 3.38.1) — a bug in the SDK's built-in `analyzer_plugin`
+> bridge loading `custom_lint_builder` 0.8.1, not a defect in this plugin's
+> rules. `dart analyze` never surfaces `custom_lint` diagnostics anyway (see
+> [Obtaining the list of lints in the
+> CI](https://github.com/invertase/dart_custom_lint#obtaining-the-list-of-lints-in-the-ci))
+> — use `dart run custom_lint` as shown above instead. The monorepo's
+> `melos.yaml` excludes this package from its `analyze` script accordingly.
