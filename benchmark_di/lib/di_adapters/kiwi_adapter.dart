@@ -30,6 +30,12 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
         throw UnsupportedError(
             'Kiwi does not support async dependencies or async binding scenarios.');
       }
+      if (scenario == UniversalScenario.override) {
+        throw UnsupportedError(
+            'Kiwi не поддерживает иерархию scope: KiwiContainer.scoped() '
+            'создаёт независимый контейнер, поэтому сценарий override был бы '
+            'плоским резолвом под чужим именем.');
+      }
       return (container) {
         switch (scenario) {
           case UniversalScenario.asyncChain:
@@ -105,7 +111,7 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
   }
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     _container.clear();
   }
 

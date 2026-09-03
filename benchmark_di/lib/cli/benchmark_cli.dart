@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:io';
 
 import 'package:benchmark_di/cli/report/markdown_report.dart';
 import 'package:benchmark_di/di_adapters/yx_scope_adapter.dart';
@@ -29,7 +29,21 @@ import 'package:kiwi/kiwi.dart';
 class BenchmarkCliRunner {
   /// Runs benchmarks based on CLI [args], configuring different test scenarios.
   Future<void> run(List<String> args) async {
+    // Первой строкой: baseline памяти должен быть снят до любых регистраций.
+    captureProcessBaseline();
     final config = parseBenchmarkCli(args);
+
+    // Фаст-путь cherrypick (_canUseDirectResolvePath) включается только при
+    // silent observer и выключенном детекторе циклов. Это значения по
+    // умолчанию, но документация называет enableCycleDetection рекомендованным,
+    // поэтому конфигурация обязана попадать в отчёт и управляться флагом —
+    // иначе публикуется лучший из двух режимов без указания, какой именно.
+    if (config.cycleDetection) {
+      CherryPick.enableGlobalCycleDetection();
+    }
+    // dart compile exe собирает в product-режиме, dart run — нет.
+    const runtimeMode = bool.fromEnvironment('dart.vm.product') ? 'aot' : 'jit';
+
     final results = <Map<String, dynamic>>[];
     // DI implementations that do not support async scenarios
     const asyncUnsupported = {'kiwi', 'yx_scope'};
@@ -37,9 +51,22 @@ class BenchmarkCliRunner {
       for (final bench in config.benchesToRun) {
         final scenario = toScenario(bench);
         final mode = toMode(bench);
+        // Пропуск неподдерживаемого сценария сообщается в stderr: молчаливая
+        // пустая таблица однажды уже привела к публикации числа для сценария,
+        // который инструмент выполнить не может (yx_scope/chainAsync = 87.2us).
         if (asyncUnsupported.contains(config.di) &&
             scenario == UniversalScenario.asyncChain) {
-          continue; // Skip async benchmarks for DI that does not support them
+          stderr.writeln(
+              'пропущено: ${config.di}/$bench — контейнер не поддерживает '
+              'асинхронные привязки');
+          continue;
+        }
+        if (hierarchyUnsupported.contains(config.di) &&
+            scenario == UniversalScenario.override) {
+          stderr.writeln(
+              'пропущено: ${config.di}/$bench — контейнер не поддерживает '
+              'иерархию scope');
+          continue;
         }
         for (final c in config.chainCounts) {
           for (final d in config.nestDepths) {
@@ -58,6 +85,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<GetIt>(
@@ -72,6 +100,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else if (config.di == 'kiwi') {
@@ -88,6 +117,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<KiwiContainer>(
@@ -102,6 +132,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else if (config.di == 'riverpod') {
@@ -119,6 +150,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<
@@ -134,6 +166,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else if (config.di == 'yx_scope') {
@@ -151,6 +184,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync =
@@ -166,6 +200,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             } else {
@@ -182,6 +217,7 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               } else {
                 final benchSync = UniversalChainBenchmark<Scope>(
@@ -196,37 +232,44 @@ class BenchmarkCliRunner {
                   warmups: config.warmups,
                   repeats: config.repeats,
                   phase: phase,
+                  opsPerSample: config.opsPerSample,
                 );
               }
             }
             final timings = benchResult.timings;
             if (timings.isEmpty) continue; // skip failed scenarios
-            timings.sort();
-            final count = timings.length;
-            final mean = timings.reduce((a, b) => a + b) / count;
-            final median = count.isOdd
-                ? timings[count ~/ 2]
-                : (timings[count ~/ 2 - 1] + timings[count ~/ 2]) / 2;
-            final minVal = timings.first;
-            final maxVal = timings.last;
-            final stddev = sqrt(
-                timings.map((x) => pow(x - mean, 2)).reduce((a, b) => a + b) /
-                    count);
+            final sorted = [...timings]..sort();
+            final count = sorted.length;
+            final median = _median(sorted);
+            final p95 = sorted[((count - 1) * 0.95).round()];
+            // Медианное абсолютное отклонение: устойчиво к выбросам, которых
+            // в этих замерах больше, чем полезного сигнала. Среднее и stddev
+            // по такому распределению описывают в основном самый неудачный
+            // замер, а не поведение контейнера.
+            final mad =
+                _median(sorted.map((x) => (x - median).abs()).toList()..sort());
+
             results.add({
               'benchmark': 'Universal_$bench',
+              'di': config.di,
+              'runtime_mode': runtimeMode,
+              'cycle_detection': config.cycleDetection ? 'on' : 'off',
               'phase': phase.name,
               'chainCount': c,
               'nestingDepth': d,
-              'mean_us': mean.toStringAsFixed(2),
-              'median_us': median.toStringAsFixed(2),
-              'stddev_us': stddev.toStringAsFixed(2),
-              'min_us': minVal.toStringAsFixed(2),
-              'max_us': maxVal.toStringAsFixed(2),
-              'trials': timings.length,
-              'timings_us': timings.map((t) => t.toStringAsFixed(2)).toList(),
+              'median_ns': median.toStringAsFixed(1),
+              'min_ns': sorted.first.toStringAsFixed(1),
+              'p95_ns': p95.toStringAsFixed(1),
+              'mad_ns': mad.toStringAsFixed(1),
+              'ops_per_sample': benchResult.opsPerSample,
+              'trials': count,
+              'timings_ns': sorted.map((t) => t.toStringAsFixed(1)).toList(),
               'memory_diff_kb': benchResult.memoryDiffKb,
               'delta_peak_kb': benchResult.deltaPeakKb,
               'peak_rss_kb': benchResult.peakRssKb,
+              'baseline_rss_kb': benchResult.baselineRssKb,
+              'rss_over_baseline_kb':
+                  benchResult.peakRssKb - benchResult.baselineRssKb,
             });
           }
         }
@@ -242,3 +285,8 @@ class BenchmarkCliRunner {
         PrettyReport().render(results));
   }
 }
+
+/// Медиана отсортированного списка.
+double _median(List<double> sorted) => sorted.length.isOdd
+    ? sorted[sorted.length ~/ 2]
+    : (sorted[sorted.length ~/ 2 - 1] + sorted[sorted.length ~/ 2]) / 2;

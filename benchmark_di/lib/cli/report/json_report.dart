@@ -1,14 +1,18 @@
+import 'dart:convert';
+
 import 'report_generator.dart';
 
-/// Generates a JSON-formatted report for benchmark results.
+/// Отчёт в машинночитаемом JSON.
+///
+/// Читается агрегатором матрицы (`bin/matrix.dart`), поэтому формат обязан
+/// проходить `jsonDecode` без предобработки. Прежняя реализация печатала
+/// `Map.toString()` — ключи без кавычек, распарсить нельзя.
 class JsonReport extends ReportGenerator {
   /// No specific keys; outputs all fields in raw map.
   @override
   List<String> get keys => [];
 
-  /// Renders all result rows as a pretty-printed JSON array.
   @override
-  String render(List<Map<String, dynamic>> rows) {
-    return '[\n${rows.map((r) => '  $r').join(',\n')}\n]';
-  }
+  String render(List<Map<String, dynamic>> rows) =>
+      const JsonEncoder.withIndent('  ').convert(rows);
 }

@@ -12,6 +12,21 @@ abstract class UniversalService {
 }
 
 /// Default implementation for [UniversalService] used in service chains.
+///
+/// Считает созданные экземпляры, когда включён [countingEnabled]. Счётчик
+/// нужен тесту равного объёма работы: если один DI при первом резолве строит
+/// 100 объектов, а другой 10 000, сравнивать их время бессмысленно.
+/// В измерительном прогоне флаг выключен, и цена — одна проверка bool,
+/// одинаковая для всех адаптеров.
 class UniversalServiceImpl extends UniversalService {
-  UniversalServiceImpl({required super.value, super.dependency});
+  static bool countingEnabled = false;
+  static int createdCount = 0;
+
+  static void resetCounter() {
+    createdCount = 0;
+  }
+
+  UniversalServiceImpl({required super.value, super.dependency}) {
+    if (countingEnabled) createdCount++;
+  }
 }

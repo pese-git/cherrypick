@@ -33,8 +33,12 @@ class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
   }
 
   @override
-  Future<void> teardown() async {
-    di.teardown();
+  Future<void> teardown() => teardownAsync();
+
+  /// Освобождает контейнер и ждёт завершения. Одноимённый метод есть и у
+  /// синхронного бенчмарка — раннер вызывает его, не различая их.
+  Future<void> teardownAsync() async {
+    await di.teardown();
   }
 
   @override

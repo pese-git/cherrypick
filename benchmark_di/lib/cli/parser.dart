@@ -31,6 +31,9 @@ enum UniversalBenchmark {
   override,
 }
 
+/// Контейнеры без иерархии scope: сценарий override для них не запускается.
+const hierarchyUnsupported = {'kiwi', 'yx_scope'};
+
 enum ResolvePhase {
   firstResolve,
   steadyStateResolve,
@@ -74,20 +77,64 @@ UniversalBindingMode toMode(UniversalBenchmark b) {
   }
 }
 
-/// Utility to parse a string into its corresponding enum value [T].
-T parseEnum<T>(String value, List<T> values, T defaultValue) {
-  return values.firstWhere(
-    (v) => v.toString().split('.').last.toLowerCase() == value.toLowerCase(),
-    orElse: () => defaultValue,
-  );
+/// Ошибка конфигурации командной строки. Бросается вместо тихого возврата
+/// пустого списка — пустая матрица означала бы отчёт без единого замера.
+class BenchmarkCliException implements Exception {
+  final String message;
+  BenchmarkCliException(this.message);
+  @override
+  String toString() => 'BenchmarkCliException: $message';
 }
 
-/// Parses comma-separated integer list from [s].
-List<int> parseIntList(String s) => s
-    .split(',')
-    .map((e) => int.tryParse(e.trim()) ?? 0)
-    .where((x) => x > 0)
-    .toList();
+/// Строго разбирает значение перечисления [T]. Без fallback: подмена опечатки
+/// на chainSingleton давала бы отчёт с чужими числами под чужим именем.
+T parseEnumStrict<T>(String value, List<T> values, String optionName) {
+  for (final v in values) {
+    if (v.toString().split('.').last.toLowerCase() == value.toLowerCase()) {
+      return v;
+    }
+  }
+  final known = values.map((v) => v.toString().split('.').last).join(', ');
+  throw BenchmarkCliException(
+      'Опция --$optionName: неизвестное значение "$value". Допустимые: $known.');
+}
+
+/// Разбирает список положительных целых из [s]. Любой невалидный элемент —
+/// ошибка: "-c=100" приходит сюда как "=100", и молчаливый пропуск такого
+/// значения оставлял бы пользователя с пустой таблицей и кодом возврата 0.
+List<int> parseIntList(String s, String optionName) {
+  final parts = s.split(',').map((e) => e.trim()).toList();
+  final result = <int>[];
+  for (final part in parts) {
+    final value = int.tryParse(part);
+    if (value == null || value <= 0) {
+      throw BenchmarkCliException(
+          'Опция --$optionName: "$part" не является положительным целым. '
+          'Короткие флаги пишутся через пробел: -c 100, а не -c=100.');
+    }
+    result.add(value);
+  }
+  if (result.isEmpty) {
+    throw BenchmarkCliException('Опция --$optionName не может быть пустой.');
+  }
+  return result;
+}
+
+/// Разбирает одно целое значение с нижней границей.
+int parseSingleInt(String s, String optionName, {required int min}) {
+  if (s.contains(',')) {
+    throw BenchmarkCliException(
+        'Опция --$optionName принимает одно целое значение, а не список: "$s".');
+  }
+  final value = int.tryParse(s.trim());
+  if (value == null || value < min) {
+    final description =
+        min == 0 ? 'неотрицательным целым' : 'целым числом не меньше $min';
+    throw BenchmarkCliException(
+        'Опция --$optionName: "$s" должно быть $description.');
+  }
+  return value;
+}
 
 /// CLI config describing what and how to benchmark.
 class BenchmarkCliConfig {
@@ -115,6 +162,12 @@ class BenchmarkCliConfig {
   /// Which resolve phase(s) to measure.
   final List<ResolvePhase> phases;
 
+  /// Сколько резолвов укладывается в один замер фазы steady-state.
+  final int opsPerSample;
+
+  /// Включать ли глобальный детектор циклов cherrypick перед замером.
+  final bool cycleDetection;
+
   BenchmarkCliConfig({
     required this.benchesToRun,
     required this.chainCounts,
@@ -124,6 +177,8 @@ class BenchmarkCliConfig {
     required this.format,
     required this.di,
     required this.phases,
+    required this.opsPerSample,
+    required this.cycleDetection,
   });
 }
 
@@ -137,11 +192,17 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('repeat', abbr: 'r', defaultsTo: '2')
     ..addOption('warmup', abbr: 'w', defaultsTo: '1')
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
+    ..addOption('opsPerSample',
+        defaultsTo: '1000',
+        help: 'Сколько резолвов в одном замере фазы steady (first — всегда 1)')
     ..addOption('resolvePhase',
         defaultsTo: 'all', help: 'Resolve phase: first, steady, or all')
     ..addOption('di',
         defaultsTo: 'cherrypick',
         help: 'DI implementation: cherrypick, getit or riverpod')
+    ..addFlag('cycleDetection',
+        defaultsTo: false,
+        help: 'Включить глобальный детектор циклов cherrypick перед замером')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Show help');
   final result = parser.parse(args);
   if (result['help'] == true) {
@@ -176,28 +237,42 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     };
   }
 
+  const knownDi = {'cherrypick', 'getit', 'riverpod', 'kiwi', 'yx_scope'};
+  final di = result['di'] as String? ?? 'cherrypick';
+  if (!knownDi.contains(di)) {
+    throw BenchmarkCliException(
+        'Опция --di: неизвестное значение "$di". Допустимые: ${knownDi.join(', ')}.');
+  }
+
   final benchesToRun = isAll
       ? allBenches
       : benchNameInput
           .split(',')
-          .map((n) => parseEnum(normalizeBenchName(n), allBenches,
-              UniversalBenchmark.chainSingleton))
+          .map((n) =>
+              parseEnumStrict(normalizeBenchName(n), allBenches, 'benchmark'))
           .toSet()
           .toList();
   final phaseName = (result['resolvePhase'] as String).toLowerCase();
   final phases = switch (phaseName) {
     'first' => [ResolvePhase.firstResolve],
     'steady' => [ResolvePhase.steadyStateResolve],
-    _ => ResolvePhase.values,
+    'all' => ResolvePhase.values,
+    _ => throw BenchmarkCliException(
+        'Опция --resolvePhase: неизвестное значение "$phaseName". '
+        'Допустимые: first, steady, all.'),
   };
   return BenchmarkCliConfig(
     benchesToRun: benchesToRun,
-    chainCounts: parseIntList(result['chainCount'] as String),
-    nestDepths: parseIntList(result['nestingDepth'] as String),
-    repeats: int.tryParse(result['repeat'] as String? ?? "") ?? 2,
-    warmups: int.tryParse(result['warmup'] as String? ?? "") ?? 1,
+    chainCounts: parseIntList(result['chainCount'] as String, 'chainCount'),
+    nestDepths: parseIntList(result['nestingDepth'] as String, 'nestingDepth'),
+    repeats: parseSingleInt(result['repeat'] as String, 'repeat', min: 1),
+    warmups: parseSingleInt(result['warmup'] as String, 'warmup', min: 0),
     format: result['format'] as String,
-    di: result['di'] as String? ?? 'cherrypick',
+    di: di,
     phases: phases,
+    opsPerSample: parseSingleInt(
+        result['opsPerSample'] as String, 'opsPerSample',
+        min: 1),
+    cycleDetection: result['cycleDetection'] as bool,
   );
 }
