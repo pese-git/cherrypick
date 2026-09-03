@@ -469,7 +469,7 @@ abstract class AppModule {
 - [Full annotation reference (en)](doc/annotations_en.md)
 - [cherrypick_annotations/README.md](../cherrypick_annotations/README.md)
 - [cherrypick_generator/README.md](../cherrypick_generator/README.md)
-- [cherrypick_lint/README.md](../cherrypick_lint/README.md)
+- [cherrypick_lint/README.md](../cherrypick_lint/README.md) · [Linting guide](../doc/lint_en.md)
 - See the [`examples/postly`](../examples/postly) for a full working DI+annotations app.
 
 ---

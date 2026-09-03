@@ -135,7 +135,7 @@ abstract class AppModule extends Module {
 ## 7. References
 
 - [Cherrypick Generator README (extended)](../cherrypick_generator/README.md)
-- [Cherrypick Lint README](../cherrypick_lint/README.md)
+- [Cherrypick Lint README](../cherrypick_lint/README.md) · [Linting guide](lint_en.md)
 - Example: `examples/postly`
 - [API Reference](../cherrypick/doc/api/)
 

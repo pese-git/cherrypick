@@ -124,4 +124,4 @@ abstract class AppModule {
 
 ## References
 
-- [cherrypick_lint README](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md)
+- [cherrypick_lint README](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md) · [Linting guide](/linting/)

@@ -20,7 +20,7 @@ description: Пакеты, расширенные руководства и ис
 - [Аннотации и кодогенерация](https://github.com/pese-git/cherrypick/blob/master/doc/annotations_ru.md)
 - [Обнаружение циклических зависимостей](https://github.com/pese-git/cherrypick/blob/master/doc/cycle_detection.ru.md)
 - [Миграция на 4.0.0](https://github.com/pese-git/cherrypick/blob/master/doc/migration_4.0.0_ru.md)
-- [README lint-плагина](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md)
+- [README lint-плагина](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md) · [Гайд по линтингу](/ru/linting/)
 
 ## Исходный код
 

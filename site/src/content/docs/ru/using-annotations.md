@@ -95,4 +95,4 @@ abstract class AppModule {
 
 ## Ссылки
 
-- [README lint-плагина](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md)
+- [README lint-плагина](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md) · [Гайд по линтингу](/ru/linting/)

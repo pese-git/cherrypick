@@ -549,5 +549,5 @@ Yes! Even if none of your services currently implement `Disposable`, always use 
 - [cherrypick](https://pub.dev/packages/cherrypick)
 - [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator)
-- [cherrypick_lint](../cherrypick_lint)
+- [cherrypick_lint](../cherrypick_lint) — [linting guide](lint_en.md)
 - [Sources on GitHub](https://github.com/pese-git/cherrypick)

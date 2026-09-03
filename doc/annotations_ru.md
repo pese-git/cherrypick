@@ -132,7 +132,7 @@ abstract class AppModule extends Module {
 ## 7. Полезные ссылки
 
 - [README по генератору](../cherrypick_generator/README.md)
-- [README по lint-плагину](../cherrypick_lint/README.md)
+- [README по lint-плагину](../cherrypick_lint/README.md) · [Гайд по линтингу](lint_ru.md)
 - Пример интеграции: `examples/postly`
 - [API Reference](../cherrypick/doc/api/)
 

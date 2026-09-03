@@ -20,7 +20,7 @@ A collection of external resources for CherryPick.
 - [Annotations & code generation](https://github.com/pese-git/cherrypick/blob/master/doc/annotations_en.md)
 - [Circular dependency detection](https://github.com/pese-git/cherrypick/blob/master/doc/cycle_detection.en.md)
 - [Migrating to 4.0.0](https://github.com/pese-git/cherrypick/blob/master/doc/migration_4.0.0_en.md)
-- [cherrypick_lint README](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md)
+- [cherrypick_lint README](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md) · [Linting guide](/linting/)
 
 ## Source
 

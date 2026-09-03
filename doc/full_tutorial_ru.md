@@ -554,5 +554,5 @@ void main() {
 - [cherrypick](https://pub.dev/packages/cherrypick)
 - [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator)
-- [cherrypick_lint](../cherrypick_lint)
+- [cherrypick_lint](../cherrypick_lint) — [гайд по линтингу](lint_ru.md)
 - [Исходники на GitHub](https://github.com/pese-git/cherrypick)

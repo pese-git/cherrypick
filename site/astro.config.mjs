@@ -68,6 +68,7 @@ export default defineConfig({
           items: [
             { label: 'Dependency Resolution API', translations: { ru: 'API разрешения зависимостей' }, slug: 'dependency-resolution-api' },
             { label: 'Using Annotations', translations: { ru: 'Аннотации' }, slug: 'using-annotations' },
+            { label: 'Linting', translations: { ru: 'Линтинг' }, slug: 'linting' },
             { label: 'Example Application', translations: { ru: 'Пример приложения' }, slug: 'example-application' },
           ],
         },

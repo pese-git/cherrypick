@@ -141,7 +141,7 @@ Please see:
 - [`cherrypick/README.md`](./cherrypick/README.md) for core DI features and examples
 - [`cherrypick_flutter/README.md`](./cherrypick_flutter/README.md) for Flutter-specific usage
 - [`cherrypick_annotations/README.md`](./cherrypick_annotations/README.md) and [`cherrypick_generator/README.md`](./cherrypick_generator/README.md) for codegen and annotations
-- [`cherrypick_lint/README.md`](./cherrypick_lint/README.md) for the IDE lint plugin
+- [`cherrypick_lint/README.md`](./cherrypick_lint/README.md) for the IDE lint plugin, or the [linting guide](./doc/lint_en.md) for a rule-by-rule walkthrough
 
 ---
 
