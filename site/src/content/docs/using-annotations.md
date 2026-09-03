@@ -118,7 +118,10 @@ abstract class AppModule {
 - After modifying DI-related code, always re-run `build_runner`.
 - Do not manually edit `.g.dart` files—let the generator manage them.
 - Errors in annotation usage (e.g., using `@singleton` on wrong target) are shown at build time.
+- Add [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) to catch many of the same mistakes in the IDE, before you run the generator.
 
 ---
 
 ## References
+
+- [cherrypick_lint README](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md)
