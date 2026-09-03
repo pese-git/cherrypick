@@ -125,12 +125,14 @@ abstract class AppModule extends Module {
 - Проверьте аннотации, пути import и запускайте build_runner после каждого изменения DI/кода.
 - Ошибки применения аннотаций появляются на этапе генерации.
 - Никогда не редактируйте .g.dart файлы вручную.
+- Подключите [`cherrypick_lint`](../cherrypick_lint), чтобы ловить многие из тех же ошибок в аннотациях (`@module` без `abstract`, метод без `@provide`/`@instance`, `@inject`-поле не `late final` и другие) прямо в IDE, ещё до запуска генератора.
 
 ---
 
 ## 7. Полезные ссылки
 
 - [README по генератору](../cherrypick_generator/README.md)
+- [README по lint-плагину](../cherrypick_lint/README.md)
 - Пример интеграции: `examples/postly`
 - [API Reference](../cherrypick/doc/api/)
 

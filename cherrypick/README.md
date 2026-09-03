@@ -460,6 +460,7 @@ abstract class AppModule {
 - After modifying DI-related code, always re-run `build_runner`.
 - Do not manually edit `.g.dart` files—let the generator manage them.
 - Errors in annotation usage (e.g., using `@singleton` on wrong target) are shown at build time.
+- Add [`cherrypick_lint`](../cherrypick_lint) to catch many of the same mistakes in the IDE, before you run the generator.
 
 ---
 
@@ -468,6 +469,7 @@ abstract class AppModule {
 - [Full annotation reference (en)](doc/annotations_en.md)
 - [cherrypick_annotations/README.md](../cherrypick_annotations/README.md)
 - [cherrypick_generator/README.md](../cherrypick_generator/README.md)
+- [cherrypick_lint/README.md](../cherrypick_lint/README.md)
 - See the [`examples/postly`](../examples/postly) for a full working DI+annotations app.
 
 ---
@@ -811,6 +813,7 @@ CherryPick provides a set of official add-on modules for advanced use cases and 
 | [**cherrypick_generator**](https://pub.dev/packages/cherrypick_generator) | Code generator to produce DI bindings based on annotations. |
 | [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Flutter integration: DI provider widgets and helpers for Flutter. |
 | [**talker_cherrypick_logger**](https://pub.dev/packages/talker_cherrypick_logger) | Advanced logger for CherryPick DI events and state. Provides seamless integration with [Talker](https://pub.dev/packages/talker) logger, enabling central and visual tracking of DI events, errors, and diagnostics in both UI and console. |
+| [**cherrypick_lint**](../cherrypick_lint) | `custom_lint` plugin that catches CherryPick API misuse (missing `await` on scope disposal, invalid annotation usage, runtime traps) right in the IDE. |
 
 ---
 
