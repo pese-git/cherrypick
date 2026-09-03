@@ -8,4 +8,7 @@ pubspec.lock
 
 *.iml
 
+# custom_lint debug log (created when `custom_lint: debug: true` is set)
+custom_lint.log
+
 pubspec_overrides.yaml
