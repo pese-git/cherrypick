@@ -43,7 +43,6 @@ CherryPick DI содержит ряд API-контрактов, нарушени
 
 _Все вопросы закрыты._
 
-- ~~Нужен ли `avoid_experimental_scope_api` как `warning` или `info`?~~ → **`info`**: методы активно используются в примерах, `warning` был бы слишком шумным.
 - ~~Следует ли `avoid_unawaited_scope_dispose` срабатывать на любой `Disposable.dispose()`?~~ → **Только `Scope.dispose()`**: пользовательские синхронные `Disposable` возвращают `void`, правило не должно на них срабатывать.
 
 ## Структура пакета
@@ -61,7 +60,6 @@ cherrypick_lint/
 │       │   ├── avoid_unawaited_close_sub_scope.dart
 │       │   ├── avoid_unawaited_scope_dispose.dart
 │       │   ├── avoid_extends_silent_observer.dart
-│       │   ├── avoid_experimental_scope_api.dart
 │       │   ├── module_must_be_abstract.dart
 │       │   ├── module_method_missing_binding.dart
 │       │   ├── inject_field_must_be_late_final.dart
@@ -156,7 +154,6 @@ analyzer:
 | Код | Триггер | Quick fix |
 |-----|---------|-----------|
 | `avoid_extends_silent_observer` | `extends SilentCherryPickObserver` | Replace with implements CherryPickObserver |
-| `avoid_experimental_scope_api` | вызов `CherryPick.openScope` / `CherryPick.closeScope` | Предложить `openSubScope` / `closeSubScope` |
 
 ## Архитектура плагина
 

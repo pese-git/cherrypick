@@ -54,7 +54,6 @@ fire-and-forget and doesn't trigger these rules.
 | Rule | Severity | Triggers on | Quick fix |
 |---|---|---|---|
 | `avoid_extends_silent_observer` | `warning` | `class Foo extends SilentCherryPickObserver` | Replace with `implements CherryPickObserver` |
-| `avoid_experimental_scope_api` | `info` | `CherryPick.openScope`/`closeScope` | — (suggests `openSubScope`/`closeSubScope`) |
 
 `SilentCherryPickObserver` is deliberately skipped by `Scope`'s fast path
 (`if (_observer is SilentCherryPickObserver)`), so an `extends` subclass
@@ -67,7 +66,7 @@ CherryPickObserver` is always what you want instead.
 # analysis_options.yaml
 custom_lint:
   rules:
-    - avoid_experimental_scope_api: false
+    - avoid_extends_silent_observer: false
 ```
 
 ## Compatibility

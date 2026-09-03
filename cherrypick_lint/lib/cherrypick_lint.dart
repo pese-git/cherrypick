@@ -1,6 +1,5 @@
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
-import 'src/rules/avoid_experimental_scope_api.dart';
 import 'src/rules/avoid_extends_silent_observer.dart';
 import 'src/rules/avoid_unawaited_close_scope.dart';
 import 'src/rules/avoid_unawaited_close_sub_scope.dart';
@@ -29,6 +28,5 @@ class _CherryPickLint extends PluginBase {
     ParamsRequiresProvide(),
     // runtime-trap-rules
     AvoidExtendsSilentObserver(),
-    AvoidExperimentalScopeApi(),
   ];
 }

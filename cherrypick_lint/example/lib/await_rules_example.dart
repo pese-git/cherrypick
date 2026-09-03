@@ -16,7 +16,7 @@ Future<void> violations() async {
 }
 
 Future<void> closeScopeViolation() async {
-  // expect_lint: avoid_unawaited_close_scope, avoid_experimental_scope_api
+  // expect_lint: avoid_unawaited_close_scope
   CherryPick.closeScope(scopeName: 'demo');
 }
 

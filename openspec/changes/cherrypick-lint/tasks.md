@@ -31,8 +31,7 @@
 ## 4. Рантайм-ловушки
 
 - [x] 4.1 Реализовать `avoid_extends_silent_observer` + quick fix (replace with implements)
-- [x] 4.2 Реализовать `avoid_experimental_scope_api` (severity: info)
-- [x] 4.3 Написать тесты — `example/lib/runtime_trap_rules_example.dart`, та же схема
+- [x] 4.2 Написать тесты — `example/lib/runtime_trap_rules_example.dart`, та же схема
 
 ## 5. Документация и публикация
 
