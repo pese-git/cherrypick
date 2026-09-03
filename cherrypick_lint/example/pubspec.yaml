@@ -1,0 +1,15 @@
+name: cherrypick_lint_example
+description: Fixture files exercising every cherrypick_lint rule via // expect_lint.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  cherrypick: ^4.0.0-dev.4
+  cherrypick_annotations: ^4.0.0-dev.0
+
+dev_dependencies:
+  cherrypick_lint: ^0.1.0
+  custom_lint: ^0.8.1

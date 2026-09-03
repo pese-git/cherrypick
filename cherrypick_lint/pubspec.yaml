@@ -1,0 +1,27 @@
+name: cherrypick_lint
+description: >
+  custom_lint plugin that catches CherryPick DI API misuse right in the IDE:
+  missing await on scope disposal, misused annotations, and runtime traps.
+version: 0.1.0
+homepage: https://cherrypick-di.netlify.app
+documentation: https://cherrypick-di.netlify.app/docs/intro
+repository: https://github.com/pese-git/cherrypick/cherrypick_lint
+issue_tracker: https://github.com/pese-git/cherrypick/issues
+topics:
+  - lint
+  - di
+  - ioc
+  - dependency-injection
+  - static-analysis
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  analyzer: ^8.0.0
+  custom_lint_builder: ^0.8.1
+
+dev_dependencies:
+  custom_lint: ^0.8.1
+  lints: ^6.0.0
+  test: ^1.25.8

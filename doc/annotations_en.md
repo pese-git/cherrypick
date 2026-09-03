@@ -128,12 +128,14 @@ abstract class AppModule extends Module {
 - Make sure all dependencies are annotated, imports are correct, and run `build_runner` on every code/DI change.
 - Errors in annotation usage (e.g. `@singleton` on non-class/method) will be shown at build time.
 - Use the `.g.dart` files directly—do not edit them by hand.
+- Add [`cherrypick_lint`](../cherrypick_lint) to catch many of the same annotation mistakes (missing `abstract` on `@module`, a method with no `@provide`/`@instance`, an `@inject` field that isn't `late final`, and more) right in the IDE, before you even run the generator.
 
 ---
 
 ## 7. References
 
 - [Cherrypick Generator README (extended)](../cherrypick_generator/README.md)
+- [Cherrypick Lint README](../cherrypick_lint/README.md) · [Linting guide](lint_en.md)
 - Example: `examples/postly`
 - [API Reference](../cherrypick/doc/api/)
 

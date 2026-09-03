@@ -96,6 +96,8 @@ resource to a subscope's lifetime, declare its binding in that subscope.
 
 Manual `await scope.dispose()` is available if you manage scopes yourself.
 
+> 💡 [`cherrypick_lint`](../cherrypick_lint) flags a missing `await` on scope disposal calls right in the IDE.
+
 #### Example
 
 ```dart

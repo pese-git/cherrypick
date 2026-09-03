@@ -1,0 +1,12 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  errors:
+    # custom_lint_builder 0.8.1's public DartLintRule/DartFix API still uses
+    # ErrorReporter/AnalysisError/ErrorSeverity — see upstream's own example:
+    # https://github.com/invertase/dart_custom_lint/blob/custom_lint-v0.8.1/packages/custom_lint/example/example_lint/lib/custom_lint_example_lint.dart
+    deprecated_member_use: ignore
+
+linter:
+  rules:
+    prefer_single_quotes: true

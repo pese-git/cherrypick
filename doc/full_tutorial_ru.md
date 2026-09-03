@@ -6,6 +6,7 @@
 > - [`cherrypick`](https://pub.dev/packages/cherrypick) — runtime DI core  
 > - [`cherrypick_annotations`](https://pub.dev/packages/cherrypick_annotations) — аннотации для DI  
 > - [`cherrypick_generator`](https://pub.dev/packages/cherrypick_generator) — генерация DI-кода  
+> - [`cherrypick_lint`](../cherrypick_lint) — lint-плагин для IDE, ловит неверное использование API  
 >
 
 ---
@@ -544,6 +545,8 @@ void main() {
 **О:**  
 Да! Даже если в данный момент ни один сервис не реализует Disposable, всегда используйте `await` при закрытии скоупа. Если в будущем потребуется добавить освобождение ресурсов через dispose, CherryPick вызовет его автоматически без изменения завершения работы ваших скоупов. Такой подход делает управление ресурсами устойчивым и безопасным для любых изменений архитектуры.
 
+> 💡 [`cherrypick_lint`](../cherrypick_lint) подсвечивает пропущенный `await` на `closeSubScope`/`closeScope`/`dispose` прямо в IDE — не нужно держать это в голове.
+
 ---
 
 ## Полезные ссылки
@@ -551,4 +554,5 @@ void main() {
 - [cherrypick](https://pub.dev/packages/cherrypick)
 - [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator)
+- [cherrypick_lint](../cherrypick_lint) — [гайд по линтингу](lint_ru.md)
 - [Исходники на GitHub](https://github.com/pese-git/cherrypick)

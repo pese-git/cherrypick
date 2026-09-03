@@ -127,28 +127,28 @@ packages:
       path: "../../cherrypick"
       relative: true
     source: path
-    version: "4.0.0-dev.3"
+    version: "4.0.0-dev.5"
   cherrypick_annotations:
     dependency: "direct main"
     description:
       path: "../../cherrypick_annotations"
       relative: true
     source: path
-    version: "4.0.0-dev.0"
+    version: "4.0.0-dev.1"
   cherrypick_flutter:
     dependency: "direct main"
     description:
       path: "../../cherrypick_flutter"
       relative: true
     source: path
-    version: "4.0.0-dev.3"
+    version: "4.0.0-dev.5"
   cherrypick_generator:
     dependency: "direct dev"
     description:
       path: "../../cherrypick_generator"
       relative: true
     source: path
-    version: "4.0.0-dev.3"
+    version: "4.0.0-dev.5"
   clock:
     dependency: transitive
     description:
@@ -695,7 +695,7 @@ packages:
       path: "../../talker_cherrypick_logger"
       relative: true
     source: path
-    version: "4.0.0-dev.3"
+    version: "4.0.0-dev.5"
   talker_flutter:
     dependency: "direct main"
     description:

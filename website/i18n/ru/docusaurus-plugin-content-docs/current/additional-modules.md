@@ -12,3 +12,4 @@ CherryPick предоставляет набор официальных доп. 
 | [**cherrypick_generator**](https://pub.dev/packages/cherrypick_generator) | Генератор кода для автосборки DI-привязок по аннотациям.  |
 | [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Интеграция DI с Flutter: виджеты-провайдеры, injection.   |
 | [**talker_cherrypick_logger**](https://pub.dev/packages/talker_cherrypick_logger) | Продвинутый логгер событий DI CherryPick с интеграцией в [Talker](https://pub.dev/packages/talker). Позволяет визуализировать состояние, ошибки и автоматически отслеживать DI прямо в UI и консоли. |
+| [**cherrypick_lint**](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) | `custom_lint`-плагин, ловит неверное использование API CherryPick (пропущенный `await` при закрытии скоупа, неверное применение аннотаций, рантайм-ловушки) прямо в IDE. |

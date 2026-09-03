@@ -89,7 +89,10 @@ abstract class AppModule {
 - После изменений в DI-коде запускайте build_runner заново.
 - Не редактируйте `.g.dart` вручную.
 - Ошибки некорректных аннотаций определяются автоматически.
+- Подключите [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint), чтобы ловить многие из тех же ошибок прямо в IDE, ещё до запуска генератора.
 
 ---
 
 ## Ссылки
+
+- [README lint-плагина](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md) · [Гайд по линтингу](/ru/linting/)
