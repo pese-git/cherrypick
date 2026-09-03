@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.5`](#cherrypick---v400-dev5)
+ - [`cherrypick_annotations` - `v4.0.0-dev.1`](#cherrypick_annotations---v400-dev1)
+ - [`cherrypick_flutter` - `v4.0.0-dev.5`](#cherrypick_flutter---v400-dev5)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.5`](#talker_cherrypick_logger---v400-dev5)
+ - [`cherrypick_generator` - `v4.0.0-dev.5`](#cherrypick_generator---v400-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v4.0.0-dev.5`
+ - `talker_cherrypick_logger` - `v4.0.0-dev.5`
+ - `cherrypick_generator` - `v4.0.0-dev.5`
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.5`
+
+ - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.
+
+#### `cherrypick_annotations` - `v4.0.0-dev.1`
+
+ - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.
+
+
 ## 2026-08-26
 
 ### Changes

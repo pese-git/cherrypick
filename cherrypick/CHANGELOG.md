@@ -1,3 +1,7 @@
+## 4.0.0-dev.5
+
+ - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.
+
 ## 4.0.0-dev.4
 
  - **REFACTOR**(scope): extract local resolve into shared sync/async helpers.
