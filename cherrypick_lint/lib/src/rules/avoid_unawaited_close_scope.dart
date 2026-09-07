@@ -25,7 +25,7 @@ class AvoidUnawaitedCloseScope extends DartLintRule {
       if (node.methodName.name != 'closeScope') return;
       if (!isStaticCallOn(node, 'CherryPick', 'cherrypick')) return;
 
-      if (isAwaited(node) || isWrappedInUnawaited(node)) return;
+      if (isFutureHandled(node) || isWrappedInUnawaited(node)) return;
 
       reporter.atNode(node, _code);
     });

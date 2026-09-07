@@ -35,6 +35,18 @@
 - **WHEN** выражение имеет вид `unawaited(scope.closeSubScope(name))`
 - **THEN** диагностика не репортируется (намеренный fire-and-forget явно выражен)
 
+#### Scenario: Future передаётся вызывающему через return
+- **WHEN** выражение имеет вид `return scope.closeSubScope(name);` (в блочном или arrow-теле функции)
+- **THEN** диагностика не репортируется — future становится ответственностью вызывающей стороны
+
+#### Scenario: Future сохраняется в переменную и awaited позже в том же блоке
+- **WHEN** код имеет вид `final job = scope.closeSubScope(name); ... await job;` в пределах одного блока
+- **THEN** диагностика не репортируется
+
+#### Scenario: Future сохранён в переменную, но нигде не awaited
+- **WHEN** код имеет вид `final job = scope.closeSubScope(name);` и `job` нигде в этом блоке не передаётся в `await`
+- **THEN** диагностика репортируется как обычно
+
 ---
 
 ### Requirement: avoid_unawaited_close_scope
@@ -48,6 +60,14 @@
 
 #### Scenario: Корректный вызов
 - **WHEN** выражение имеет вид `await CherryPick.closeScope(...)`
+- **THEN** диагностика не репортируется
+
+#### Scenario: Future передаётся вызывающему через return
+- **WHEN** выражение имеет вид `return CherryPick.closeScope(...);` (в блочном или arrow-теле функции)
+- **THEN** диагностика не репортируется
+
+#### Scenario: Future сохраняется в переменную и awaited позже в том же блоке
+- **WHEN** код имеет вид `final job = CherryPick.closeScope(...); ... await job;` в пределах одного блока
 - **THEN** диагностика не репортируется
 
 ---
@@ -69,6 +89,14 @@
 
 #### Scenario: Корректный вызов
 - **WHEN** выражение имеет вид `await scope.dispose()`
+- **THEN** диагностика не репортируется
+
+#### Scenario: Future передаётся вызывающему через return
+- **WHEN** выражение имеет вид `return scope.dispose();` (в блочном или arrow-теле функции)
+- **THEN** диагностика не репортируется
+
+#### Scenario: Future сохраняется в переменную и awaited позже в том же блоке
+- **WHEN** код имеет вид `final job = scope.dispose(); ... await job;` в пределах одного блока
 - **THEN** диагностика не репортируется
 
 ---

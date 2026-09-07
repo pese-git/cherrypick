@@ -37,7 +37,7 @@ class AvoidUnawaitedCloseSubScope extends DartLintRule {
         return;
       }
 
-      if (isAwaited(node) || isWrappedInUnawaited(node)) return;
+      if (isFutureHandled(node) || isWrappedInUnawaited(node)) return;
 
       reporter.atNode(node, _code);
     });
