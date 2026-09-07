@@ -11,4 +11,8 @@ pubspec.lock
 # custom_lint debug log (created when `custom_lint: debug: true` is set)
 custom_lint.log
 
+# Disposable scratch file written by test/expect_lint_test.dart to exercise
+# --fix without mutating a committed fixture; the test deletes it itself.
+lib/_add_await_fix_scratch.dart
+
 pubspec_overrides.yaml

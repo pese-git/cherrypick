@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/error/error.dart' hide LintCode;
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
@@ -14,7 +15,17 @@ class AddAwaitFix extends DartFix {
     List<AnalysisError> others,
   ) {
     context.registry.addMethodInvocation((node) {
-      if (!analysisError.sourceRange.intersects(node.sourceRange)) return;
+      // Match the exact flagged node — not merely any invocation whose
+      // range contains it (e.g. an outer `Future.wait(...)` call around
+      // the flagged argument), which used to cause the fix to also insert
+      // `await` around the outer call.
+      if (node.sourceRange != analysisError.sourceRange) return;
+
+      // `await` is only valid inside an async function/method/closure body.
+      // Without this guard the fix would offer to insert `await` into sync
+      // code, turning it into a compile error.
+      final body = node.thisOrAncestorOfType<FunctionBody>();
+      if (body == null || !body.isAsynchronous) return;
 
       final changeBuilder = reporter.createChangeBuilder(
         message: 'Add await',
