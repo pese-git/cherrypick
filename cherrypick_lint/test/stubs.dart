@@ -7,10 +7,40 @@ import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 /// with the right shape. Must be called from `setUp`, before `super.setUp()`.
 void addCherryPickStub(AnalysisRuleTest test) {
   test.newPackage('cherrypick').addFile('lib/cherrypick.dart', r'''
+import 'dart:async';
+
 class Scope {
   Future<void> dispose() async {}
   Future<void> closeSubScope(String name) async {}
   Scope openSubScope(String name) => this;
+  T resolve<T>({String? named, dynamic params}) => throw 0;
+  T? tryResolve<T>({String? named, dynamic params}) => null;
+  Future<T> resolveAsync<T>({String? named, dynamic params}) => throw 0;
+  Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async => null;
+  Scope installModules(List<Module> modules) => this;
+}
+
+class Binding<T> {
+  Binding<T> toInstance(FutureOr<T> value) => this;
+  Binding<T> toInstanceAsync(FutureOr<T> value) => this;
+  Binding<T> toProvide(FutureOr<T> Function() value) => this;
+  Binding<T> toProvideAsync(Future<T> Function() value) => this;
+  Binding<T> toProvideWithParams(FutureOr<T> Function(dynamic) value) => this;
+  Binding<T> toProvideAsyncWithParams(Future<T> Function(dynamic) value) =>
+      this;
+  Binding<T> withName(String name) => this;
+  Binding<T> singleton() => this;
+}
+
+abstract class Module {
+  Binding<T> bind<T>() => Binding<T>();
+  void builder(Scope currentScope);
+}
+
+abstract interface class CherryPickObserver {}
+
+class SilentCherryPickObserver implements CherryPickObserver {
+  const SilentCherryPickObserver();
 }
 
 class CherryPick {

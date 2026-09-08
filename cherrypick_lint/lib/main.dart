@@ -4,6 +4,13 @@ import 'package:analysis_server_plugin/registry.dart';
 import 'src/fixes/add_await_fix.dart';
 import 'src/fixes/add_late_final_fix.dart';
 import 'src/fixes/make_class_abstract_fix.dart';
+import 'src/fixes/remove_redundant_singleton_fix.dart';
+import 'src/fixes/replace_extends_with_implements_fix.dart';
+import 'src/rules/avoid_extends_silent_observer.dart';
+import 'src/rules/avoid_precomputed_value_in_provide.dart';
+import 'src/rules/avoid_redundant_singleton_on_instance.dart';
+import 'src/rules/avoid_resolve_in_to_instance.dart';
+import 'src/rules/avoid_singleton_on_provide_with_params.dart';
 import 'src/rules/avoid_unawaited_close_scope.dart';
 import 'src/rules/avoid_unawaited_close_sub_scope.dart';
 import 'src/rules/avoid_unawaited_scope_dispose.dart';
@@ -58,5 +65,20 @@ class CherryPickLintPlugin extends Plugin {
     );
     registry.registerWarningRule(NamedValueMustNotBeEmpty());
     registry.registerWarningRule(ParamsRequiresProvide());
+
+    // runtime-trap-rules
+    registry.registerWarningRule(AvoidExtendsSilentObserver());
+    registry.registerFixForRule(
+      AvoidExtendsSilentObserver.code,
+      ReplaceExtendsWithImplementsFix.new,
+    );
+    registry.registerWarningRule(AvoidRedundantSingletonOnInstance());
+    registry.registerFixForRule(
+      AvoidRedundantSingletonOnInstance.code,
+      RemoveRedundantSingletonFix.new,
+    );
+    registry.registerWarningRule(AvoidSingletonOnProvideWithParams());
+    registry.registerWarningRule(AvoidResolveInToInstance());
+    registry.registerWarningRule(AvoidPrecomputedValueInProvide());
   }
 }

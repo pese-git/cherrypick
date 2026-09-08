@@ -39,12 +39,16 @@
 
 ## 4. Рантайм-ловушки
 
-- [ ] 4.1 Перенести `avoid_extends_silent_observer` (+ quick fix)
-- [ ] 4.2 Перенести `avoid_redundant_singleton_on_instance` (+ quick fix)
-- [ ] 4.3 Перенести `avoid_singleton_on_provide_with_params`
-- [ ] 4.4 Перенести `avoid_resolve_in_to_instance`
-- [ ] 4.5 Перенести `avoid_precomputed_value_in_provide`
-- [ ] 4.6 Тесты через `analyzer_testing` на все сценарии
+- [x] 4.1 Перенести `avoid_extends_silent_observer` (+ quick fix)
+- [x] 4.2 Перенести `avoid_redundant_singleton_on_instance` (+ quick fix)
+- [x] 4.3 Перенести `avoid_singleton_on_provide_with_params`
+- [x] 4.4 Перенести `avoid_resolve_in_to_instance`
+- [x] 4.5 Перенести `avoid_precomputed_value_in_provide`
+- [x] 4.6 Тесты через `analyzer_testing` на все сценарии
+      Всего 55 кейсов на 13 правил. Паритет с прежней реализацией проверен на
+      `example/`: все 17 маркеров `// expect_lint` воспроизводятся, лишних
+      диагностик нет (18-я — второе срабатывание того же правила на строке с
+      двумя вызовами, которую `expect_lint` помечал однократно).
 
 ## 5. Инфраструктура и CI
 
