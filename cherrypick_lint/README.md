@@ -17,7 +17,7 @@ resolves it itself. Name it in the top-level `plugins` section of your
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^2.0.0
+  cherrypick_lint: ^1.0.0
 ```
 
 Then restart the Dart Analysis Server (in VS Code: *Dart: Restart Analysis
@@ -103,7 +103,7 @@ Every rule is enabled by default. Switch one off under the plugin's
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^2.0.0
+    version: ^1.0.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```
@@ -135,10 +135,10 @@ whose repository is archived and which its author no longer publishes; see
 The rules, their messages, severities and quick fixes are unchanged. Only
 installation changes:
 
-| 0.1.x (`custom_lint`) | 2.0.0 (analyzer plugin) |
+| 0.1.x (`custom_lint`) | 1.0.0 (analyzer plugin) |
 |---|---|
 | `dev_dependencies: custom_lint`, `cherrypick_lint` | no dependency at all |
-| `analyzer: plugins: [custom_lint]` | top-level `plugins: cherrypick_lint: ^2.0.0` |
+| `analyzer: plugins: [custom_lint]` | top-level `plugins: cherrypick_lint: ^1.0.0` |
 | `custom_lint: rules: - <rule>: false` | `plugins: cherrypick_lint: diagnostics: <rule>: false` |
 | `dart run custom_lint` in CI | plain `dart analyze` |
 | `// ignore: <rule>` | `// ignore: cherrypick_lint/<rule>` |

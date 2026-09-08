@@ -1,4 +1,4 @@
-## 2.0.0
+## 1.0.0
 
 **BREAKING**: the plugin now runs on the official
 [`analysis_server_plugin`](https://pub.dev/packages/analysis_server_plugin)
