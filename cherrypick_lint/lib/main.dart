@@ -2,6 +2,8 @@ import 'package:analysis_server_plugin/plugin.dart';
 import 'package:analysis_server_plugin/registry.dart';
 
 import 'src/fixes/add_await_fix.dart';
+import 'src/rules/avoid_unawaited_close_scope.dart';
+import 'src/rules/avoid_unawaited_close_sub_scope.dart';
 import 'src/rules/avoid_unawaited_scope_dispose.dart';
 
 /// Entrypoint used by the Dart Analysis Server to load this plugin.
@@ -21,6 +23,14 @@ class CherryPickLintPlugin extends Plugin {
     // `registerLintRule` would make a rule opt-in, silently switching it off
     // for existing users. Severity lives in each rule's `LintCode` and is
     // independent of how the rule is registered.
+    // await-rules
+    registry.registerWarningRule(AvoidUnawaitedCloseSubScope());
+    registry.registerFixForRule(
+      AvoidUnawaitedCloseSubScope.code,
+      AddAwaitFix.new,
+    );
+    registry.registerWarningRule(AvoidUnawaitedCloseScope());
+    registry.registerFixForRule(AvoidUnawaitedCloseScope.code, AddAwaitFix.new);
     registry.registerWarningRule(AvoidUnawaitedScopeDispose());
     registry.registerFixForRule(
       AvoidUnawaitedScopeDispose.code,

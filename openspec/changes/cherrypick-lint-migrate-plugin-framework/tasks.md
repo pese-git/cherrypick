@@ -19,10 +19,14 @@
 
 ## 2. await-правила
 
-- [ ] 2.1 Перенести `avoid_unawaited_close_sub_scope` (+ quick fix) на `AnalysisRule`/`ResolvedCorrectionProducer`
-- [ ] 2.2 Перенести `avoid_unawaited_close_scope` (+ quick fix)
-- [ ] 2.3 Перенести `avoid_unawaited_scope_dispose` (+ quick fix)
-- [ ] 2.4 Тесты через `analyzer_testing` (`AnalysisRuleTest`, `assertDiagnostics`/`assertNoDiagnostics`) на все сценарии, уже покрытые в `specs/lint-rules/spec.md` (await/return/store-then-await/unawaited)
+- [x] 2.1 Перенести `avoid_unawaited_close_sub_scope` (+ quick fix) на `AnalysisRule`/`ResolvedCorrectionProducer`
+- [x] 2.2 Перенести `avoid_unawaited_close_scope` (+ quick fix)
+- [x] 2.3 Перенести `avoid_unawaited_scope_dispose` (+ quick fix) — сделано в 1.2
+- [x] 2.4 Тесты через `analyzer_testing` (`AnalysisRuleTest`, `assertDiagnostics`/`assertNoDiagnostics`) на все сценарии, уже покрытые в `specs/lint-rules/spec.md` (await/return/store-then-await/unawaited)
+      18 кейсов на три правила. Quick fix'ы тестами не покрываются: в
+      `analyzer_testing` 0.2.5 нет API для проверки фиксов, а `dart fix` фиксы
+      плагинов не применяет (`Nothing to fix!`) — проверка только глазами в IDE,
+      как и было с `custom_lint`.
 
 ## 3. Аннотационные правила
 

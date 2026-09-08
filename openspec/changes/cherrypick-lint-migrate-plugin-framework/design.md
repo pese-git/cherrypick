@@ -144,6 +144,7 @@ class CherryPickLintPlugin extends Plugin {
 - `dart analyze` показывает диагностику плагина (`warning - ... - no_await_probe`) и **не крашится** — то есть обходной путь для `melos run analyze` действительно снимается;
 - `// ignore: <plugin_name>/<rule_name>` подавляет диагностику;
 - `diagnostics: <rule_name>: false` в секции плагина отключает правило, зарегистрированное через `registerWarningRule`.
+- `dart fix` фиксы плагина **не применяет** (`Nothing to fix!` при трёх активных диагностиках), и в `analyzer_testing` 0.2.5 нет API для тестирования фиксов — значит quick fix'ы, как и на `custom_lint`, проверяются только вручную в IDE; в документации это стоит сказать прямо.
 - относительный `path:` в секции `plugins:` работает (разрешается от каталога самого `analysis_options.yaml`), хотя `using_plugins.md` упоминает только абсолютный — это важно для `example/` в монорепо, которому абсолютный путь не подошёл бы.
 
 ## Migration Plan
