@@ -1,9 +1,16 @@
 ## 1. Разведка и скелет
 
-- [ ] 1.1 Проверить актуальную версию `analysis_server_plugin` и её реальный (а не SDK-workspace) диапазон `analyzer` на момент реализации — обновить design.md, если рекомендация изменилась
+- [x] 1.1 Проверить актуальную версию `analysis_server_plugin` и её реальный (а не SDK-workspace) диапазон `analyzer` на момент реализации — обновить design.md, если рекомендация изменилась
+      Итог: все версии пинуют `analyzer` точно; под запиненным Dart 3.10.0 максимум —
+      0.3.14/`analyzer` 12.1.0 (под Dart 3.11.5 было бы 0.3.22/14.3.0). Решено остаться
+      на Dart 3.10.0, см. Decisions в design.md.
 - [ ] 1.2 Поднять минимальный скелет плагина (`lib/main.dart`, `Plugin`, один самый простой перенесённый rule — например `avoid_unawaited_scope_dispose`) и проверить в реальном IDE + `dart analyze` на Dart 3.10.0 (Flutter 3.38.1), что краш `custom_lint_builder` не воспроизводится
-- [ ] 1.3 Определить, как выставляется severity, эквивалентная нынешнему `errorSeverity: ErrorSeverity.WARNING/ERROR`, в `LintCode`/`AnalysisRule` этой версии `analysis_server_plugin`
-- [ ] 1.4 Решить `registerWarningRule` vs `registerLintRule` для каждого из 13 правил
+- [x] 1.3 Определить, как выставляется severity, эквивалентная нынешнему `errorSeverity: ErrorSeverity.WARNING/ERROR`, в `LintCode`/`AnalysisRule` этой версии `analysis_server_plugin`
+      Итог: параметр `severity:` конструктора `LintCode`, тип `DiagnosticSeverity`,
+      дефолт `INFO` — задавать явно в каждом правиле.
+- [x] 1.4 Решить `registerWarningRule` vs `registerLintRule` для каждого из 13 правил
+      Итог: `registerWarningRule` для всех 13 — сохраняет текущее «включено по умолчанию»;
+      severity живёт в `LintCode` и от способа регистрации не зависит.
 
 ## 2. await-правила
 

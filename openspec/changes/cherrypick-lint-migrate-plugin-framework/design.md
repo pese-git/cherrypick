@@ -30,12 +30,15 @@
 - **Точка входа — `lib/main.dart` с top-level `plugin`-переменной**, как того требует `analysis_server_plugin` (см. `writing_a_plugin.md`), вместо текущего `lib/cherrypick_lint.dart` с фабрикой `createPlugin()`. Существующий `lib/cherrypick_lint.dart` можно оставить как реэкспорт правил/утилит для тестов, но точкой входа плагина становится `lib/main.dart`.
 - **Тесты — `package:analyzer_testing`'s `AnalysisRuleTest` + `assertDiagnostics`/`assertNoDiagnostics`** с inline-исходниками вместо `// expect_lint:`-комментариев в `example/lib/*.dart`, гоняемых через `dart run custom_lint` в отдельном процессе. Это устраняет целый класс проблем этой сессии — блуждающие процессы `custom_lint_client.dart`, портящие фикстуры между запусками, необходимость `pkill` перед каждым дебагом.
   - `example/` пакет с фикстурами, вероятно, стоит оставить как демонстрационный пример подключения плагина конечным пользователем (не как тестовый харнесс) — решить при реализации.
+- **Целевые версии — `analysis_server_plugin` 0.3.14 + `analyzer` 12.1.0; запиненный SDK остаётся Dart 3.10.0 (Flutter 3.38.1).** `analyzer` ≥13.1.0 требует SDK `^3.11.0`, а версии `analysis_server_plugin` пинуют `analyzer` точно, поэтому под Dart 3.10.0 `pub` разрешает максимум 0.3.14/`analyzer` 12.1.0 (проверено реальным `pub get` на обоих SDK: под Dart 3.11.5 разрешается 0.3.22/`analyzer` 14.3.0). Альтернатива — поднять `.fvmrc` до Flutter 3.41.7 — отклонена: `cherrypick_lint` 2.0.0 тогда потребовал бы у пользователей Dart ≥3.11, а совместимость с Flutter 3.38 важнее свежести API плагина. Цена решения: пишем против API на два мажора `analyzer` позади актуального, часть примеров из доков на `main` придётся переводить вручную.
+- **Severity задаётся параметром `severity:` конструктора `LintCode`** — `DiagnosticSeverity.WARNING`/`ERROR`/`INFO` из `package:analyzer/error/error.dart`; `ErrorSeverity` переименован в `DiagnosticSeverity`. **Дефолт — `INFO`**, то есть ловушка ровно та же, что уже один раз аукнулась в `cherrypick-lint`: не задал явно — получил `info`. Каждое перенесённое правило задаёт `severity` явно.
+- **Все 13 правил регистрируются через `registerWarningRule`.** Способ регистрации в этом API управляет только тем, включено ли правило по умолчанию, и никак не связан с severity: `registerWarningRule` + `LintCode(severity: DiagnosticSeverity.INFO)` — валидная комбинация для двух singleton-правил. `registerLintRule` сделал бы правило opt-in и молча отключил бы его существующим пользователям, что противоречит требованию delta-спеки о сохранении поведения.
 - **API-соответствие (для реализации каждого правила):**
 
   | custom_lint (текущее) | analysis_server_plugin (целевое) |
   |---|---|
   | `class X extends DartLintRule` | `class X extends AnalysisRule` |
-  | `static const _code = LintCode(name:, problemMessage:, correctionMessage:, errorSeverity:)` | `static const code = LintCode(name, problemMessage, correctionMessage:)` — своя структура severity (см. Open Questions) |
+  | `static const _code = LintCode(name:, problemMessage:, correctionMessage:, errorSeverity:)` | `static const code = LintCode(name, problemMessage, correctionMessage:, severity:)` — позиционные `name`/`problemMessage`, severity через `severity: DiagnosticSeverity.X` (дефолт — `INFO`) |
   | `void run(CustomLintResolver, ErrorReporter, CustomLintContext)` + `context.registry.addXxx((node) {...})` | `void registerNodeProcessors(RuleVisitorRegistry, RuleContext)` создаёт `_Visitor` и регистрирует его через `registry.addXxx(this, visitor)` |
   | `reporter.atNode(node, _code)` | `class _Visitor extends SimpleAstVisitor<void>` с методами `visitXxx(node)`, репорт через `rule.reportAtNode(node)` |
   | `class Fix extends DartFix` + `run(resolver, reporter, context, analysisError, others)` | `class Fix extends ResolvedCorrectionProducer` + `FixKind` + `Future<void> compute(ChangeBuilder builder)` |
@@ -44,11 +47,103 @@
 
 ## Risks / Trade-offs
 
-- [Risk] `analysis_server_plugin`, судя по внутреннему workspace-пубспеку самого `dart-lang/sdk`, использует точный пин `analyzer: 14.3.0` (не диапазон) — но это резолвинг самого SDK-монорепо (`resolution: workspace`), не требование к сторонним авторам плагинов. Официальный гайд `writing_a_plugin.md` явно показывает пример стороннего плагина с `analyzer: ^8.0.0`. → Mitigation: зафиксировать собственный, достаточно широкий диапазон `analyzer` в `cherrypick_lint/pubspec.yaml` при реализации, ориентируясь на актуальную рекомендацию `writing_a_plugin.md` на тот момент, а не на пин из SDK-репозитория.
-- [Risk] Новый способ подключения (`plugins:` в `analysis_options.yaml`, без обязательной `dev_dependency`) — breaking change для существующих пользователей `cherrypick_lint` 0.1.0. → Mitigation: отдельный мажорный релиз (`2.0.0`), явный раздел "Migration from 0.x" в `README.md`/`CHANGELOG.md`.
-- [Risk] `analysis_server_plugin` — молодой пакет (Dart 3.10+, вышел недавно); его API может ещё меняться между минорными версиями сильнее, чем у стабилизировавшегося `custom_lint`. → Mitigation: зафиксировать версию по актуальной на момент реализации, добавить в `tasks.md` пункт на проверку совместимости, как это уже сделано для `cherrypick-lint`.
-- [Risk] Формат `LintCode`/severity в `analyzer_plugin`'овском API может отличаться от `custom_lint_builder`'овского настолько, что придётся пересмотреть, как выставлялся `errorSeverity` (см. недавний фикс в `cherrypick-lint` — 4 правила молча репортились как `info` из-за отсутствия явного `errorSeverity`). → Mitigation: явно перепроверить severity каждого перенесённого правила через реальный прогон `dart analyze`, а не полагаться на дефолты, как это уже один раз аукнулось.
-- [Risk] `registerWarningRule` включает правило по умолчанию, `registerLintRule` — требует явного включения в `analysis_options.yaml` пользователя. Нужно решить, какое соответствие использовать для каждой из 13 правил (вероятно: `warning`/`error`-правила → `registerWarningRule`, `info`-правила без quick fix → возможно `registerLintRule`, требуя явного opt-in). → Mitigation: решить как отдельную задачу в `tasks.md`, свериться с уже задокументированной severity-таблицей в `cherrypick_lint/README.md`.
+- [Resolved] Допущение о том, что точный пин `analyzer` — артефакт workspace-резолвинга SDK-монорепо, а сторонние плагины берут диапазон, **не подтвердилось**: каждая опубликованная версия `analysis_server_plugin` пинует `analyzer` точной версией (0.3.13→`12.0.0`, 0.3.15→`13.0.0`, 0.3.19→`14.0.0`, 0.3.22→`14.3.0`). Пример из официального `writing_a_plugin.md` (`analysis_server_plugin: ^0.2.2` + `analyzer: ^8.0.0`) устарел и не разрешается ни с одной опубликованной 0.3.x. → Решение: целимся в конкретную пару версий, совместимую с запиненным SDK (см. Decisions), и сверяемся с версионно-совпадающими доками из `doc/` внутри самого пакета в pub-кэше, а не с `main` в `dart-lang/sdk`.
+
+## Проверенный API (analysis_server_plugin 0.3.14 / analyzer 12.1.0)
+
+Формы ниже сверены с доками, которые пакет везёт с собой (`doc/writing_rules.md`,
+`writing_fixes.md`, `testing_rules.md` внутри `analysis_server_plugin-0.3.14` в
+pub-кэше), и скомпилированы на этой паре версий.
+
+Правило:
+
+```dart
+class MyRule extends AnalysisRule {
+  static const LintCode code = LintCode(
+    'my_rule',                       // позиционный name
+    'Problem message.',              // позиционный problemMessage
+    correctionMessage: 'Try ...',
+    severity: DiagnosticSeverity.WARNING,   // дефолт INFO — задавать всегда
+  );
+
+  MyRule() : super(name: 'my_rule', description: '...');
+
+  @override
+  LintCode get diagnosticCode => code;
+
+  @override
+  void registerNodeProcessors(RuleVisitorRegistry registry, RuleContext context) {
+    registry.addMethodInvocation(this, _Visitor(this, context));
+  }
+}
+
+class _Visitor extends SimpleAstVisitor<void> {
+  final AnalysisRule rule;
+  final RuleContext context;
+  _Visitor(this.rule, this.context);
+
+  @override
+  void visitMethodInvocation(MethodInvocation node) => rule.reportAtNode(node);
+}
+```
+
+`LintCode` обязан быть `static const` (единственный инстанс на код) — иначе
+analysis server не сматчит код и `// ignore:` у пользователя не сработает.
+Визитор — только `SimpleAstVisitor`; каждому его `visitXxx` соответствует
+`registry.addXxx(this, visitor)`.
+
+Quick fix:
+
+```dart
+class MyFix extends ResolvedCorrectionProducer {
+  static const _kind = FixKind('cherrypick.fix.x', DartFixKindPriority.standard, 'Add await');
+  MyFix({required super.context});
+
+  @override
+  CorrectionApplicability get applicability => CorrectionApplicability.singleLocation;
+
+  @override
+  FixKind get fixKind => _kind;
+
+  @override
+  Future<void> compute(ChangeBuilder builder) async {
+    await builder.addDartFileEdit(file, (builder) { /* addInsertion/addDeletion/... */ });
+  }
+}
+```
+
+Точка входа и регистрация (`lib/main.dart`, top-level `plugin`):
+
+```dart
+final plugin = CherryPickLintPlugin();
+
+class CherryPickLintPlugin extends Plugin {
+  @override
+  String get name => 'cherrypick_lint';
+
+  @override
+  void register(PluginRegistry registry) {
+    registry.registerWarningRule(MyRule());
+    registry.registerFixForRule(MyRule.code, MyFix.new);   // фикс привязан к коду, передаётся конструктор
+  }
+}
+```
+
+Тесты (`analyzer_testing` 0.2.5 — версия, которая резолвится под Dart 3.10.0):
+класс `extends AnalysisRuleTest`, в `setUp` присваивается `rule = MyRule()` **до**
+`super.setUp()` (база сама регистрирует правило и включает его в
+`analysis_options.yaml` тестового пакета), тела — `assertDiagnostics(src, [lint(offset, length)])`
+и `assertNoDiagnostics(src)`, запуск через `test_reflective_loader`
+(`defineReflectiveSuite`/`defineReflectiveTests`). Типы `cherrypick`/`cherrypick_annotations`
+в тестах подставляются заглушками через `newPackage('cherrypick')..addFile(...)`
+(тоже в `setUp` до `super.setUp()`), а не реальной зависимостью.
+
+Проверено end-to-end на запиненном Dart 3.10.0 (скелетный плагин + пакет-потребитель
+с `plugins: <name>: path: ...`):
+
+- `dart analyze` показывает диагностику плагина (`warning - ... - no_await_probe`) и **не крашится** — то есть обходной путь для `melos run analyze` действительно снимается;
+- `// ignore: <plugin_name>/<rule_name>` подавляет диагностику;
+- `diagnostics: <rule_name>: false` в секции плагина отключает правило, зарегистрированное через `registerWarningRule`.
 
 ## Migration Plan
 
@@ -64,7 +159,7 @@
 
 ## Open Questions
 
-- Как именно `analysis_server_plugin`'овский `LintCode`/`AnalysisRule` выставляет severity, эквивалентную нынешнему `errorSeverity: ErrorSeverity.WARNING/ERROR` в `custom_lint`? Нужно свериться с актуальной версией `analyzer`/`analysis_server_plugin` при реализации — этот design.md перечисляет только базовую форму `LintCode(name, problemMessage, correctionMessage:)` из документации без явного severity-параметра.
-- `registerWarningRule` vs `registerLintRule` для каждого из 13 правил — см. Risks выше.
+- ~~Как именно `analysis_server_plugin`'овский `LintCode`/`AnalysisRule` выставляет severity?~~ → **Параметром `severity:` в `LintCode`**, тип `DiagnosticSeverity`, дефолт `INFO` (см. Decisions). Проверено на `analyzer` 12.1.0: `lib/src/dart/error/lint_codes.dart`.
+- ~~`registerWarningRule` vs `registerLintRule` для каждого из 13 правил~~ → **`registerWarningRule` для всех 13** (см. Decisions).
 - Нужен ли `cherrypick_lint/example` как отдельный пакет-фикстура после перехода на `analyzer_testing`, или его стоит превратить в чисто демонстрационный пример подключения плагина (без тестовой роли)?
 - Стоит ли использовать `MultiAnalysisRule`/`List<LintCode> get diagnosticCodes` для каких-либо из 13 правил (актуально, если при переносе захочется разделить один codegen-класс на несколько сообщений) — на сегодня ни одному правилу это не требуется, каждое репортит один код.
