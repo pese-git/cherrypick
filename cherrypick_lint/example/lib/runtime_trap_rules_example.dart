@@ -25,3 +25,18 @@ class GoodSingletonModule extends Module {
     bind<int>().toInstance(1);
   }
 }
+
+class ParamsSingletonModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    // `.singleton()` here is a "master singleton" that ignores params after
+    // the first resolve — surprising enough to flag, but not always wrong,
+    // so this rule has no quick fix.
+    // expect_lint: avoid_singleton_on_provide_with_params
+    bind<String>().toProvideWithParams((p) => p.toString()).singleton();
+
+    // No `.singleton()` chained — a fresh instance per params, as expected
+    // for a parameterized provider. Nothing to flag.
+    bind<int>().toProvideWithParams((p) => p as int);
+  }
+}

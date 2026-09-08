@@ -183,6 +183,21 @@ bind<Api>().toInstance(ApiMock());
 bind<Api>().toProvide(() => ApiMock()).singleton();
 ```
 
+### `avoid_singleton_on_provide_with_params` (info, no quick fix)
+
+`.singleton()` after `.toProvideWithParams()`/`.toProvideAsyncWithParams()` turns the binding into
+a "master singleton": only the very first `resolve<T>(params: ...)` uses its parameters, every
+later resolve returns the same cached instance regardless of params. That's sometimes exactly what
+you want, so this rule has no quick fix — it's a nudge to double-check intent.
+
+```dart
+// ℹ️ avoid_singleton_on_provide_with_params
+bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
+
+// fine if a new instance per params is intended — just drop .singleton()
+bind<Service>().toProvideWithParams((params) => Service(params));
+```
+
 ## Disabling a rule
 
 ```yaml

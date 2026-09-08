@@ -2,6 +2,7 @@ import 'package:custom_lint_builder/custom_lint_builder.dart';
 
 import 'src/rules/avoid_extends_silent_observer.dart';
 import 'src/rules/avoid_redundant_singleton_on_instance.dart';
+import 'src/rules/avoid_singleton_on_provide_with_params.dart';
 import 'src/rules/avoid_unawaited_close_scope.dart';
 import 'src/rules/avoid_unawaited_close_sub_scope.dart';
 import 'src/rules/avoid_unawaited_scope_dispose.dart';
@@ -30,5 +31,6 @@ class _CherryPickLint extends PluginBase {
     // runtime-trap-rules
     AvoidExtendsSilentObserver(),
     AvoidRedundantSingletonOnInstance(),
+    AvoidSingletonOnProvideWithParams(),
   ];
 }

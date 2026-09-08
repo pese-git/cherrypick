@@ -55,6 +55,7 @@ fire-and-forget and doesn't trigger these rules.
 |---|---|---|---|
 | `avoid_extends_silent_observer` | `warning` | `class Foo extends SilentCherryPickObserver` | Replace with `implements CherryPickObserver` |
 | `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` chained after `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant `.singleton()` |
+| `avoid_singleton_on_provide_with_params` | `info` | `.singleton()` chained after `.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` | — |
 
 `SilentCherryPickObserver` is deliberately skipped by `Scope`'s fast path
 (`if (_observer is SilentCherryPickObserver)`), so an `extends` subclass
@@ -64,6 +65,12 @@ CherryPickObserver` is always what you want instead.
 `.singleton()` after `.toInstance(...)` is a documented no-op (see
 `Binding.singleton()`'s doc comment): the bound value is already a single,
 constant instance, so the call does nothing but read as if it did.
+
+`.singleton()` after `.toProvideWithParams(...)` turns the binding into a
+"master singleton" that only honors params on the very first resolve — every
+later resolve returns the same cached instance regardless of params. That's
+sometimes intentional, so this rule has no quick fix; it's a nudge to
+double-check, not an auto-correctable mistake.
 
 ## Disabling a rule
 

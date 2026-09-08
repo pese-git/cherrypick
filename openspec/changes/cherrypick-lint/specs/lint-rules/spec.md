@@ -224,3 +224,24 @@
 #### Scenario: .toInstance() без .singleton()
 - **WHEN** в коде присутствует `bind<T>().toInstance(value)` без последующего `.singleton()`
 - **THEN** диагностика не репортируется
+
+---
+
+### Requirement: avoid_singleton_on_provide_with_params
+
+Вызов `.singleton()`, сцепленный сразу после `.toProvideWithParams(...)` или `.toProvideAsyncWithParams(...)` на `Binding`, MUST репортить информационное предупреждение без quick fix.
+
+Согласно doc-комментарию `Binding.singleton()`, в этом случае параметры учитываются только при самом первом `resolve<T>(params: ...)` — все последующие resolve, независимо от переданных params, возвращают тот же закэшированный экземпляр. Это иногда осознанный паттерн («master singleton»), поэтому правило только предупреждает, не предлагая автоматическое исправление.
+
+#### Scenario: .singleton() после .toProvideWithParams()
+- **WHEN** в коде присутствует `bind<T>().toProvideWithParams(fn).singleton()`
+- **THEN** репортируется `avoid_singleton_on_provide_with_params` с severity `info`
+- **AND** quick fix не предлагается
+
+#### Scenario: .singleton() после .toProvideAsyncWithParams()
+- **WHEN** в коде присутствует `bind<T>().toProvideAsyncWithParams(fn).singleton()`
+- **THEN** репортируется `avoid_singleton_on_provide_with_params` с severity `info`
+
+#### Scenario: .toProvideWithParams() без .singleton()
+- **WHEN** в коде присутствует `bind<T>().toProvideWithParams(fn)` без последующего `.singleton()`
+- **THEN** диагностика не репортируется — новый экземпляр на каждый набор params, как и ожидается

@@ -61,6 +61,7 @@ cherrypick_lint/
 │       │   ├── avoid_unawaited_scope_dispose.dart
 │       │   ├── avoid_extends_silent_observer.dart
 │       │   ├── avoid_redundant_singleton_on_instance.dart
+│       │   ├── avoid_singleton_on_provide_with_params.dart  # без quick fix
 │       │   ├── module_must_be_abstract.dart
 │       │   ├── module_method_missing_binding.dart
 │       │   ├── inject_field_must_be_late_final.dart
@@ -86,6 +87,8 @@ cherrypick_lint/
 Четвёртый файл фикса (`replace_extends_with_implements_fix.dart`) не был учтён в исходном списке — понадобился для quick fix `avoid_extends_silent_observer`, которая явно требуется в `specs/lint-rules/spec.md`.
 
 Правило `avoid_redundant_singleton_on_instance` и его фикс `remove_redundant_singleton_fix.dart` добавлены уже после первичной реализации спеки — по итогам вопроса о правилах, которых ещё нет в плагине.
+
+Правило `avoid_singleton_on_provide_with_params` добавлено тем же путём — но, в отличие от предыдущего, `.singleton()` после `.toProvideWithParams(...)` не всегда ошибка (может быть осознанным «master singleton»), поэтому у него нет quick fix — только диагностика.
 
 ## Зависимости
 
@@ -159,6 +162,7 @@ analyzer:
 |-----|----------|---------|-----------|
 | `avoid_extends_silent_observer` | `warning` | `extends SilentCherryPickObserver` | Replace with implements CherryPickObserver |
 | `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` после `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant .singleton() |
+| `avoid_singleton_on_provide_with_params` | `info` | `.singleton()` после `.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` | — |
 
 ## Архитектура плагина
 
