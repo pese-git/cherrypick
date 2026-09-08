@@ -48,7 +48,10 @@
 
 ## 5. Инфраструктура и CI
 
-- [ ] 5.1 Обновить `cherrypick_lint/pubspec.yaml`: убрать `custom_lint`/`custom_lint_builder`, добавить `analysis_server_plugin` + актуальный `analyzer`
+- [x] 5.1 Обновить `cherrypick_lint/pubspec.yaml`: убрать `custom_lint`/`custom_lint_builder`, добавить `analysis_server_plugin` + актуальный `analyzer`
+      `analysis_server_plugin` 0.3.22, `analyzer` 14.3.0, `analyzer_plugin` 0.14.16,
+      `environment: sdk: ">=3.11.0 <4.0.0"`. Пин `.fvmrc` поднят до Flutter 3.41.7
+      (Dart 3.11.5) — иначе актуальные версии не резолвятся, см. Decisions в design.md.
 - [ ] 5.2 Убрать `lib/cherrypick_lint.dart` как entrypoint (или оставить как реэкспорт для тестов — решить при реализации), добавить `lib/main.dart`
 - [ ] 5.3 Удалить `test/expect_lint_test.dart` и обходной путь через `dart run custom_lint`
 - [ ] 5.4 Решить судьбу `cherrypick_lint/example` — тестовый харнесс или чисто демонстрационный пример

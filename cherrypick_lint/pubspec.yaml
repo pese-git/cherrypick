@@ -16,20 +16,21 @@ topics:
   - static-analysis
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
+  # analyzer 14.3.0 requires Dart >=3.11; the repo is pinned to Flutter 3.41.7
+  # (Dart 3.11.5) partly for that reason — see the change docs in
+  # openspec/changes/cherrypick-lint-migrate-plugin-framework.
+  sdk: ">=3.11.0 <4.0.0"
 
 dependencies:
   # Exact versions, mirroring how analysis_server_plugin itself pins analyzer:
-  # every published analysis_server_plugin release pins one exact analyzer
-  # version, and analyzer >=13.1.0 requires Dart >=3.11 — 0.3.14/12.1.0 is the
-  # newest pair resolvable under this repo's pinned Dart 3.10.0 (Flutter
-  # 3.38.1). See openspec/changes/cherrypick-lint-migrate-plugin-framework.
-  analysis_server_plugin: 0.3.14
-  analyzer: 12.1.0
-  analyzer_plugin: 0.14.8
+  # every published release pins one exact analyzer version, so a range here
+  # would only resolve to whatever that pin allows anyway.
+  analysis_server_plugin: 0.3.22
+  analyzer: 14.3.0
+  analyzer_plugin: 0.14.16
 
 dev_dependencies:
-  analyzer_testing: ^0.2.5
+  analyzer_testing: ^0.4.1
   lints: ^6.0.0
   test: ^1.25.8
   test_reflective_loader: ^0.4.0
