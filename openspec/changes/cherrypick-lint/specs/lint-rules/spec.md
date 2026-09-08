@@ -245,3 +245,32 @@
 #### Scenario: .toProvideWithParams() без .singleton()
 - **WHEN** в коде присутствует `bind<T>().toProvideWithParams(fn)` без последующего `.singleton()`
 - **THEN** диагностика не репортируется — новый экземпляр на каждый набор params, как и ожидается
+
+---
+
+### Requirement: avoid_resolve_in_to_instance
+
+Вызов `scope.resolve<T>()` (или `resolveAsync`/`tryResolve`/`tryResolveAsync`) на приёмнике типа `Scope`, найденный где-либо внутри аргументов `.toInstance(...)` или `.toInstanceAsync(...)` на `Binding`, MUST репортить предупреждение без quick fix.
+
+`toInstance`-биндинги внутри `Module.builder` применяются последовательно, поэтому на момент их регистрации соседний биндинг, зарегистрированный позже в том же `builder`, ещё не резолвится — вызов бросает `Can't resolve dependency ...` в рантайме, если резолвимый тип регистрируется позже. Это задокументированное поведение (см. doc-комментарий `Binding.toInstance()`), а не гипотетический риск, поэтому severity `warning`. Правильный фикс (перенос вычисления в `.toProvide(() => ...)` или ручная сборка зависимости заранее) зависит от конкретного кода, поэтому quick fix не предлагается.
+
+#### Scenario: resolve() внутри toInstance()
+- **WHEN** в коде присутствует `bind<T>().toInstance(scope.resolve<U>())`
+- **THEN** репортируется `avoid_resolve_in_to_instance` с severity `warning`
+- **AND** quick fix не предлагается
+
+#### Scenario: tryResolveAsync() внутри toInstanceAsync()
+- **WHEN** в коде присутствует `bind<T>().toInstanceAsync(scope.tryResolveAsync<U>())`
+- **THEN** репортируется `avoid_resolve_in_to_instance` с severity `warning`
+
+#### Scenario: несколько resolve-вызовов в одном toInstance()
+- **WHEN** аргумент `.toInstance(...)` содержит более одного вызова `resolve`/`resolveAsync`/`tryResolve`/`tryResolveAsync` на `Scope`
+- **THEN** каждый такой вызов репортируется отдельно
+
+#### Scenario: resolve() отложен через toProvide()
+- **WHEN** в коде присутствует `bind<T>().toProvide(() => scope.resolve<U>())`
+- **THEN** диагностика не репортируется — резолв выполнится лениво, когда соседние биндинги уже зарегистрированы
+
+#### Scenario: toInstance() без resolve-вызовов
+- **WHEN** в коде присутствует `bind<T>().toInstance(value)`, где `value` не содержит вызовов `resolve`/`resolveAsync`/`tryResolve`/`tryResolveAsync` на `Scope`
+- **THEN** диагностика не репортируется

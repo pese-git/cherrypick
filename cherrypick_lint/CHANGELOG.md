@@ -9,4 +9,6 @@
 - runtime-trap-rules: `avoid_extends_silent_observer` (+ quick fix),
   `avoid_redundant_singleton_on_instance` (+ quick fix),
   `avoid_singleton_on_provide_with_params` (no quick fix — the pattern can be
-  intentional).
+  intentional), `avoid_resolve_in_to_instance` (no quick fix — flags
+  `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` inside
+  `.toInstance(...)`/`.toInstanceAsync(...)`, a documented runtime crash risk).

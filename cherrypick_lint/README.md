@@ -56,6 +56,7 @@ fire-and-forget and doesn't trigger these rules.
 | `avoid_extends_silent_observer` | `warning` | `class Foo extends SilentCherryPickObserver` | Replace with `implements CherryPickObserver` |
 | `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` chained after `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant `.singleton()` |
 | `avoid_singleton_on_provide_with_params` | `info` | `.singleton()` chained after `.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` | — |
+| `avoid_resolve_in_to_instance` | `warning` | `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` inside `.toInstance(...)`/`.toInstanceAsync(...)` | — |
 
 `SilentCherryPickObserver` is deliberately skipped by `Scope`'s fast path
 (`if (_observer is SilentCherryPickObserver)`), so an `extends` subclass
@@ -71,6 +72,15 @@ constant instance, so the call does nothing but read as if it did.
 later resolve returns the same cached instance regardless of params. That's
 sometimes intentional, so this rule has no quick fix; it's a nudge to
 double-check, not an auto-correctable mistake.
+
+`.toInstance(...)` bindings inside a `Module.builder` are applied
+sequentially, so calling `scope.resolve<T>()` (or `resolveAsync`/`tryResolve`/
+`tryResolveAsync`) to build the value can throw `Can't resolve dependency ...`
+if `T` is registered later in the same builder (see `Binding.toInstance()`'s
+doc comment for the full example). Deferring the resolve with
+`.toProvide(() => ...)` runs it lazily, once every sibling binding is already
+registered — this rule has no quick fix since the fix depends on how the
+dependency chain should actually be built.
 
 ## Disabling a rule
 

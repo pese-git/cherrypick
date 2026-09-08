@@ -202,6 +202,22 @@ bind<Service>().toProvideWithParams((params) => Service(params)).singleton();
 bind<Service>().toProvideWithParams((params) => Service(params));
 ```
 
+### `avoid_resolve_in_to_instance` (warning, без quick fix)
+
+`.toInstance(...)`-биндинги внутри `Module.builder` применяются последовательно, поэтому вызов
+`scope.resolve<T>()` (или `resolveAsync`/`tryResolve`/`tryResolveAsync`) для построения значения
+может бросить `Can't resolve dependency ...`, если `T` регистрируется позже в том же builder'е.
+Отложите резолв через `.toProvide(() => ...)` — он выполнится лениво, когда все соседние биндинги
+уже зарегистрированы.
+
+```dart
+// ❌ avoid_resolve_in_to_instance
+bind<int>().toInstance(scope.resolve<String>().length);
+
+// ✅
+bind<int>().toProvide(() => scope.resolve<String>().length);
+```
+
 ---
 
 ## Отключение правила

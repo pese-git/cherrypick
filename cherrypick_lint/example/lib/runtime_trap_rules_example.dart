@@ -40,3 +40,22 @@ class ParamsSingletonModule extends Module {
     bind<int>().toProvideWithParams((p) => p as int);
   }
 }
+
+class BadResolveModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    // `resolve()` runs eagerly while this builder is still registering
+    // bindings — a sibling type isn't guaranteed to be available yet.
+    // expect_lint: avoid_resolve_in_to_instance
+    bind<int>().toInstance(currentScope.resolve<String>().length);
+  }
+}
+
+class GoodResolveModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    // Deferred via `.toProvide()` — the resolve only runs once this binding
+    // is itself resolved, by which point sibling bindings are registered.
+    bind<int>().toProvide(() => currentScope.resolve<String>().length);
+  }
+}

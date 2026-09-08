@@ -62,6 +62,7 @@ cherrypick_lint/
 │       │   ├── avoid_extends_silent_observer.dart
 │       │   ├── avoid_redundant_singleton_on_instance.dart
 │       │   ├── avoid_singleton_on_provide_with_params.dart  # без quick fix
+│       │   ├── avoid_resolve_in_to_instance.dart             # без quick fix
 │       │   ├── module_must_be_abstract.dart
 │       │   ├── module_method_missing_binding.dart
 │       │   ├── inject_field_must_be_late_final.dart
@@ -89,6 +90,8 @@ cherrypick_lint/
 Правило `avoid_redundant_singleton_on_instance` и его фикс `remove_redundant_singleton_fix.dart` добавлены уже после первичной реализации спеки — по итогам вопроса о правилах, которых ещё нет в плагине.
 
 Правило `avoid_singleton_on_provide_with_params` добавлено тем же путём — но, в отличие от предыдущего, `.singleton()` после `.toProvideWithParams(...)` не всегда ошибка (может быть осознанным «master singleton»), поэтому у него нет quick fix — только диагностика.
+
+Правило `avoid_resolve_in_to_instance` добавлено тем же путём — по итогам вопроса про смешивание `.toInstance(scope.resolve<T>())` с `.toProvide(...)`. Это уже документированный в `Binding.toInstance()` рантайм-риск: `toInstance`-биндинги в `Module.builder` применяются последовательно, поэтому `resolve`/`resolveAsync`/`tryResolve`/`tryResolveAsync`, вызванные для построения значения, могут упасть с `Can't resolve dependency ...`, если резолвимый тип регистрируется позже в том же builder'е. В отличие от singleton-правил, здесь нет «иногда это нормально» — поэтому severity `warning`, а не `info`, и quick fix не добавлен: правильный фикс (перенос в `.toProvide(...)` или ручная сборка цепочки зависимостей) зависит от конкретного кода.
 
 ## Зависимости
 
@@ -163,6 +166,7 @@ analyzer:
 | `avoid_extends_silent_observer` | `warning` | `extends SilentCherryPickObserver` | Replace with implements CherryPickObserver |
 | `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` после `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant .singleton() |
 | `avoid_singleton_on_provide_with_params` | `info` | `.singleton()` после `.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` | — |
+| `avoid_resolve_in_to_instance` | `warning` | `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` внутри `.toInstance(...)`/`.toInstanceAsync(...)` | — |
 
 ## Архитектура плагина
 

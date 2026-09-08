@@ -34,6 +34,7 @@
 - [x] 4.2 Написать тесты — `example/lib/runtime_trap_rules_example.dart`, та же схема
 - [x] 4.3 Реализовать `avoid_redundant_singleton_on_instance` + quick fix (remove redundant .singleton()), добавлено по итогам PR-ревью, тесты — та же фикстура
 - [x] 4.4 Реализовать `avoid_singleton_on_provide_with_params` (без quick fix — паттерн может быть осознанным), тесты — та же фикстура
+- [x] 4.5 Реализовать `avoid_resolve_in_to_instance` (без quick fix — документированный рантайм-риск, фикс зависит от кода), тесты — та же фикстура
 
 ## 5. Документация и публикация
 
