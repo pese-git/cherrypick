@@ -59,3 +59,32 @@ class GoodResolveModule extends Module {
     bind<int>().toProvide(() => currentScope.resolve<String>().length);
   }
 }
+
+class BadPrecomputedModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    // `hello` is built once, right here — every resolve<String>() call
+    // silently gets this same instance back instead of a fresh one.
+    final hello = 'hello';
+    // expect_lint: avoid_precomputed_value_in_provide
+    bind<String>().toProvide(() => hello);
+  }
+}
+
+class GoodPrecomputedModule extends Module {
+  @override
+  void builder(Scope currentScope) {
+    // Constructed inside the closure — a fresh value on every resolve.
+    bind<String>().toProvide(() => 'hello');
+
+    // A local variable used as part of an expression is fine — the
+    // expression itself still runs inside the closure on every resolve.
+    final suffix = '!';
+    bind<String>().toProvide(() => 'hello$suffix');
+
+    // toInstance() always constructs eagerly regardless of where the value
+    // comes from, so precomputing here is fine — nothing to flag.
+    final greeting = 'hi';
+    bind<String>().withName('greeting').toInstance(greeting);
+  }
+}

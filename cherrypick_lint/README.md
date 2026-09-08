@@ -57,6 +57,7 @@ fire-and-forget and doesn't trigger these rules.
 | `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` chained after `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant `.singleton()` |
 | `avoid_singleton_on_provide_with_params` | `info` | `.singleton()` chained after `.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` | — |
 | `avoid_resolve_in_to_instance` | `warning` | `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` inside `.toInstance(...)`/`.toInstanceAsync(...)` | — |
+| `avoid_precomputed_value_in_provide` | `warning` | `.toProvide(...)`/`.toProvideAsync(...)`/`.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` closure that just returns a variable built outside it | — |
 
 `SilentCherryPickObserver` is deliberately skipped by `Scope`'s fast path
 (`if (_observer is SilentCherryPickObserver)`), so an `extends` subclass
@@ -81,6 +82,15 @@ doc comment for the full example). Deferring the resolve with
 `.toProvide(() => ...)` runs it lazily, once every sibling binding is already
 registered — this rule has no quick fix since the fix depends on how the
 dependency chain should actually be built.
+
+A provider closure exists to be re-invoked on every `resolve<T>()` — the
+value should be built there. `bind<T>().toProvide(() => variable)`, where
+`variable` was already constructed earlier in the same method, actually
+builds the value once, at `Module.builder()` time; every `resolve<T>()` then
+silently returns that same instance, an unintended pseudo-singleton that
+bypasses `.singleton()`'s explicit opt-in. `.toInstance(...)` isn't affected
+by this — it always constructs eagerly regardless of where the value comes
+from, so precomputing a value for it is fine.
 
 ## Disabling a rule
 

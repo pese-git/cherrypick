@@ -274,3 +274,28 @@
 #### Scenario: toInstance() без resolve-вызовов
 - **WHEN** в коде присутствует `bind<T>().toInstance(value)`, где `value` не содержит вызовов `resolve`/`resolveAsync`/`tryResolve`/`tryResolveAsync` на `Scope`
 - **THEN** диагностика не репортируется
+
+---
+
+### Requirement: avoid_precomputed_value_in_provide
+
+Вызов `.toProvide(...)`, `.toProvideAsync(...)`, `.toProvideWithParams(...)` или `.toProvideAsyncWithParams(...)` на `Binding`, чьё замыкание-аргумент целиком состоит из голой ссылки на локальную переменную (`() => x` или `{ return x; }`), MUST репортить предупреждение без quick fix. `.toInstance(...)`/`.toInstanceAsync(...)` этим правилом не проверяются.
+
+Замыкание провайдера существует для того, чтобы выполняться заново при каждом `resolve<T>()` — значение должно строиться внутри него. Если замыкание лишь возвращает переменную, построенную вне его (например, в теле `Module.builder`), значение на самом деле конструируется один раз, в момент регистрации биндинга, и каждый `resolve<T>()` молча возвращает тот же экземпляр — непреднамеренный псевдо-singleton в обход явного `.singleton()`. Это отличается от `.toInstance(...)`, которое конструирует значение сразу в любом случае независимо от того, откуда оно взялось, — поэтому предвычисление для `toInstance()` не является ошибкой и не флагуется.
+
+#### Scenario: toProvide() возвращает предвычисленную переменную
+- **WHEN** в коде присутствует `final x = Foo(); bind<T>().toProvide(() => x);`
+- **THEN** репортируется `avoid_precomputed_value_in_provide` с severity `warning`
+- **AND** quick fix не предлагается
+
+#### Scenario: toProvideAsync()/toProvideWithParams()/toProvideAsyncWithParams() возвращают предвычисленную переменную
+- **WHEN** в коде присутствует `final x = Foo(); bind<T>().toProvideAsync(() async => x);` (аналогично для `toProvideWithParams`/`toProvideAsyncWithParams`)
+- **THEN** репортируется `avoid_precomputed_value_in_provide` с severity `warning`
+
+#### Scenario: конструктор вызывается внутри замыкания
+- **WHEN** в коде присутствует `bind<T>().toProvide(() => Foo())` или `bind<T>().toProvide(() => Foo(capturedArg))`, где `capturedArg` — переменная, используемая как аргумент конструктора внутри замыкания
+- **THEN** диагностика не репортируется — конструктор выполняется заново при каждом вызове замыкания
+
+#### Scenario: toInstance() с предвычисленной переменной
+- **WHEN** в коде присутствует `final x = Foo(); bind<T>().toInstance(x);`
+- **THEN** диагностика не репортируется — `toInstance()` конструирует значение сразу в любом случае

@@ -218,6 +218,24 @@ bind<int>().toInstance(scope.resolve<String>().length);
 bind<int>().toProvide(() => scope.resolve<String>().length);
 ```
 
+### `avoid_precomputed_value_in_provide` (warning, без quick fix)
+
+Замыкание провайдера существует для того, чтобы выполняться заново при каждом `resolve<T>()` —
+значение должно строиться внутри него. Если замыкание просто возвращает переменную, построенную
+ранее в том же методе, значение на самом деле создаётся один раз, в момент `Module.builder()`, и
+каждый `resolve<T>()` молча возвращает тот же экземпляр — непреднамеренный псевдо-singleton в обход
+явного `.singleton()`. На `.toInstance(...)` это не влияет: он всегда конструирует значение сразу
+независимо от того, откуда оно взялось, поэтому предвычисление для него безопасно.
+
+```dart
+// ❌ avoid_precomputed_value_in_provide
+final api = ApiMock();
+bind<Api>().toProvide(() => api);
+
+// ✅
+bind<Api>().toProvide(() => ApiMock());
+```
+
 ---
 
 ## Отключение правила

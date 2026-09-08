@@ -11,7 +11,10 @@
   `avoid_singleton_on_provide_with_params` (no quick fix — the pattern can be
   intentional), `avoid_resolve_in_to_instance` (no quick fix — flags
   `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` inside
-  `.toInstance(...)`/`.toInstanceAsync(...)`, a documented runtime crash risk).
+  `.toInstance(...)`/`.toInstanceAsync(...)`, a documented runtime crash risk),
+  `avoid_precomputed_value_in_provide` (no quick fix — flags a provider
+  closure that just returns a value built outside it instead of constructing
+  one, an unintended pseudo-singleton).
 - Fix: `avoid_extends_silent_observer` and the three await-rules never set
   `errorSeverity` explicitly, so they silently reported as `info` instead of
   the documented `warning`. All four now set `errorSeverity:

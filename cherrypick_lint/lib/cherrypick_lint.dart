@@ -1,6 +1,7 @@
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
 import 'src/rules/avoid_extends_silent_observer.dart';
+import 'src/rules/avoid_precomputed_value_in_provide.dart';
 import 'src/rules/avoid_redundant_singleton_on_instance.dart';
 import 'src/rules/avoid_resolve_in_to_instance.dart';
 import 'src/rules/avoid_singleton_on_provide_with_params.dart';
@@ -34,5 +35,6 @@ class _CherryPickLint extends PluginBase {
     AvoidRedundantSingletonOnInstance(),
     AvoidSingletonOnProvideWithParams(),
     AvoidResolveInToInstance(),
+    AvoidPrecomputedValueInProvide(),
   ];
 }

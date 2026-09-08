@@ -214,6 +214,24 @@ bind<int>().toInstance(scope.resolve<String>().length);
 bind<int>().toProvide(() => scope.resolve<String>().length);
 ```
 
+### `avoid_precomputed_value_in_provide` (warning, no quick fix)
+
+A provider closure exists to be re-invoked on every `resolve<T>()` — the value should be built
+there. If the closure just returns a variable built earlier in the same method, that value was
+actually constructed once, at `Module.builder()` time, so every `resolve<T>()` silently returns the
+same instance — an unintended pseudo-singleton that bypasses `.singleton()`'s explicit opt-in.
+`.toInstance(...)` isn't affected by this: it always constructs eagerly regardless of where the
+value comes from, so precomputing a value for it is fine.
+
+```dart
+// ❌ avoid_precomputed_value_in_provide
+final api = ApiMock();
+bind<Api>().toProvide(() => api);
+
+// ✅
+bind<Api>().toProvide(() => ApiMock());
+```
+
 ## Disabling a rule
 
 ```yaml

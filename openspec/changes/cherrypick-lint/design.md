@@ -63,6 +63,7 @@ cherrypick_lint/
 │       │   ├── avoid_redundant_singleton_on_instance.dart
 │       │   ├── avoid_singleton_on_provide_with_params.dart  # без quick fix
 │       │   ├── avoid_resolve_in_to_instance.dart             # без quick fix
+│       │   ├── avoid_precomputed_value_in_provide.dart       # без quick fix
 │       │   ├── module_must_be_abstract.dart
 │       │   ├── module_method_missing_binding.dart
 │       │   ├── inject_field_must_be_late_final.dart
@@ -93,7 +94,9 @@ cherrypick_lint/
 
 Правило `avoid_resolve_in_to_instance` добавлено тем же путём — по итогам вопроса про смешивание `.toInstance(scope.resolve<T>())` с `.toProvide(...)`. Это уже документированный в `Binding.toInstance()` рантайм-риск: `toInstance`-биндинги в `Module.builder` применяются последовательно, поэтому `resolve`/`resolveAsync`/`tryResolve`/`tryResolveAsync`, вызванные для построения значения, могут упасть с `Can't resolve dependency ...`, если резолвимый тип регистрируется позже в том же builder'е. В отличие от singleton-правил, здесь нет «иногда это нормально» — поэтому severity `warning`, а не `info`, и quick fix не добавлен: правильный фикс (перенос в `.toProvide(...)` или ручная сборка цепочки зависимостей) зависит от конкретного кода.
 
-При реализации этого правила также обнаружилось, что `avoid_extends_silent_observer` и все три await-правила никогда явно не задавали `errorSeverity` в своём `LintCode`, из-за чего фактически репортились как `info`, а не задокументированный `warning`. Это исправлено — все четыре теперь явно задают `errorSeverity: ErrorSeverity.WARNING`.
+Правило `avoid_precomputed_value_in_provide` добавлено по итогам ещё одного вопроса пользователя — про запрет инициализации значения в отдельной переменной с последующим использованием в `toInstance()`/`toProvide()`. Проверка показала асимметрию: для `toInstance()` это не баг (значение конструируется сразу в любом случае, флагать нечего), а вот для `toProvide()`/`toProvideAsync()`/`toProvideWithParams()`/`toProvideAsyncWithParams()` — реальная ошибка. Замыкание провайдера должно выполняться заново при каждом `resolve<T>()`; если оно лишь возвращает переменную, построенную вне замыкания, значение на самом деле строится один раз, в момент `Module.builder()`, и каждый resolve молча получает тот же экземпляр — непреднамеренный псевдо-singleton в обход `.singleton()`. Правило триггерится только на самый узкий и однозначный случай — тело замыкания целиком состоит из голой ссылки на локальную переменную (`() => x` или `{ return x; }`), — чтобы не давать ложных срабатываний на легитимных случаях вроде `() => Sample(count)`, где конструктор вызывается внутри замыкания с использованием захваченной переменной как аргумента.
+
+При реализации `avoid_resolve_in_to_instance` также обнаружилось, что `avoid_extends_silent_observer` и все три await-правила никогда явно не задавали `errorSeverity` в своём `LintCode`, из-за чего фактически репортились как `info`, а не задокументированный `warning`. Это исправлено — все четыре теперь явно задают `errorSeverity: ErrorSeverity.WARNING`.
 
 ## Зависимости
 
@@ -169,6 +172,7 @@ analyzer:
 | `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` после `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant .singleton() |
 | `avoid_singleton_on_provide_with_params` | `info` | `.singleton()` после `.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` | — |
 | `avoid_resolve_in_to_instance` | `warning` | `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` внутри `.toInstance(...)`/`.toInstanceAsync(...)` | — |
+| `avoid_precomputed_value_in_provide` | `warning` | `.toProvide(...)`/`.toProvideAsync(...)`/`.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)`, чьё тело — голая ссылка на переменную, построенную вне замыкания | — |
 
 ## Архитектура плагина
 
