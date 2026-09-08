@@ -90,13 +90,12 @@ bool isDeclaredInPackage(Element? element, String packageName) {
   return uri != null && uri.toString().startsWith('package:$packageName/');
 }
 
-/// Whether [node] statically resolves to a call on the class [className]
-/// declared in package [packageName], e.g. `CherryPick.closeScope(...)`.
-bool isStaticCallOn(
-  MethodInvocation node,
-  String className,
-  String packageName,
-) {
+/// Whether [node] resolves to a method declared on the class [className] in
+/// package [packageName] — regardless of whether the call is static (e.g.
+/// `CherryPick.closeScope(...)`) or an instance call (e.g.
+/// `binding.singleton()`); either way, `methodName.element`'s enclosing
+/// class is what identifies the declaring type.
+bool isCallOn(MethodInvocation node, String className, String packageName) {
   final owner = enclosingElementOf(node.methodName.element);
   return owner?.name == className && isDeclaredInPackage(owner, packageName);
 }

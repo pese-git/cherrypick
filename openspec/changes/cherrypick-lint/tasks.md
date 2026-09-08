@@ -32,6 +32,7 @@
 
 - [x] 4.1 Реализовать `avoid_extends_silent_observer` + quick fix (replace with implements)
 - [x] 4.2 Написать тесты — `example/lib/runtime_trap_rules_example.dart`, та же схема
+- [x] 4.3 Реализовать `avoid_redundant_singleton_on_instance` + quick fix (remove redundant .singleton()), добавлено по итогам PR-ревью, тесты — та же фикстура
 
 ## 5. Документация и публикация
 

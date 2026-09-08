@@ -199,3 +199,28 @@
 #### Scenario: implements CherryPickObserver
 - **WHEN** класс объявлен как `class Foo implements CherryPickObserver`
 - **THEN** диагностика не репортируется
+
+---
+
+### Requirement: avoid_redundant_singleton_on_instance
+
+Вызов `.singleton()`, сцепленный сразу после `.toInstance(...)` или `.toInstanceAsync(...)` на `Binding`, MUST репортить информационное предупреждение.
+
+Согласно doc-комментарию `Binding.singleton()`, такой вызов не имеет эффекта: значение, переданное в `toInstance`, уже является единственным константным экземпляром, который возвращается при каждом resolve. `.singleton()` осмысленен только после провайдера (`toProvide`, `toProvideAsync` и т. д.).
+
+#### Scenario: .singleton() после .toInstance()
+- **WHEN** в коде присутствует `bind<T>().toInstance(value).singleton()`
+- **THEN** репортируется `avoid_redundant_singleton_on_instance` с severity `info`
+- **AND** предлагается quick fix «Remove redundant .singleton()»
+
+#### Scenario: .singleton() после .toInstanceAsync()
+- **WHEN** в коде присутствует `bind<T>().toInstanceAsync(value).singleton()`
+- **THEN** репортируется `avoid_redundant_singleton_on_instance` с severity `info`
+
+#### Scenario: .singleton() после провайдера
+- **WHEN** в коде присутствует `bind<T>().toProvide(() => value).singleton()` (или `toProvideAsync`)
+- **THEN** диагностика не репортируется — `.singleton()` здесь осмыслен
+
+#### Scenario: .toInstance() без .singleton()
+- **WHEN** в коде присутствует `bind<T>().toInstance(value)` без последующего `.singleton()`
+- **THEN** диагностика не репортируется

@@ -54,11 +54,16 @@ fire-and-forget and doesn't trigger these rules.
 | Rule | Severity | Triggers on | Quick fix |
 |---|---|---|---|
 | `avoid_extends_silent_observer` | `warning` | `class Foo extends SilentCherryPickObserver` | Replace with `implements CherryPickObserver` |
+| `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` chained after `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant `.singleton()` |
 
 `SilentCherryPickObserver` is deliberately skipped by `Scope`'s fast path
 (`if (_observer is SilentCherryPickObserver)`), so an `extends` subclass
 silently receives none of the 14 observer callbacks — `implements
 CherryPickObserver` is always what you want instead.
+
+`.singleton()` after `.toInstance(...)` is a documented no-op (see
+`Binding.singleton()`'s doc comment): the bound value is already a single,
+constant instance, so the call does nothing but read as if it did.
 
 ## Disabling a rule
 

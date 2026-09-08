@@ -167,6 +167,22 @@ class MyObserver implements CherryPickObserver {
 }
 ```
 
+### `avoid_redundant_singleton_on_instance` (info)
+
+Согласно doc-комментарию `Binding.singleton()`, вызов после `.toInstance()`/`.toInstanceAsync()`
+не имеет эффекта — переданное значение уже единственный константный экземпляр. `.singleton()`
+осмыслен только после провайдера.
+
+```dart
+// ℹ️ avoid_redundant_singleton_on_instance
+bind<Api>().toInstance(ApiMock()).singleton();
+
+// ✅
+bind<Api>().toInstance(ApiMock());
+// либо, если действительно нужно ленивое создание единственного экземпляра:
+bind<Api>().toProvide(() => ApiMock()).singleton();
+```
+
 ## Отключение правила
 
 ```yaml

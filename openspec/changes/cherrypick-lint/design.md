@@ -60,6 +60,7 @@ cherrypick_lint/
 │       │   ├── avoid_unawaited_close_sub_scope.dart
 │       │   ├── avoid_unawaited_scope_dispose.dart
 │       │   ├── avoid_extends_silent_observer.dart
+│       │   ├── avoid_redundant_singleton_on_instance.dart
 │       │   ├── module_must_be_abstract.dart
 │       │   ├── module_method_missing_binding.dart
 │       │   ├── inject_field_must_be_late_final.dart
@@ -69,7 +70,8 @@ cherrypick_lint/
 │           ├── add_await_fix.dart                     # общий для 3 await-правил
 │           ├── make_class_abstract_fix.dart
 │           ├── add_late_final_fix.dart
-│           └── replace_extends_with_implements_fix.dart
+│           ├── replace_extends_with_implements_fix.dart
+│           └── remove_redundant_singleton_fix.dart
 ├── test/
 │   └── expect_lint_test.dart         # запускает `dart run custom_lint` над example/
 └── example/                          # отдельный пакет-фикстура (publish_to: none)
@@ -82,6 +84,8 @@ cherrypick_lint/
 ```
 
 Четвёртый файл фикса (`replace_extends_with_implements_fix.dart`) не был учтён в исходном списке — понадобился для quick fix `avoid_extends_silent_observer`, которая явно требуется в `specs/lint-rules/spec.md`.
+
+Правило `avoid_redundant_singleton_on_instance` и его фикс `remove_redundant_singleton_fix.dart` добавлены уже после первичной реализации спеки — по итогам вопроса о правилах, которых ещё нет в плагине.
 
 ## Зависимости
 
@@ -149,11 +153,12 @@ analyzer:
 | `named_value_must_not_be_empty` | `@named('')` или `@named("")` | — |
 | `params_requires_provide` | `@params` на методе без `@provide` | — |
 
-### Группа 3 — рантайм-ловушки (severity: warning)
+### Группа 3 — рантайм-ловушки (severity смешанная — см. колонку)
 
-| Код | Триггер | Quick fix |
-|-----|---------|-----------|
-| `avoid_extends_silent_observer` | `extends SilentCherryPickObserver` | Replace with implements CherryPickObserver |
+| Код | Severity | Триггер | Quick fix |
+|-----|----------|---------|-----------|
+| `avoid_extends_silent_observer` | `warning` | `extends SilentCherryPickObserver` | Replace with implements CherryPickObserver |
+| `avoid_redundant_singleton_on_instance` | `info` | `.singleton()` после `.toInstance(...)`/`.toInstanceAsync(...)` | Remove redundant .singleton() |
 
 ## Архитектура плагина
 
