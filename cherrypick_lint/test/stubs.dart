@@ -24,3 +24,53 @@ class MyService {
 }
 ''');
 }
+
+/// Writes stub sources for the `cherrypick_annotations` vocabulary.
+///
+/// Only the shapes the rules inspect matter: the annotation class names, and
+/// which of them take a value. Must be called from `setUp`, before
+/// `super.setUp()`.
+void addAnnotationsStub(AnalysisRuleTest test) {
+  test.newPackage('cherrypick_annotations').addFile(
+    'lib/cherrypick_annotations.dart',
+    r'''
+final class module {
+  const module();
+}
+
+final class provide {
+  const provide();
+}
+
+final class instance {
+  const instance();
+}
+
+final class singleton {
+  const singleton();
+}
+
+final class named {
+  final String value;
+  const named(this.value);
+}
+
+final class params {
+  const params();
+}
+
+final class inject {
+  const inject();
+}
+
+final class injectable {
+  const injectable();
+}
+
+final class scope {
+  final String name;
+  const scope(this.name);
+}
+''',
+  );
+}

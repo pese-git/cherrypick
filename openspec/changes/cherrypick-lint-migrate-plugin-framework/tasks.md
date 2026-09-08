@@ -30,12 +30,12 @@
 
 ## 3. Аннотационные правила
 
-- [ ] 3.1 Перенести `module_must_be_abstract` (+ quick fix)
-- [ ] 3.2 Перенести `module_method_missing_binding`
-- [ ] 3.3 Перенести `inject_field_must_be_late_final` (+ quick fix)
-- [ ] 3.4 Перенести `named_value_must_not_be_empty`
-- [ ] 3.5 Перенести `params_requires_provide`
-- [ ] 3.6 Тесты через `analyzer_testing` на все сценарии
+- [x] 3.1 Перенести `module_must_be_abstract` (+ quick fix)
+- [x] 3.2 Перенести `module_method_missing_binding`
+- [x] 3.3 Перенести `inject_field_must_be_late_final` (+ quick fix)
+- [x] 3.4 Перенести `named_value_must_not_be_empty`
+- [x] 3.5 Перенести `params_requires_provide`
+- [x] 3.6 Тесты через `analyzer_testing` на все сценарии
 
 ## 4. Рантайм-ловушки
 
