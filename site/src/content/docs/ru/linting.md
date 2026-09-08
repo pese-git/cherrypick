@@ -23,7 +23,7 @@ plugins:
   cherrypick_lint: ^1.0.0
 ```
 
-Требуется Dart >=3.11 (Flutter >=3.41).
+Требуется Dart >=3.10 (Flutter >=3.38).
 
 После этого перезапустите Dart Analysis Server (в VS Code: *Dart: Restart Analysis Server*) —
 плагины анализатора подхватываются только при старте. Дальше правила видны и в IDE, и в

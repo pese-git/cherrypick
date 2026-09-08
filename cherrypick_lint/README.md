@@ -25,8 +25,8 @@ Server*); analyzer plugins are only picked up on start-up. The rules then show
 up both in the IDE and in `dart analyze` / `flutter analyze` — there is no
 separate command to run.
 
-Requires Dart >=3.11 (Flutter >=3.41); analyzer plugins themselves need Dart
->=3.10.
+Requires Dart >=3.10 (Flutter >=3.38) — the release that introduced analyzer
+plugins.
 
 ## Rules
 
@@ -118,13 +118,20 @@ scope.dispose();
 
 ## Compatibility
 
-Requires Dart >=3.11.0 (Flutter >=3.41). Built against
-`analysis_server_plugin` 0.3.22 and `analyzer` 14.3.0.
+Requires Dart >=3.10.0 (Flutter >=3.38).
 
-Note that every published `analysis_server_plugin` release pins one exact
-`analyzer` version, so the `analyzer` you actually get follows from whichever
-plugin release the analysis server resolves for your SDK. Since `analyzer`
->=13.1.0 requires Dart >=3.11, the SDK floor follows from the same constraint.
+Every published `analysis_server_plugin` release pins one exact `analyzer`
+version, and `analyzer` >=13.1.0 requires Dart >=3.11 — so which versions you
+actually get follows from your SDK. Both resolutions are tested from the same
+sources:
+
+| | Dart 3.10 (Flutter 3.38) | Dart 3.11+ (Flutter 3.41+) |
+|---|---|---|
+| `analysis_server_plugin` | 0.3.14 | 0.3.22 |
+| `analyzer` | 12.1.0 | 14.3.0 |
+| `analyzer_plugin` | 0.14.8 | 0.14.16 |
+
+The rules and fixes compile against both `analyzer` majors unchanged.
 
 Versions 0.1.x were built on [`custom_lint`](https://pub.dev/packages/custom_lint),
 whose repository is archived and which its author no longer publishes; see

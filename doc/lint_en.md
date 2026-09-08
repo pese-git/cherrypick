@@ -21,7 +21,7 @@ plugins:
   cherrypick_lint: ^1.0.0
 ```
 
-Requires Dart >=3.11 (Flutter >=3.41).
+Requires Dart >=3.10 (Flutter >=3.38).
 
 Restart the Dart Analysis Server afterwards (in VS Code: *Dart: Restart Analysis Server*) —
 analyzer plugins are only picked up on start-up. The rules then appear both in the IDE and in

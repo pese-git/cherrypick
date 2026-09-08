@@ -13,16 +13,19 @@ each rule flags, with which severity and which quick fix, is unchanged.
 - Rules are disabled under `plugins: cherrypick_lint: diagnostics:` instead of
   `custom_lint: rules:`.
 - Ignore comments take the plugin prefix: `// ignore: cherrypick_lint/<rule>`.
-- Requires Dart >=3.11.0 (Flutter >=3.41), up from >=3.9.0.
+- Requires Dart >=3.10.0 (Flutter >=3.38), up from >=3.9.0 — that is the
+  release which introduced analyzer plugins.
 - Tests moved to `analyzer_testing` unit tests; the `// expect_lint` fixture
   package became a plain installation example.
 
 See the "Migration from 0.x" section of the README for the before/after table.
 
 Why: `custom_lint`'s repository is archived and its author no longer has
-publishing rights, recommending `analysis_server_plugin` instead. Verified
-against `analysis_server_plugin` 0.3.22, `analyzer` 14.3.0 and
-`analyzer_plugin` 0.14.16 on Dart 3.11.5 (Flutter 3.41.7).
+publishing rights, recommending `analysis_server_plugin` instead.
+
+Verified from the same sources on both supported SDKs: `analysis_server_plugin`
+0.3.14 / `analyzer` 12.1.0 on Dart 3.10.0 (Flutter 3.38.1), and 0.3.22 /
+`analyzer` 14.3.0 on Dart 3.11.5 (Flutter 3.41.7).
 
 ## 0.1.0
 
