@@ -12,7 +12,7 @@ A collection of external resources for CherryPick.
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator) — code generation
 - [cherrypick_flutter](https://pub.dev/packages/cherrypick_flutter) — Flutter integration
 - [talker_cherrypick_logger](https://pub.dev/packages/talker_cherrypick_logger) — Talker-based logger for DI events
-- [cherrypick_lint](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) — `custom_lint` IDE plugin for catching API misuse (not yet published to pub.dev)
+- [cherrypick_lint](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) — analyzer plugin for catching API misuse in the IDE and in `dart analyze` (not yet published to pub.dev)
 
 ## Extended guides in the repository
 

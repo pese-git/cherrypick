@@ -26,7 +26,7 @@ CherryPick Workspace is a modular, open-source dependency injection ecosystem fo
   Adds Flutter-native integration, exposing DI scopes and modules to the widget tree through `CherryPickProvider` and enabling dependency management throughout your Flutter app.
 
 - **[`cherrypick_lint`](./cherrypick_lint)**  
-  A [`custom_lint`](https://pub.dev/packages/custom_lint) plugin that catches CherryPick API misuse right in the IDE — missing `await` on scope disposal, invalid annotation usage, and runtime traps — without running `build_runner`.
+  An [analyzer plugin](https://pub.dev/packages/analysis_server_plugin) that catches CherryPick API misuse in the IDE and in `dart analyze` — missing `await` on scope disposal, invalid annotation usage, and runtime traps — without running `build_runner`.
 
 ---
 

@@ -1,8 +1,8 @@
 # cherrypick_lint
 
-A [`custom_lint`](https://pub.dev/packages/custom_lint) plugin that catches
-[CherryPick](https://pub.dev/packages/cherrypick) DI API misuse right in the
-IDE — no `build_runner` required.
+An [analyzer plugin](https://pub.dev/packages/analysis_server_plugin) that
+catches [CherryPick](https://pub.dev/packages/cherrypick) DI API misuse in the
+IDE and in `dart analyze` — no `build_runner` required.
 
 `cherrypick_generator` already validates annotations, but only when you run
 codegen. `cherrypick_lint` surfaces the same class of mistakes (plus a few
@@ -10,21 +10,23 @@ runtime traps `codegen` can't see) as you type.
 
 ## Install
 
-```yaml
-dev_dependencies:
-  custom_lint: ^0.8.1
-  cherrypick_lint: ^0.1.0
-```
+The plugin is **not** a dependency of your project — the analysis server
+resolves it itself. Name it in the top-level `plugins` section of your
+`analysis_options.yaml`:
 
 ```yaml
 # analysis_options.yaml
-analyzer:
-  plugins:
-    - custom_lint
+plugins:
+  cherrypick_lint: ^2.0.0
 ```
 
-Restart your IDE's analysis server (or run `dart run custom_lint`) after adding
-the plugin.
+Then restart the Dart Analysis Server (in VS Code: *Dart: Restart Analysis
+Server*); analyzer plugins are only picked up on start-up. The rules then show
+up both in the IDE and in `dart analyze` / `flutter analyze` — there is no
+separate command to run.
+
+Requires Dart >=3.11 (Flutter >=3.41); analyzer plugins themselves need Dart
+>=3.10.
 
 ## Rules
 
@@ -94,48 +96,84 @@ from, so precomputing a value for it is fine.
 
 ## Disabling a rule
 
+Every rule is enabled by default. Switch one off under the plugin's
+`diagnostics` key:
+
 ```yaml
 # analysis_options.yaml
-custom_lint:
-  rules:
-    - avoid_extends_silent_observer: false
+plugins:
+  cherrypick_lint:
+    version: ^2.0.0
+    diagnostics:
+      avoid_extends_silent_observer: false
+```
+
+A single line or file can be exempted with an ignore comment, using the
+`<plugin>/<rule>` form:
+
+```dart
+// ignore: cherrypick_lint/avoid_unawaited_scope_dispose
+scope.dispose();
 ```
 
 ## Compatibility
 
-Requires Dart >=3.9.0, `custom_lint` / `custom_lint_builder` ^0.8.1 (analyzer
-^8.0.0).
+Requires Dart >=3.11.0 (Flutter >=3.41). Built against
+`analysis_server_plugin` 0.3.22 and `analyzer` 14.3.0.
 
-`custom_lint_builder` pins `analyzer ^8.0.0`, one major behind
-`cherrypick_generator`'s `analyzer ^9.0.0` — the two packages can't share a
-single `analyzer` version. This isn't a temporary gap: the
-[`invertase/dart_custom_lint`](https://github.com/invertase/dart_custom_lint)
-repo is archived, so no `custom_lint_builder` release supporting `analyzer`
-9.x is coming. Since this monorepo doesn't use native pub workspaces (no
-`workspace:` in the root `pubspec.yaml`), each package resolves its own
-dependencies independently and there's no version-solve conflict — but it
-does mean `cherrypick_lint` has to stay on `analyzer` 8.x for as long as it
-depends on `custom_lint`.
+Note that every published `analysis_server_plugin` release pins one exact
+`analyzer` version, so the `analyzer` you actually get follows from whichever
+plugin release the analysis server resolves for your SDK. Since `analyzer`
+>=13.1.0 requires Dart >=3.11, the SDK floor follows from the same constraint.
+
+Versions 0.1.x were built on [`custom_lint`](https://pub.dev/packages/custom_lint),
+whose repository is archived and which its author no longer publishes; see
+[Migration from 0.x](#migration-from-0x) below.
+
+## Migration from 0.x
+
+The rules, their messages, severities and quick fixes are unchanged. Only
+installation changes:
+
+| 0.1.x (`custom_lint`) | 2.0.0 (analyzer plugin) |
+|---|---|
+| `dev_dependencies: custom_lint`, `cherrypick_lint` | no dependency at all |
+| `analyzer: plugins: [custom_lint]` | top-level `plugins: cherrypick_lint: ^2.0.0` |
+| `custom_lint: rules: - <rule>: false` | `plugins: cherrypick_lint: diagnostics: <rule>: false` |
+| `dart run custom_lint` in CI | plain `dart analyze` |
+| `// ignore: <rule>` | `// ignore: cherrypick_lint/<rule>` |
+
+So: drop both `dev_dependencies`, replace the `analyzer: plugins:` block with
+the top-level `plugins:` block above, delete any `dart run custom_lint` step
+from CI, and restart the analysis server.
 
 ## Development
 
-Fixture files exercising every rule live in [`example/lib`](example/lib), each
-using `// expect_lint: <code>` to assert the exact violations expected:
+Every rule is covered by unit tests built on
+[`analyzer_testing`](https://pub.dev/packages/analyzer_testing) — inline
+sources plus `assertDiagnostics`/`assertNoDiagnostics`, no fixture files and
+no subprocess:
 
 ```bash
-cd example
-dart pub get
-dart run custom_lint          # verify every expect_lint is fulfilled
-dart run custom_lint --fix    # try quick fixes against real violations
+dart test
 ```
 
-> **Note:** `dart analyze` on this package or `example/` can intermittently
-> crash with `Bad state: The analysis server crashed unexpectedly` under
-> Dart 3.10.0 (Flutter 3.38.1) — a bug in the SDK's built-in `analyzer_plugin`
-> bridge loading `custom_lint_builder` 0.8.1, not a defect in this plugin's
-> rules. Since `dart_custom_lint` is archived (see [Compatibility](#compatibility)
-> above), there's no upstream fix to wait for. `dart analyze` never surfaces
-> `custom_lint` diagnostics anyway (see [Obtaining the list of lints in the
-> CI](https://github.com/invertase/dart_custom_lint#obtaining-the-list-of-lints-in-the-ci))
-> — use `dart run custom_lint` as shown above instead. The monorepo's
-> `melos.yaml` excludes this package from its `analyze` script accordingly.
+[`example/`](example) is a rule-clean CherryPick setup that doubles as an
+installation demo: its `analysis_options.yaml` enables this plugin by path,
+and `dart analyze` there is expected to stay quiet.
+
+Quick fixes have no automated coverage: `analyzer_testing` has no API for
+testing fixes, and `dart fix` does not apply plugin fixes. Check them by hand
+in the IDE.
+
+> **Note:** after changing this package's dependencies (or the Dart SDK),
+> `dart analyze` in a package that enables the plugin can start failing with
+> `Bad state: The analysis server crashed unexpectedly`. The analysis server
+> caches a synthetic wrapper package per plugin configuration under
+> `~/.dartServer/.plugin_manager/<hash>/` and reuses it after the plugin's
+> dependencies have moved on. Delete the stale directories and the crash goes
+> away:
+>
+> ```bash
+> rm -rf ~/.dartServer/.plugin_manager
+> ```

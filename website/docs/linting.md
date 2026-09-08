@@ -4,9 +4,9 @@ sidebar_position: 5.5
 
 # Linting
 
-[`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) is a
-[`custom_lint`](https://pub.dev/packages/custom_lint) plugin that catches CherryPick API misuse
-right in the IDE — no `build_runner` required. This page shows what each rule catches, with a
+[`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) is an
+[analyzer plugin](https://pub.dev/packages/analysis_server_plugin) that catches CherryPick API
+misuse in the IDE and in `dart analyze` — no `build_runner` required. This page shows what each rule catches, with a
 bad/good example, and how to install and configure it.
 
 > `cherrypick_generator` already validates annotations, but only when you run codegen.
@@ -15,23 +15,20 @@ bad/good example, and how to install and configure it.
 
 ## Install
 
-```yaml
-# pubspec.yaml
-dev_dependencies:
-  custom_lint: ^0.8.1
-  cherrypick_lint: ^0.1.0
-```
+The plugin is not a dependency of your project — the analysis server resolves it itself.
+Name it in the top-level `plugins` section of `analysis_options.yaml`:
 
 ```yaml
 # analysis_options.yaml
-analyzer:
-  plugins:
-    - custom_lint
+plugins:
+  cherrypick_lint: ^2.0.0
 ```
 
-Restart your IDE's analysis server (or run `dart run custom_lint`) after adding the plugin.
-`dart analyze` never surfaces `custom_lint` diagnostics — use `dart run custom_lint` to see them
-from the command line (e.g. in CI).
+Requires Dart >=3.11 (Flutter >=3.41).
+
+Restart the Dart Analysis Server afterwards (in VS Code: *Dart: Restart Analysis Server*) —
+analyzer plugins are only picked up on start-up. The rules then appear both in the IDE and in
+`dart analyze` / `flutter analyze`, so CI needs no extra step.
 
 ## await-rules
 
@@ -236,9 +233,18 @@ bind<Api>().toProvide(() => ApiMock());
 
 ```yaml
 # analysis_options.yaml
-custom_lint:
-  rules:
-    - avoid_extends_silent_observer: false
+plugins:
+  cherrypick_lint:
+    version: ^2.0.0
+    diagnostics:
+      avoid_extends_silent_observer: false
+```
+
+A single line or file can be exempted with an ignore comment, using the `<plugin>/<rule>` form:
+
+```dart
+// ignore: cherrypick_lint/avoid_unawaited_scope_dispose
+scope.dispose();
 ```
 
 ## References

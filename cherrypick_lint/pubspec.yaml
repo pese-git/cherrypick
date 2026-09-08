@@ -3,7 +3,7 @@ description: >
   Analyzer plugin that catches CherryPick DI API misuse right in the IDE and
   in dart analyze: missing await on scope disposal, misused annotations, and
   runtime traps.
-version: 0.1.0
+version: 2.0.0
 homepage: https://cherrypick-di.netlify.app
 documentation: https://cherrypick-di.netlify.app/docs/intro
 repository: https://github.com/pese-git/cherrypick/cherrypick_lint
@@ -22,12 +22,14 @@ environment:
   sdk: ">=3.11.0 <4.0.0"
 
 dependencies:
-  # Exact versions, mirroring how analysis_server_plugin itself pins analyzer:
-  # every published release pins one exact analyzer version, so a range here
-  # would only resolve to whatever that pin allows anyway.
-  analysis_server_plugin: 0.3.22
-  analyzer: 14.3.0
-  analyzer_plugin: 0.14.16
+  # Every published analysis_server_plugin release pins one exact analyzer
+  # version, so in practice the resolved analyzer follows from whichever
+  # analysis_server_plugin the analysis server picks. These ranges are
+  # deliberately caret-wide anyway: pinning exactly would block the server
+  # from resolving a newer compatible plugin release for the user's SDK.
+  analysis_server_plugin: ^0.3.22
+  analyzer: ^14.3.0
+  analyzer_plugin: ^0.14.16
 
 dev_dependencies:
   analyzer_testing: ^0.4.1

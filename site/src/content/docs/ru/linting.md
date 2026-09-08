@@ -4,8 +4,8 @@ description: Ловите неверное использование API Cherry
 ---
 
 [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) — это плагин
-[`custom_lint`](https://pub.dev/packages/custom_lint), который подсвечивает неверное использование
-API CherryPick прямо в IDE — без `build_runner`. На этой странице показано, что ловит каждое
+[анализатора](https://pub.dev/packages/analysis_server_plugin), который подсвечивает неверное
+использование API CherryPick в IDE и в `dart analyze` — без `build_runner`. На этой странице показано, что ловит каждое
 правило (пример «плохо → хорошо»), и как подключить и настроить плагин.
 
 > `cherrypick_generator` уже валидирует аннотации, но только при запуске кодогена.
@@ -14,23 +14,20 @@ API CherryPick прямо в IDE — без `build_runner`. На этой стр
 
 ## Установка
 
-```yaml
-# pubspec.yaml
-dev_dependencies:
-  custom_lint: ^0.8.1
-  cherrypick_lint: ^0.1.0
-```
+Плагин не является зависимостью проекта — analysis server резолвит его сам.
+Достаточно назвать его в top-level секции `plugins` файла `analysis_options.yaml`:
 
 ```yaml
 # analysis_options.yaml
-analyzer:
-  plugins:
-    - custom_lint
+plugins:
+  cherrypick_lint: ^2.0.0
 ```
 
-После добавления плагина перезапустите analysis server вашей IDE (или выполните
-`dart run custom_lint`). `dart analyze` никогда не показывает диагностики `custom_lint` —
-используйте `dart run custom_lint`, чтобы увидеть их из командной строки (например, в CI).
+Требуется Dart >=3.11 (Flutter >=3.41).
+
+После этого перезапустите Dart Analysis Server (в VS Code: *Dart: Restart Analysis Server*) —
+плагины анализатора подхватываются только при старте. Дальше правила видны и в IDE, и в
+`dart analyze` / `flutter analyze`, так что отдельного шага в CI не нужно.
 
 ## await-rules
 
@@ -236,9 +233,18 @@ bind<Api>().toProvide(() => ApiMock());
 
 ```yaml
 # analysis_options.yaml
-custom_lint:
-  rules:
-    - avoid_extends_silent_observer: false
+plugins:
+  cherrypick_lint:
+    version: ^2.0.0
+    diagnostics:
+      avoid_extends_silent_observer: false
+```
+
+Отдельную строку или файл можно исключить комментарием в форме `<плагин>/<правило>`:
+
+```dart
+// ignore: cherrypick_lint/avoid_unawaited_scope_dispose
+scope.dispose();
 ```
 
 ## Ссылки

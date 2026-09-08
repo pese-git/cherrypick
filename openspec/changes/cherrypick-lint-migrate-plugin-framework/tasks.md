@@ -71,8 +71,18 @@
 
 ## 6. Документация и релиз
 
-- [ ] 6.1 Обновить `cherrypick_lint/README.md`: способ установки (`plugins:` в `analysis_options.yaml`, не `dev_dependency`), раздел «Disabling a rule» (`plugins: cherrypick_lint: diagnostics:` вместо `custom_lint: rules:`), убрать раздел про краш `dart analyze`/обходной путь
-- [ ] 6.2 Обновить `cherrypick_lint/CHANGELOG.md` — мажорный релиз, явный раздел "Migration from 0.x"
-- [ ] 6.3 Обновить `doc/lint_{en,ru}.md` и `linting.md` на обеих площадках (`site/`, `website/`, en+ru) — новый способ подключения
-- [ ] 6.4 Собрать обе документационные площадки (`site/`, `website/`) локально, убедиться, что ничего не сломано
-- [ ] 6.5 Проверить совместимость с актуальной версией `analysis_server_plugin`/`analyzer` перед публикацией, зафиксировать в `CHANGELOG.md`
+- [x] 6.1 Обновить `cherrypick_lint/README.md`: способ установки (`plugins:` в `analysis_options.yaml`, не `dev_dependency`), раздел «Disabling a rule» (`plugins: cherrypick_lint: diagnostics:` вместо `custom_lint: rules:`), убрать раздел про краш `dart analyze`/обходной путь
+      Раздел про краш заменён на заметку о настоящей причине — устаревшем кэше в
+      `~/.dartServer/.plugin_manager` — с командой очистки. Добавлены разделы
+      Compatibility и «Migration from 0.x» с таблицей до/после.
+- [x] 6.2 Обновить `cherrypick_lint/CHANGELOG.md` — мажорный релиз, явный раздел "Migration from 0.x"
+- [x] 6.3 Обновить `doc/lint_{en,ru}.md` и `linting.md` на обеих площадках (`site/`, `website/`, en+ru) — новый способ подключения
+      Плюс упоминания «плагин custom_lint» в корневом `README.md`, `cherrypick/README.md`,
+      `additional-modules.md` и `documentation-links.md` на обеих площадках (en+ru).
+- [x] 6.4 Собрать обе документационные площадки (`site/`, `website/`) локально, убедиться, что ничего не сломано
+      `site`: 115 страниц, сборка чистая. `website`: en+ru собрались чисто, но
+      Docusaurus по `yarn.lock` требует yarn, которого нет на машине — сборка
+      прогонялась через npm, временно спрятав `yarn.lock`.
+- [x] 6.5 Проверить совместимость с актуальной версией `analysis_server_plugin`/`analyzer` перед публикацией, зафиксировать в `CHANGELOG.md`
+      Версии зафиксированы в CHANGELOG. `dart pub publish --dry-run` проходит;
+      по его замечанию точные пины заменены на каретки.
