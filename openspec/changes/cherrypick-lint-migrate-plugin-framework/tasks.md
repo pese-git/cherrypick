@@ -4,7 +4,12 @@
       Итог: все версии пинуют `analyzer` точно; под запиненным Dart 3.10.0 максимум —
       0.3.14/`analyzer` 12.1.0 (под Dart 3.11.5 было бы 0.3.22/14.3.0). Решено остаться
       на Dart 3.10.0, см. Decisions в design.md.
-- [ ] 1.2 Поднять минимальный скелет плагина (`lib/main.dart`, `Plugin`, один самый простой перенесённый rule — например `avoid_unawaited_scope_dispose`) и проверить в реальном IDE + `dart analyze` на Dart 3.10.0 (Flutter 3.38.1), что краш `custom_lint_builder` не воспроизводится
+- [x] 1.2 Поднять минимальный скелет плагина (`lib/main.dart`, `Plugin`, один самый простой перенесённый rule — например `avoid_unawaited_scope_dispose`) и проверить в реальном IDE + `dart analyze` на Dart 3.10.0 (Flutter 3.38.1), что краш `custom_lint_builder` не воспроизводится
+      Итог: `dart analyze` на Dart 3.10.0 показывает диагностику плагина и не крашится —
+      проверено и на отдельном пакете-потребителе, и на `example/`, где правило сработало
+      ровно там, где старые фикстуры ждали `// expect_lint: avoid_unawaited_scope_dispose`.
+      Проверку в IDE нужно сделать глазами (перезапустив Dart Analysis Server) — из CLI
+      она недоступна.
 - [x] 1.3 Определить, как выставляется severity, эквивалентная нынешнему `errorSeverity: ErrorSeverity.WARNING/ERROR`, в `LintCode`/`AnalysisRule` этой версии `analysis_server_plugin`
       Итог: параметр `severity:` конструктора `LintCode`, тип `DiagnosticSeverity`,
       дефолт `INFO` — задавать явно в каждом правиле.

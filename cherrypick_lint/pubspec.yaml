@@ -1,7 +1,8 @@
 name: cherrypick_lint
 description: >
-  custom_lint plugin that catches CherryPick DI API misuse right in the IDE:
-  missing await on scope disposal, misused annotations, and runtime traps.
+  Analyzer plugin that catches CherryPick DI API misuse right in the IDE and
+  in dart analyze: missing await on scope disposal, misused annotations, and
+  runtime traps.
 version: 0.1.0
 homepage: https://cherrypick-di.netlify.app
 documentation: https://cherrypick-di.netlify.app/docs/intro
@@ -18,10 +19,17 @@ environment:
   sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
-  analyzer: ^8.0.0
-  custom_lint_builder: ^0.8.1
+  # Exact versions, mirroring how analysis_server_plugin itself pins analyzer:
+  # every published analysis_server_plugin release pins one exact analyzer
+  # version, and analyzer >=13.1.0 requires Dart >=3.11 — 0.3.14/12.1.0 is the
+  # newest pair resolvable under this repo's pinned Dart 3.10.0 (Flutter
+  # 3.38.1). See openspec/changes/cherrypick-lint-migrate-plugin-framework.
+  analysis_server_plugin: 0.3.14
+  analyzer: 12.1.0
+  analyzer_plugin: 0.14.8
 
 dev_dependencies:
-  custom_lint: ^0.8.1
+  analyzer_testing: ^0.2.5
   lints: ^6.0.0
   test: ^1.25.8
+  test_reflective_loader: ^0.4.0

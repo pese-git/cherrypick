@@ -1,39 +1,48 @@
+import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
+import 'package:analysis_server_plugin/edit/dart/dart_fix_kind_priority.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/error/error.dart' hide LintCode;
-import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
+import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 
 /// Inserts `await ` before the call expression that triggered the
 /// diagnostic. Shared by every await-rule (`avoid_unawaited_*`), since the
 /// fix is identical regardless of which one fired.
-class AddAwaitFix extends DartFix {
+class AddAwaitFix extends CorrectionProducerWithDiagnostic {
+  static const _addAwaitKind = FixKind(
+    'cherrypick_lint.fix.addAwait',
+    DartFixKindPriority.standard,
+    'Add await',
+  );
+
+  AddAwaitFix({required super.context});
+
   @override
-  void run(
-    CustomLintResolver resolver,
-    ChangeReporter reporter,
-    CustomLintContext context,
-    AnalysisError analysisError,
-    List<AnalysisError> others,
-  ) {
-    context.registry.addMethodInvocation((node) {
-      // Match the exact flagged node — not merely any invocation whose
-      // range contains it (e.g. an outer `Future.wait(...)` call around
-      // the flagged argument), which used to cause the fix to also insert
-      // `await` around the outer call.
-      if (node.sourceRange != analysisError.sourceRange) return;
+  CorrectionApplicability get applicability =>
+      CorrectionApplicability.singleLocation;
 
-      // `await` is only valid inside an async function/method/closure body.
-      // Without this guard the fix would offer to insert `await` into sync
-      // code, turning it into a compile error.
-      final body = node.thisOrAncestorOfType<FunctionBody>();
-      if (body == null || !body.isAsynchronous) return;
+  @override
+  FixKind get fixKind => _addAwaitKind;
 
-      final changeBuilder = reporter.createChangeBuilder(
-        message: 'Add await',
-        priority: 10,
-      );
-      changeBuilder.addDartFileEdit((builder) {
-        builder.addSimpleInsertion(node.offset, 'await ');
-      });
+  @override
+  Future<void> compute(ChangeBuilder builder) async {
+    // `node` is the node covering the reported range; only act when that is
+    // exactly the flagged invocation, so an enclosing call (e.g. a
+    // `Future.wait(...)` around the flagged argument) never gets the await.
+    final invocation = node;
+    if (invocation is! MethodInvocation) return;
+    if (invocation.offset != diagnostic.offset ||
+        invocation.length != diagnostic.length) {
+      return;
+    }
+
+    // `await` is only valid inside an async function/method/closure body.
+    // Without this guard the fix would offer to insert `await` into sync
+    // code, turning it into a compile error.
+    final body = invocation.thisOrAncestorOfType<FunctionBody>();
+    if (body == null || !body.isAsynchronous) return;
+
+    await builder.addDartFileEdit(file, (builder) {
+      builder.addSimpleInsertion(invocation.offset, 'await ');
     });
   }
 }
