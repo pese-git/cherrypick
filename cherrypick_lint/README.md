@@ -106,6 +106,17 @@ custom_lint:
 Requires Dart >=3.9.0, `custom_lint` / `custom_lint_builder` ^0.8.1 (analyzer
 ^8.0.0).
 
+`custom_lint_builder` pins `analyzer ^8.0.0`, one major behind
+`cherrypick_generator`'s `analyzer ^9.0.0` — the two packages can't share a
+single `analyzer` version. This isn't a temporary gap: the
+[`invertase/dart_custom_lint`](https://github.com/invertase/dart_custom_lint)
+repo is archived, so no `custom_lint_builder` release supporting `analyzer`
+9.x is coming. Since this monorepo doesn't use native pub workspaces (no
+`workspace:` in the root `pubspec.yaml`), each package resolves its own
+dependencies independently and there's no version-solve conflict — but it
+does mean `cherrypick_lint` has to stay on `analyzer` 8.x for as long as it
+depends on `custom_lint`.
+
 ## Development
 
 Fixture files exercising every rule live in [`example/lib`](example/lib), each
@@ -122,8 +133,9 @@ dart run custom_lint --fix    # try quick fixes against real violations
 > crash with `Bad state: The analysis server crashed unexpectedly` under
 > Dart 3.10.0 (Flutter 3.38.1) — a bug in the SDK's built-in `analyzer_plugin`
 > bridge loading `custom_lint_builder` 0.8.1, not a defect in this plugin's
-> rules. `dart analyze` never surfaces `custom_lint` diagnostics anyway (see
-> [Obtaining the list of lints in the
+> rules. Since `dart_custom_lint` is archived (see [Compatibility](#compatibility)
+> above), there's no upstream fix to wait for. `dart analyze` never surfaces
+> `custom_lint` diagnostics anyway (see [Obtaining the list of lints in the
 > CI](https://github.com/invertase/dart_custom_lint#obtaining-the-list-of-lints-in-the-ci))
 > — use `dart run custom_lint` as shown above instead. The monorepo's
 > `melos.yaml` excludes this package from its `analyze` script accordingly.
