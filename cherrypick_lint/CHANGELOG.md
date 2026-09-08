@@ -12,3 +12,7 @@
   intentional), `avoid_resolve_in_to_instance` (no quick fix — flags
   `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` inside
   `.toInstance(...)`/`.toInstanceAsync(...)`, a documented runtime crash risk).
+- Fix: `avoid_extends_silent_observer` and the three await-rules never set
+  `errorSeverity` explicitly, so they silently reported as `info` instead of
+  the documented `warning`. All four now set `errorSeverity:
+  ErrorSeverity.WARNING`.

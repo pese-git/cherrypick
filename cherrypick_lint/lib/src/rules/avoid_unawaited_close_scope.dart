@@ -1,3 +1,4 @@
+import 'package:analyzer/error/error.dart' hide LintCode;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
@@ -13,6 +14,7 @@ class AvoidUnawaitedCloseScope extends DartLintRule {
     problemMessage: 'Missing await on CherryPick.closeScope().',
     correctionMessage:
         'Add await, or wrap the call in unawaited() if this is intentional.',
+    errorSeverity: ErrorSeverity.WARNING,
   );
 
   @override

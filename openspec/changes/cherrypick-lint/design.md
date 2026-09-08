@@ -93,6 +93,8 @@ cherrypick_lint/
 
 Правило `avoid_resolve_in_to_instance` добавлено тем же путём — по итогам вопроса про смешивание `.toInstance(scope.resolve<T>())` с `.toProvide(...)`. Это уже документированный в `Binding.toInstance()` рантайм-риск: `toInstance`-биндинги в `Module.builder` применяются последовательно, поэтому `resolve`/`resolveAsync`/`tryResolve`/`tryResolveAsync`, вызванные для построения значения, могут упасть с `Can't resolve dependency ...`, если резолвимый тип регистрируется позже в том же builder'е. В отличие от singleton-правил, здесь нет «иногда это нормально» — поэтому severity `warning`, а не `info`, и quick fix не добавлен: правильный фикс (перенос в `.toProvide(...)` или ручная сборка цепочки зависимостей) зависит от конкретного кода.
 
+При реализации этого правила также обнаружилось, что `avoid_extends_silent_observer` и все три await-правила никогда явно не задавали `errorSeverity` в своём `LintCode`, из-за чего фактически репортились как `info`, а не задокументированный `warning`. Это исправлено — все четыре теперь явно задают `errorSeverity: ErrorSeverity.WARNING`.
+
 ## Зависимости
 
 ```yaml
