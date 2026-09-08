@@ -32,7 +32,7 @@ class AvoidPrecomputedValueInProvide extends DartLintRule {
     problemMessage:
         'This provider closure just returns a value computed outside of '
         'it instead of constructing one — the value was built once, at '
-        "Module.builder() time, so every resolve<T>() silently returns "
+        'Module.builder() time, so every resolve<T>() silently returns '
         "the same instance, bypassing .singleton()'s explicit opt-in.",
     correctionMessage:
         'Construct the value inside the closure, e.g. '
