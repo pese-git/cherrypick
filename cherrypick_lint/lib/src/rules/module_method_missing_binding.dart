@@ -7,14 +7,25 @@ import 'package:analyzer/error/error.dart';
 
 import '../utils.dart';
 
-/// Flags a public method in a `@module` class that has neither `@provide`
-/// nor `@instance` — the generator has no binding annotation to work with.
+/// Flags a method in a `@module` class that has neither `@provide` nor
+/// `@instance` — the generator has no binding annotation to work with.
+///
+/// Visibility and `static` make no difference: `GeneratedClass` collects
+/// `ClassElement.methods` filtered only by `!isAbstract`, and every one of
+/// them goes through `AnnotationValidator.validateMethodAnnotations`, which
+/// throws on a method that carries neither annotation. So a private helper or
+/// a static utility inside a `@module` class fails the build exactly like a
+/// public one. Getters and setters are not in `ClassElement.methods` and are
+/// therefore never validated.
 class ModuleMethodMissingBinding extends AnalysisRule {
   static const LintCode code = LintCode(
     'module_method_missing_binding',
-    'Public methods in a @module class must be annotated with @provide '
-        'or @instance.',
-    correctionMessage: 'Add @provide() or @instance() to this method.',
+    'Methods in a @module class must be annotated with @provide or '
+        '@instance — codegen validates every non-abstract method, private '
+        'and static ones included.',
+    correctionMessage:
+        'Add @provide() or @instance() to this method, or move it out of the '
+        '@module class.',
     severity: DiagnosticSeverity.ERROR,
   );
 
@@ -22,7 +33,7 @@ class ModuleMethodMissingBinding extends AnalysisRule {
     : super(
         name: 'module_method_missing_binding',
         description:
-            'Annotate every public method of a @module class with @provide or '
+            'Annotate every method of a @module class with @provide or '
             '@instance.',
       );
 
@@ -45,8 +56,10 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    if (node.isGetter || node.isSetter || node.isOperator) return;
-    if (node.name.lexeme.startsWith('_')) return;
+    // Only accessors are exempt: they live in `ClassElement.getters`/
+    // `.setters`, which codegen never looks at. Operators, private and
+    // static methods all reach the validator.
+    if (node.isGetter || node.isSetter) return;
 
     final classNode = node.thisOrAncestorOfType<ClassDeclaration>();
     final classElement = classNode?.declaredFragment?.element;
