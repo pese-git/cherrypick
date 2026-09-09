@@ -17,7 +17,7 @@ resolves it itself. Name it in the top-level `plugins` section of your
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.0.0
+  cherrypick_lint: ^1.1.0
 ```
 
 Then restart the Dart Analysis Server (in VS Code: *Dart: Restart Analysis
@@ -45,11 +45,46 @@ fire-and-forget and doesn't trigger these rules.
 
 | Rule | Triggers on | Quick fix |
 |---|---|---|
+| `module_requires_part_directive` | a `@module` library without `part '<file>.module.cherrypick.g.dart';` | Add the generated part directive |
+| `module_must_extend_module` | `@module` class without `Module` in its supertype chain | — |
 | `module_must_be_abstract` | `@module` on a non-`abstract` class | Make class abstract |
-| `module_method_missing_binding` | public method in a `@module` class without `@provide`/`@instance` | — |
+| `module_method_missing_binding` | a method in a `@module` class without `@provide`/`@instance` — private and `static` included | — |
 | `inject_field_must_be_late_final` | `@inject` field not declared `late final` | Add late final |
 | `named_value_must_not_be_empty` | `@named('')` | — |
 | `params_requires_provide` | `@params` without `@provide` | — |
+
+`module_requires_part_directive` covers the one requirement whose failure is
+silent: `moduleBuilder` is a `PartBuilder`, so without the part directive
+`build_runner` finishes successfully having written nothing, saying so only
+through a log warning.
+
+`module_must_extend_module` covers the other hard requirement. The generated
+part is `final class $Foo extends Foo`, whose `builder()` body is a list of
+`bind<T>()` calls; both members come from `Module`, so a `@module` class that
+doesn't extend it gets a part that can't compile — and the generator itself
+reports nothing, since it writes the file happily.
+
+`abstract`, by contrast, is not something the generator checks: it collects the
+non-abstract methods and emits `final class $Foo extends Foo` either way. A
+concrete `@module` class is still a dead end, which is why the rule stays an
+`error` — `Module.builder` is abstract, so without an override Dart rejects the
+class (`non_abstract_class_inherits_abstract_member`), and with one the
+generator's validator rejects `builder` itself as a method carrying neither
+`@provide` nor `@instance`.
+
+That same validator is why `module_method_missing_binding` ignores neither
+private nor `static` methods: `GeneratedClass` collects `ClassElement.methods`
+filtered only by `!isAbstract`, and every one of them must carry `@provide` or
+`@instance` or the build fails. Getters and setters are the only exemption —
+they live in `ClassElement.getters`/`.setters`, which codegen never reads.
+
+An abstract method inside a `@module` class is a different problem the rule
+does not yet describe well: codegen skips it, but the generated
+`final class $Foo extends Foo` then leaves it unimplemented, so the part
+doesn't compile — and annotating it doesn't help (with `@provide` the binding
+is silently dropped and `builder()` comes out empty). The rule still reports
+such a method; the fix is to give it a body or move it out of the module
+class, not to add an annotation.
 
 ### runtime-trap-rules — footguns `codegen` can't see
 
@@ -103,7 +138,7 @@ Every rule is enabled by default. Switch one off under the plugin's
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.0.0
+    version: ^1.1.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```

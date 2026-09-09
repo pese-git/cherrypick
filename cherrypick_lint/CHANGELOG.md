@@ -1,3 +1,33 @@
+## 1.1.0
+
+Two new rules for the `@module` requirements that codegen actually enforces,
+and a correction to two existing ones. Verified by running
+`cherrypick_generator`'s `moduleBuilder` through `build_test` on each case.
+
+- **New** `module_requires_part_directive` (`error`, quick fix "Add the
+  generated part directive"): a `@module` library must declare
+  `part '<file>.module.cherrypick.g.dart';`. `moduleBuilder` is a
+  `PartBuilder`, so without it the build succeeds having written nothing and
+  warns only in the `build_runner` log.
+- **New** `module_must_extend_module` (`error`, no quick fix): a `@module`
+  class must have `Module` in its supertype chain. The generated part is
+  `final class $Foo extends Foo` whose `builder()` body calls `bind<T>()` —
+  both come from `Module` — so codegen emits a part that cannot compile, and
+  reports nothing itself.
+- `module_method_missing_binding` no longer skips private methods, and now
+  covers `static` methods and operators. `GeneratedClass` collects
+  `ClassElement.methods` filtered only by `!isAbstract`, without a visibility
+  check, so `String _helper() => 'x';` inside a `@module` class fails the build
+  exactly like a public method would. Getters and setters stay exempt: they are
+  not part of `ClassElement.methods`. This means the rule reports on code it
+  previously accepted.
+- `module_must_be_abstract` keeps its `error` severity, but its message and
+  documentation no longer claim the generator requires the modifier — it
+  doesn't. The reason a concrete `@module` class still cannot work is that
+  `Module.builder` is abstract: without an override Dart rejects the class,
+  and with one the generator's validator rejects `builder` as a method carrying
+  neither `@provide` nor `@instance`.
+
 ## 1.0.0
 
 **BREAKING**: the plugin now runs on the official

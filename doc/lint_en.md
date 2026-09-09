@@ -18,7 +18,7 @@ Name it in the top-level `plugins` section of `analysis_options.yaml`:
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.0.0
+  cherrypick_lint: ^1.1.0
 ```
 
 Requires Dart >=3.10 (Flutter >=3.38).
@@ -72,19 +72,70 @@ await scope.dispose();
 The same class of mistakes `cherrypick_generator`'s `AnnotationValidator` throws on at build
 time — caught in the IDE instead, before you run the generator.
 
-### `module_must_be_abstract`
+### `module_requires_part_directive`
+
+`moduleBuilder` is a `PartBuilder`, so the part directive is what the generated
+class is written into. Without it the build still succeeds and produces
+nothing, warning only in the `build_runner` log.
 
 ```dart
-// ❌ module_must_be_abstract
+// ❌ module_requires_part_directive — codegen writes nothing
 @module()
-class AppModule {
+abstract class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+
+// ✅
+part 'app_module.module.cherrypick.g.dart';
+
+@module()
+abstract class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+```
+
+### `module_must_extend_module`
+
+The generated part is `final class $AppModule extends AppModule`, whose
+`builder()` body is made of `bind<T>()` calls — both members come from
+`Module`, so codegen emits a part that cannot compile.
+
+```dart
+// ❌ module_must_extend_module — generated part won't compile
+@module()
+abstract class AppModule {
   @provide()
   Api api() => Api();
 }
 
 // ✅
 @module()
-abstract class AppModule {
+abstract class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+```
+
+### `module_must_be_abstract`
+
+The generator doesn't check the modifier itself, but a concrete `@module` class
+is a dead end either way: `Module.builder` is abstract, so without an override
+Dart rejects the class, and with one the generator rejects `builder` as a
+method carrying neither `@provide` nor `@instance`.
+
+```dart
+// ❌ module_must_be_abstract
+@module()
+class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+
+// ✅
+@module()
+abstract class AppModule extends Module {
   @provide()
   Api api() => Api();
 }
@@ -92,11 +143,18 @@ abstract class AppModule {
 
 ### `module_method_missing_binding`
 
+Codegen validates every non-abstract method of the class — private and
+`static` ones included. Only getters and setters are exempt, since they are not
+part of `ClassElement.methods`.
+
 ```dart
 @module()
-abstract class AppModule {
+abstract class AppModule extends Module {
   // ❌ module_method_missing_binding — no @provide/@instance
   Api api() => Api();
+
+  // ❌ module_method_missing_binding — private methods are validated too
+  String _token() => 'secret';
 
   // ✅
   @provide()
@@ -240,7 +298,7 @@ bind<Api>().toProvide(() => ApiMock());
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.0.0
+    version: ^1.1.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```

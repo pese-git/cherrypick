@@ -21,7 +21,7 @@ sidebar_position: 5.5
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.0.0
+  cherrypick_lint: ^1.1.0
 ```
 
 Требуется Dart >=3.10 (Flutter >=3.38).
@@ -71,19 +71,71 @@ await scope.dispose();
 Те же классы ошибок, на которых `AnnotationValidator` генератора бросает исключение во время
 сборки — только теперь они видны в IDE ещё до запуска генератора.
 
-### `module_must_be_abstract`
+### `module_requires_part_directive`
+
+`moduleBuilder` — это `PartBuilder`, и part-директива задаёт файл, в который
+пишется сгенерированный класс. Без неё сборка проходит успешно и не создаёт
+ничего, предупредив лишь в логе `build_runner`.
 
 ```dart
-// ❌ module_must_be_abstract
+// ❌ module_requires_part_directive — кодогенерация ничего не пишет
 @module()
-class AppModule {
+abstract class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+
+// ✅
+part 'app_module.module.cherrypick.g.dart';
+
+@module()
+abstract class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+```
+
+### `module_must_extend_module`
+
+Генерируемый part — это `final class $AppModule extends AppModule`, тело
+`builder()` в нём состоит из вызовов `bind<T>()`. Оба члена объявлены в
+`Module`, поэтому без наследования генератор выдаёт part, который не
+компилируется.
+
+```dart
+// ❌ module_must_extend_module — сгенерированный part не скомпилируется
+@module()
+abstract class AppModule {
   @provide()
   Api api() => Api();
 }
 
 // ✅
 @module()
-abstract class AppModule {
+abstract class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+```
+
+### `module_must_be_abstract`
+
+Сам генератор модификатор не проверяет, но конкретный `@module`-класс тупиковый
+в любом случае: `Module.builder` абстрактный, поэтому без переопределения класс
+отвергает Dart, а с переопределением генератор отвергает `builder` как метод
+без `@provide` и `@instance`.
+
+```dart
+// ❌ module_must_be_abstract
+@module()
+class AppModule extends Module {
+  @provide()
+  Api api() => Api();
+}
+
+// ✅
+@module()
+abstract class AppModule extends Module {
   @provide()
   Api api() => Api();
 }
@@ -91,11 +143,18 @@ abstract class AppModule {
 
 ### `module_method_missing_binding`
 
+Кодогенерация валидирует каждый неабстрактный метод класса, включая приватные и
+`static`. Исключение — только геттеры и сеттеры: они не входят в
+`ClassElement.methods`.
+
 ```dart
 @module()
-abstract class AppModule {
+abstract class AppModule extends Module {
   // ❌ module_method_missing_binding — нет @provide/@instance
   Api api() => Api();
+
+  // ❌ module_method_missing_binding — приватные тоже валидируются
+  String _token() => 'secret';
 
   // ✅
   @provide()
@@ -236,7 +295,7 @@ bind<Api>().toProvide(() => ApiMock());
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.0.0
+    version: ^1.1.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```
