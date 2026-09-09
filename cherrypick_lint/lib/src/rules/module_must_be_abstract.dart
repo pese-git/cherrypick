@@ -9,12 +9,23 @@ import '../utils.dart';
 
 /// Flags a `@module` class that isn't declared `abstract`.
 ///
-/// The generator emits a concrete `final class $Foo extends Foo`; if `Foo`
-/// isn't abstract, the generated code may fail to compile or misbehave.
+/// The generator itself doesn't require `abstract` — it collects the
+/// non-abstract methods and emits `final class $Foo extends Foo` either way.
+/// A concrete `@module` class is nevertheless a dead end, because
+/// `Module.builder` is abstract:
+/// - without a `builder` override, Dart rejects the class itself
+///   (`non_abstract_class_inherits_abstract_member`);
+/// - with one, `builder` is a non-abstract method carrying neither `@provide`
+///   nor `@instance`, so the generator's own validator fails the build on it
+///   ('Method must be marked with either @instance or @provide annotation').
+///
+/// So `abstract` is the only shape that works, and it stays an `error`.
 class ModuleMustBeAbstract extends AnalysisRule {
   static const LintCode code = LintCode(
     'module_must_be_abstract',
-    '@module classes must be declared abstract.',
+    '@module classes must be declared abstract: Module.builder is abstract, '
+        'so a concrete module either fails to compile without a builder '
+        'override or fails codegen with one.',
     correctionMessage: 'Add the abstract modifier to this class.',
     severity: DiagnosticSeverity.ERROR,
   );
@@ -23,8 +34,8 @@ class ModuleMustBeAbstract extends AnalysisRule {
     : super(
         name: 'module_must_be_abstract',
         description:
-            'Declare @module classes abstract so the generated subclass is '
-            'valid.',
+            'Declare @module classes abstract — a concrete one cannot both '
+            'satisfy Module.builder and pass codegen.',
       );
 
   @override
