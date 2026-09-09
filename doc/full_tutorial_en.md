@@ -311,7 +311,11 @@ CherryPick supports DI with annotations, letting you eliminate manual DI setup.
 ### Example DI module
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
 
 @module()
 abstract class AppModule extends Module {

@@ -74,8 +74,11 @@ dependencies:
 ### 2. Write a DI Module (with annotations)
 
 ```dart
+// my_module.dart
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 import 'package:cherrypick/cherrypick.dart';
+
+part 'my_module.module.cherrypick.g.dart';
 
 @module()
 abstract class MyModule extends Module {

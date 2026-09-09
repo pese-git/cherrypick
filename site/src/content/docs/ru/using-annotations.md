@@ -54,16 +54,28 @@ class ProfilePage with _\$ProfilePage {
 ## Пример модуля/провайдера
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
+
 @module()
-abstract class AppModule {
-  @singleton
+abstract class AppModule extends Module {
+  @provide()
+  @singleton()
   AuthService provideAuth(Api api) => AuthService(api);
 
+  @provide()
   @named('logging')
-  @provide
-  Future<Logger> provideLogger(@params Map<String, dynamic> args) async => ...;
+  Future<Logger> provideLogger(@params() Map<String, dynamic> args) async => ...;
 }
 ```
+
+Три вещи в этом фрагменте не опциональны: part-директива (генератор — это
+`PartBuilder`, без неё кодогенерация ничего не пишет), `extends Module`
+(сгенерированный part переопределяет `builder()` и вызывает `bind<T>()`) и
+`@provide` либо `@instance` на каждом методе — включая приватные и `static`.
 
 ---
 
@@ -89,7 +101,7 @@ abstract class AppModule {
 - После изменений в DI-коде запускайте build_runner заново.
 - Не редактируйте `.g.dart` вручную.
 - Ошибки некорректных аннотаций определяются автоматически.
-- Подключите [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint), чтобы ловить многие из тех же ошибок прямо в IDE, ещё до запуска генератора.
+- Подключите [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint), чтобы ловить многие из тех же ошибок прямо в IDE, ещё до запуска генератора — отсутствие part-директивы, `@module`-класс без `extends Module` или без `abstract`, метод без `@provide`/`@instance` и другие.
 
 ---
 

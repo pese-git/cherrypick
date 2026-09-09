@@ -64,16 +64,27 @@ class MyWidget with _$MyWidget { // the generated mixin
 ### B. Module Binding (recommended for global app services)
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
+
 @module()
 abstract class AppModule extends Module {
-  @singleton
+  @provide()
+  @singleton()
   AuthService provideAuth(Api api) => AuthService(api);
 
-  @provide
+  @provide()
   @named('logging')
-  Future<Logger> provideLogger(@params Map<String, dynamic> args) async => ...
+  Future<Logger> provideLogger(@params() Map<String, dynamic> args) async => ...
 }
 ```
+
+The `part` directive, `extends Module` and the `@provide`/`@instance` on every
+method are all required: without the first the generator writes nothing, and
+without the others its output doesn't compile.
 
 - Providers can return async(`Future<T>`) or sync.
 - `@singleton` = one instance per scope.
@@ -128,7 +139,7 @@ abstract class AppModule extends Module {
 - Make sure all dependencies are annotated, imports are correct, and run `build_runner` on every code/DI change.
 - Errors in annotation usage (e.g. `@singleton` on non-class/method) will be shown at build time.
 - Use the `.g.dart` files directly—do not edit them by hand.
-- Add [`cherrypick_lint`](../cherrypick_lint) to catch many of the same annotation mistakes (missing `abstract` on `@module`, a method with no `@provide`/`@instance`, an `@inject` field that isn't `late final`, and more) right in the IDE, before you even run the generator.
+- Add [`cherrypick_lint`](../cherrypick_lint) to catch many of the same annotation mistakes (a missing `part` directive, a `@module` class that doesn't extend `Module` or isn't `abstract`, a method with no `@provide`/`@instance` — private and `static` included, an `@inject` field that isn't `late final`, and more) right in the IDE, before you even run the generator.
 
 ---
 

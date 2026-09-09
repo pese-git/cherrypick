@@ -58,16 +58,29 @@ class ProfilePage with _\$ProfilePage {
 ## Module and Provider Example
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
+
 @module()
-abstract class AppModule {
-  @singleton
+abstract class AppModule extends Module {
+  @provide()
+  @singleton()
   AuthService provideAuth(Api api) => AuthService(api);
 
+  @provide()
   @named('logging')
-  @provide
-  Future<Logger> provideLogger(@params Map<String, dynamic> args) async => ...;
+  Future<Logger> provideLogger(@params() Map<String, dynamic> args) async => ...;
 }
 ```
+
+Three things in that snippet are not optional: the `part` directive (the
+generator is a `PartBuilder`, so without it codegen writes nothing),
+`extends Module` (the generated part overrides `builder()` and calls
+`bind<T>()`), and `@provide` or `@instance` on every method — including
+private and `static` ones.
 
 - Mark class as `@module`, write provider methods.
 - Use `@singleton`, `@named`, `@provide`, `@params` to control lifecycle, key names, and parameters.
@@ -120,7 +133,7 @@ abstract class AppModule {
 - After modifying DI-related code, always re-run `build_runner`.
 - Do not manually edit `.g.dart` files—let the generator manage them.
 - Errors in annotation usage (e.g., using `@singleton` on wrong target) are shown at build time.
-- Add [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) to catch many of the same mistakes in the IDE, before you run the generator.
+- Add [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) to catch many of the same mistakes in the IDE, before you run the generator — a missing `part` directive, a `@module` class without `extends Module` or without `abstract`, a method with no `@provide`/`@instance`, and more.
 
 ---
 
