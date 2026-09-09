@@ -1,0 +1,10 @@
+# How a consumer enables cherrypick_lint: a top-level `plugins` section, not
+# `analyzer: plugins:`, and no dev_dependency — the analysis server resolves
+# the plugin package itself. A published consumer would use a version
+# constraint (`cherrypick_lint: ^1.1.0`) instead of this in-repo path.
+plugins:
+  cherrypick_lint:
+    path: ../
+    # Individual rules can be switched off here, e.g.:
+    # diagnostics:
+    #   avoid_singleton_on_provide_with_params: false

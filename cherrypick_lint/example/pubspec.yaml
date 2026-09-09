@@ -1,0 +1,13 @@
+name: cherrypick_lint_example
+description: >
+  A rule-clean CherryPick setup demonstrating how a consumer enables
+  cherrypick_lint (see analysis_options.yaml).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  cherrypick: ^4.0.0-dev.4
+  cherrypick_annotations: ^4.0.0-dev.0

@@ -25,6 +25,9 @@ CherryPick Workspace is a modular, open-source dependency injection ecosystem fo
 - **[`cherrypick_flutter`](./cherrypick_flutter)**  
   Adds Flutter-native integration, exposing DI scopes and modules to the widget tree through `CherryPickProvider` and enabling dependency management throughout your Flutter app.
 
+- **[`cherrypick_lint`](./cherrypick_lint)**  
+  An [analyzer plugin](https://pub.dev/packages/analysis_server_plugin) that catches CherryPick API misuse in the IDE and in `dart analyze` — missing `await` on scope disposal, invalid annotation usage, and runtime traps — without running `build_runner`.
+
 ---
 
 ## Why CherryPick?
@@ -71,8 +74,11 @@ dependencies:
 ### 2. Write a DI Module (with annotations)
 
 ```dart
+// my_module.dart
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
 import 'package:cherrypick/cherrypick.dart';
+
+part 'my_module.module.cherrypick.g.dart';
 
 @module()
 abstract class MyModule extends Module {
@@ -128,6 +134,7 @@ void main() {
 - ✏️ **Runtime parameters for dynamic factory methods**
 - 🏷️ **Code generator** for annotation-based DI setup (`cherrypick_generator`)
 - 🕹️ **Deep Flutter integration** via `CherryPickProvider`
+- 🔍 **IDE lint plugin** (`cherrypick_lint`) catching API misuse as you type
 
 ---
 
@@ -137,6 +144,7 @@ Please see:
 - [`cherrypick/README.md`](./cherrypick/README.md) for core DI features and examples
 - [`cherrypick_flutter/README.md`](./cherrypick_flutter/README.md) for Flutter-specific usage
 - [`cherrypick_annotations/README.md`](./cherrypick_annotations/README.md) and [`cherrypick_generator/README.md`](./cherrypick_generator/README.md) for codegen and annotations
+- [`cherrypick_lint/README.md`](./cherrypick_lint/README.md) for the IDE lint plugin, or the [linting guide](./doc/lint_en.md) for a rule-by-rule walkthrough
 
 ---
 

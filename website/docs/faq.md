@@ -8,3 +8,5 @@ sidebar_position: 7
 
 **A:**
 Yes! Even if none of your services currently implement `Disposable`, always use `await` when closing scopes. If you later add resource cleanup (by implementing `dispose()`), CherryPick will handle it automatically without you needing to change your scope cleanup code. This ensures resource management is future-proof, robust, and covers all application scenarios.
+
+> 💡 [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint) flags a missing `await` on scope disposal calls right in the IDE.

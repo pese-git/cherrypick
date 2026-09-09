@@ -14,3 +14,4 @@ sidebar_position: 1
 - Circular Dependency Detection (Local and Global)
 - Comprehensive logging of dependency injection state and actions
 - Automatic resource cleanup for all registered Disposable dependencies
+- IDE lint plugin (`cherrypick_lint`) catching API misuse as you type
