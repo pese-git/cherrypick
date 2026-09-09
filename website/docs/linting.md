@@ -26,6 +26,20 @@ plugins:
 
 Requires Dart >=3.10 (Flutter >=3.38).
 
+**Not on pub.dev yet.** The version-constraint form above starts working once
+the package is published; until then point the plugin at a local checkout of
+this repository:
+
+```yaml
+# analysis_options.yaml
+plugins:
+  cherrypick_lint:
+    path: /absolute/path/to/cherrypick/cherrypick_lint
+```
+
+A version constraint, a constraint plus a `hosted` server URL, and a path are
+the only forms the `plugins` section accepts.
+
 Restart the Dart Analysis Server afterwards (in VS Code: *Dart: Restart Analysis Server*) —
 analyzer plugins are only picked up on start-up. The rules then appear both in the IDE and in
 `dart analyze` / `flutter analyze`, so CI needs no extra step.

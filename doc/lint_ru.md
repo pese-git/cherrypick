@@ -23,6 +23,19 @@ plugins:
 
 Требуется Dart >=3.10 (Flutter >=3.38).
 
+**Пока не опубликован на pub.dev.** Форма с версионным констрейнтом заработает
+после публикации; до этого укажите плагину путь к локальной копии репозитория:
+
+```yaml
+# analysis_options.yaml
+plugins:
+  cherrypick_lint:
+    path: /absolute/path/to/cherrypick/cherrypick_lint
+```
+
+Секция `plugins` принимает только три формы: версионный констрейнт, констрейнт
+вместе с адресом `hosted`-сервера и путь.
+
 После этого перезапустите Dart Analysis Server (в VS Code: *Dart: Restart Analysis Server*) —
 плагины анализатора подхватываются только при старте. Дальше правила видны и в IDE, и в
 `dart analyze` / `flutter analyze`, так что отдельного шага в CI не нужно.
