@@ -118,10 +118,13 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
             _typedProviders[UniversalService] = provider;
             break;
           case UniversalScenario.named:
-            providers['impl1'] = rp.Provider<UniversalService>(
-                (ref) => UniversalServiceImpl(value: 'impl1'));
-            providers['impl2'] = rp.Provider<UniversalService>(
-                (ref) => UniversalServiceImpl(value: 'impl2'));
+            // Имя строится при регистрации и захватывается константой —
+            // симметрично chain-провайдерам.
+            for (var chain = 1; chain <= chainCount; chain++) {
+              final implName = 'impl$chain';
+              providers[implName] = rp.Provider<UniversalService>(
+                  (ref) => UniversalServiceImpl(value: implName));
+            }
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {

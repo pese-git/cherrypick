@@ -35,8 +35,20 @@ enum UniversalBenchmark {
 const hierarchyUnsupported = {'kiwi', 'yx_scope'};
 
 enum ResolvePhase {
+  /// Один резолв на сэмпл: второй вызов уже кеширован.
   firstResolve,
+
+  /// Пачка из opsPerSample резолвов одного биндинга.
   steadyStateResolve,
+
+  /// Окно первых резолвов: по одному первому резолву каждой из chainCount
+  /// независимых цепочек, таймер на всё окно, деление на chainCount.
+  ///
+  /// Тот же приём, что в steady-state, повёрнутый набок: вместо тысячи
+  /// вызовов одного биндинга — один вызов каждой из ста голов. Второй вызов
+  /// одного биндинга в окне невозможен, поэтому измерение остаётся первым
+  /// резолвом; погрешность кванта таймера делится на размер окна.
+  firstResolveWindow,
 }
 
 /// Maps [UniversalBenchmark] to the scenario enum for DI chains.
@@ -194,9 +206,10 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
     ..addOption('format', abbr: 'f', defaultsTo: 'pretty')
     ..addOption('opsPerSample',
         defaultsTo: '1000',
-        help: 'Сколько резолвов в одном замере фазы steady (first — всегда 1)')
+        help: 'Сколько резолвов в одном замере фазы steady '
+            '(first — 1, window — chainCount)')
     ..addOption('resolvePhase',
-        defaultsTo: 'all', help: 'Resolve phase: first, steady, or all')
+        defaultsTo: 'all', help: 'Resolve phase: first, steady, window, or all')
     ..addOption('di',
         defaultsTo: 'cherrypick',
         help: 'DI implementation: cherrypick, getit or riverpod')
@@ -256,10 +269,11 @@ BenchmarkCliConfig parseBenchmarkCli(List<String> args) {
   final phases = switch (phaseName) {
     'first' => [ResolvePhase.firstResolve],
     'steady' => [ResolvePhase.steadyStateResolve],
-    'all' => ResolvePhase.values,
+    'window' => [ResolvePhase.firstResolveWindow],
+    'all' => [ResolvePhase.firstResolve, ResolvePhase.steadyStateResolve],
     _ => throw BenchmarkCliException(
         'Опция --resolvePhase: неизвестное значение "$phaseName". '
-        'Допустимые: first, steady, all.'),
+        'Допустимые: first, steady, window, all.'),
   };
   return BenchmarkCliConfig(
     benchesToRun: benchesToRun,

@@ -82,8 +82,17 @@ class BenchmarkRunner {
   /// [opsPerSample] действует только в фазе steady-state: там один резолв
   /// стоит десятки наносекунд, и единичный замер тонет в разрешении таймера,
   /// поэтому меряется пачка и делится на её размер. В фазе first-resolve
-  /// пачка невозможна по определению — второй вызов уже попадёт в кеш, —
-  /// поэтому там меряется один вызов, но в тиках (наносекундах).
+  /// пачка вызовов одного биндинга невозможна по определению — второй вызов
+  /// уже попадёт в кеш, — поэтому там меряется один вызов, но в тиках
+  /// (наносекундах).
+  ///
+  /// В фазе first-resolve-window [opsPerSample] не используется: размером
+  /// окна служит [UniversalChainBenchmark.chainCount]. Один замер — это
+  /// по одному первому резолву каждой из chainCount независимых цепочек
+  /// (головы адресуются по имени «chain_nestingDepth»), таймер включается
+  /// на всё окно, результат делится на chainCount. Каждая голова резолвится
+  /// ровно один раз, поэтому измерение остаётся первым резолвом, а шаг
+  /// таймера делится на размер окна.
   static Future<BenchmarkResult> runSync({
     required UniversalChainBenchmark benchmark,
     required int warmups,
@@ -92,7 +101,8 @@ class BenchmarkRunner {
     required int opsPerSample,
   }) async {
     final steady = phase == ResolvePhase.steadyStateResolve;
-    final ops = steady ? opsPerSample : 1;
+    final window = phase == ResolvePhase.firstResolveWindow;
+    final ops = window ? benchmark.chainCount : (steady ? opsPerSample : 1);
     final timings = <double>[];
     final rssValues = <int>[];
 
@@ -100,7 +110,7 @@ class BenchmarkRunner {
       benchmark.setup();
       if (steady) benchmark.prewarm();
       for (int k = 0; k < ops; k++) {
-        benchmark.run();
+        window ? benchmark.runHead(k + 1) : benchmark.run();
       }
       await benchmark.teardownAsync();
     }
@@ -111,7 +121,7 @@ class BenchmarkRunner {
       if (steady) benchmark.prewarm();
       final sw = Stopwatch()..start();
       for (int k = 0; k < ops; k++) {
-        benchmark.run();
+        window ? benchmark.runHead(k + 1) : benchmark.run();
       }
       sw.stop();
       timings.add(_nanosPerOp(sw, ops));
@@ -135,7 +145,8 @@ class BenchmarkRunner {
     required int opsPerSample,
   }) async {
     final steady = phase == ResolvePhase.steadyStateResolve;
-    final ops = steady ? opsPerSample : 1;
+    final window = phase == ResolvePhase.firstResolveWindow;
+    final ops = window ? benchmark.chainCount : (steady ? opsPerSample : 1);
     final timings = <double>[];
     final rssValues = <int>[];
 
@@ -143,7 +154,7 @@ class BenchmarkRunner {
       await benchmark.setup();
       if (steady) await benchmark.prewarm();
       for (int k = 0; k < ops; k++) {
-        await benchmark.run();
+        window ? await benchmark.runHeadAsync(k + 1) : await benchmark.run();
       }
       await benchmark.teardownAsync();
     }
@@ -154,7 +165,7 @@ class BenchmarkRunner {
       if (steady) await benchmark.prewarm();
       final sw = Stopwatch()..start();
       for (int k = 0; k < ops; k++) {
-        await benchmark.run();
+        window ? await benchmark.runHeadAsync(k + 1) : await benchmark.run();
       }
       sw.stop();
       timings.add(_nanosPerOp(sw, ops));

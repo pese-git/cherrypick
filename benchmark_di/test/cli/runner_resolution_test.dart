@@ -59,4 +59,30 @@ void main() {
     );
     expect(steady.opsPerSample, 1000);
   });
+
+  test('window меряет окно из chainCount голов, а не один вызов', () async {
+    const chains = 10;
+    UniversalChainBenchmark<Scope> makeBenchmark() =>
+        UniversalChainBenchmark<Scope>(
+          CherrypickDIAdapter(),
+          chainCount: chains,
+          nestingDepth: 3,
+          mode: UniversalBindingMode.lazySingletonStrategy,
+          scenario: UniversalScenario.chain,
+        );
+
+    final window = await BenchmarkRunner.runSync(
+      benchmark: makeBenchmark(),
+      warmups: 1,
+      repeats: 5,
+      phase: ResolvePhase.firstResolveWindow,
+      opsPerSample: 1000,
+    );
+    expect(window.opsPerSample, chains,
+        reason: 'размер окна задаётся chainCount, а не --opsPerSample');
+    expect(window.timings, hasLength(5));
+    expect(window.timings.where((t) => t == 0), isEmpty,
+        reason: 'шаг таймера, делённый на размер окна, не должен обнулять '
+            'замер — иначе окно не выполняет своей задачи');
+  });
 }

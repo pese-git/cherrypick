@@ -70,13 +70,17 @@ class UniversalChainModule extends Module {
         }
         break;
       case UniversalScenario.named:
-        // Named factory registration for two distinct objects.
-        bind<UniversalService>()
-            .toProvide(() => UniversalServiceImpl(value: 'impl1'))
-            .withName('impl1');
-        bind<UniversalService>()
-            .toProvide(() => UniversalServiceImpl(value: 'impl2'))
-            .withName('impl2');
+        // 100 именованных фабрик: каждая — независимая голова для окна
+        // первых резолвов (по одному первому резолву каждой). Имя строится
+        // при регистрации и захватывается константой — симметрично
+        // chain-фабрикам, иначе named платил бы аллокацию строки,
+        // а chainFactory нет.
+        for (var chain = 1; chain <= chainCount; chain++) {
+          final implName = 'impl$chain';
+          bind<UniversalService>()
+              .toProvide(() => UniversalServiceImpl(value: implName))
+              .withName(implName);
+        }
         break;
       case UniversalScenario.chain:
         // Chain of nested services, with dependency on previous level by name.

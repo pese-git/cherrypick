@@ -46,12 +46,14 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
             );
             break;
           case UniversalScenario.named:
-            container.registerFactory<UniversalService>(
-                (c) => UniversalServiceImpl(value: 'impl1'),
-                name: 'impl1');
-            container.registerFactory<UniversalService>(
-                (c) => UniversalServiceImpl(value: 'impl2'),
-                name: 'impl2');
+            // Имя строится при регистрации и захватывается константой —
+            // симметрично chain-фабрикам.
+            for (var chain = 1; chain <= chainCount; chain++) {
+              final implName = 'impl$chain';
+              container.registerFactory<UniversalService>(
+                  (c) => UniversalServiceImpl(value: implName),
+                  name: implName);
+            }
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {

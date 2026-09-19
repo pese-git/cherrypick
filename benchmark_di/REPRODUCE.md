@@ -44,12 +44,12 @@ dart pub get
 dart test
 ```
 
-Ожидается 55 зелёных тестов. Это не формальность — три из них защищают
+Ожидается 80 зелёных тестов. Это не формальность — четыре из них защищают
 результаты от типовых искажений:
 
 - `equivalence_test.dart` — все контейнеры строят одинаковое число экземпляров
-  при первом резолве. Если он красный, любое сравнение времени недействительно:
-  контейнеры решают разные задачи.
+  при первом резолве и в окне первых резолвов. Если он красный, любое
+  сравнение времени недействительно: контейнеры решают разные задачи.
 - `scope_hierarchy_test.dart` — контейнеры без иерархии scope отказываются от
   сценария `override`, а не подменяют его плоским резолвом.
 - `runner_resolution_test.dart` — быстрая операция не измеряется нулями.
@@ -97,20 +97,73 @@ dart run bin/matrix.dart --chainCount=100 --nestingDepth=100 \
   --metric=median_ns --exe=build/benchmark_di_aot
 ```
 
+**Окно первых резолвов, JIT и AOT** (таблицы отчёта «First-Resolve Window»):
+
+```shell
+# AOT: соберите бинарь, затем
+dart run bin/matrix.dart --chainCount=100 --nestingDepth=100 \
+  --repeat=31 --warmup=5 --resolvePhase=window \
+  --metric=median_ns --exe=build/benchmark_di_aot
+# JIT: тот же прогон без --exe
+dart run bin/matrix.dart --chainCount=100 --nestingDepth=100 \
+  --repeat=31 --warmup=5 --resolvePhase=window --metric=median_ns
+# одиночный биндинг: та же фаза с --nestingDepth=1
+```
+
 **Цена детектора циклов** — по одному прогону на сценарий, с флагом и без:
 
 ```shell
-for b in registerLazySingleton chainSingleton chainLazySingleton \
-         chainFactory chainAsync named override; do
+for b in chainSingleton chainLazySingleton chainFactory chainAsync override; do
   printf "%-22s " $b
   ./build/benchmark_di_aot --di=cherrypick --benchmark=$b \
     --chainCount=100 --nestingDepth=100 --repeat=31 --warmup=5 \
-    --resolvePhase=first --format=json |
+    --resolvePhase=window --format=json |
     python3 -c "import sys,json;print(json.load(sys.stdin)[0]['median_ns'])"
 done
 ```
 
 Повторите с `--cycleDetection`, чтобы получить вторую колонку.
+
+---
+
+## 4. Окно первых резолвов
+
+Фаза `window` дополняет однотиковый первый резолв: один замер — по одному
+первому резолву каждой из `chainCount` независимых цепочек, таймер на всё окно,
+деление на размер окна. Погрешность кванта таймера (~42 нс на macOS) делится на
+окно: при 100 головах это ~0.4 нс против ±6% у однотикового замера. Методика
+пояснена в [METHODOLOGY.md](METHODOLOGY.md) («Окно первых резолвов»).
+
+Один сценарий (cherrypick), готовый markdown:
+
+```shell
+dart run bin/main.dart --di=cherrypick --benchmark=chainLazySingleton \
+  --chainCount=100 --nestingDepth=100 --repeat=31 --warmup=5 \
+  --resolvePhase=window --format=json
+```
+
+Матрица окна по всем DI и цепочечным сценариям (повторяет структуру раздела 3):
+
+```shell
+dart run bin/matrix.dart --chainCount=100 --nestingDepth=100 \
+  --repeat=31 --warmup=5 --resolvePhase=window \
+  --metric=median_ns --exe=build/benchmark_di_aot
+```
+
+Точный первый резолв одиночного биндинга (эквивалент `register*`/`named`) —
+та же фаза, но цепочка из одного звена: сто независимых голов по одному биндингу.
+
+```shell
+dart run bin/matrix.dart --chainCount=100 --nestingDepth=1 \
+  --repeat=31 --warmup=5 --resolvePhase=window \
+  --metric=median_ns --exe=build/benchmark_di_aot
+```
+
+В фазе `window` сценарий `register*` отклоняется с причиной в stderr (у него
+нет независимых голов). Сценарий `named` поддерживается: chainCount
+именованных биндингов impl$chain, каждый резолвится один раз. Окно `override`
+меряется по головам через границу дочернего scope у контейнеров с иерархией;
+kiwi и yx_scope отклоняются, как и в остальных фазах.
 
 ---
 
@@ -128,7 +181,7 @@ dart run bin/main.dart --di=cherrypick --benchmark=chainLazySingleton \
 | `min_ns` | Самый быстрый сэмпл — ближе всего к стоимости без шума планировщика |
 | `p95_ns` | 95-й перцентиль |
 | `mad_ns` | Медианное абсолютное отклонение. Растёт от реального разброса, а не от одного промаха |
-| `ops_per_sample` | Резолвов в одном замере: 1 в фазе first, 1000 в steady |
+| `ops_per_sample` | Резолвов в одном замере: 1 в фазе first, chainCount в window, 1000 в steady |
 | `rss_over_baseline_kb` | Пик RSS минус baseline процесса |
 | `runtime_mode` | `jit` или `aot` |
 | `cycle_detection` | `on` или `off` |

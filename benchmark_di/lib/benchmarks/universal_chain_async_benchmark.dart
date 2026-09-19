@@ -46,4 +46,14 @@ class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
     final serviceName = '${chainCount}_$nestingDepth';
     await di.resolveAsync<UniversalService>(named: serviceName);
   }
+
+  /// Резолвит голову [chain]-й цепочки по имени — окно первых резолвов.
+  ///
+  /// Каждая из chainCount независимых цепочек резолвится ровно один раз,
+  /// поэтому измерение остаётся честным первым резолвом, а шаг таймера
+  /// делится на размер окна.
+  Future<void> runHeadAsync(int chain) async {
+    final serviceName = '${chain}_$nestingDepth';
+    await di.resolveAsync<UniversalService>(named: serviceName);
+  }
 }

@@ -74,6 +74,34 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
     run();
   }
 
+  /// Резолвит голову [chain]-й цепочки по имени.
+  ///
+  /// В окне первых резолвов вызывается по одному разу для каждой из
+  /// chainCount независимых цепочек: каждая голова резолвится ровно один раз,
+  /// поэтому измерение остаётся честным первым резолвом, а шаг таймера
+  /// делится на размер окна. Для override голова ищется через границу
+  /// дочернего scope к регистрации родителя.
+  void runHead(int chain) {
+    switch (scenario) {
+      case UniversalScenario.chain:
+        _di.resolve<UniversalService>(named: '${chain}_$nestingDepth');
+        break;
+      case UniversalScenario.named:
+        // У named цепочек нет: головой служит сам именованный биндинг
+        // impl$chain. Каждый биндинг резолвится ровно один раз, поэтому
+        // окно остаётся честным первым резолвом именованной фабрики.
+        _di.resolve<UniversalService>(named: 'impl$chain');
+        break;
+      case UniversalScenario.override:
+        _childDi!.resolve<UniversalService>(named: '${chain}_$nestingDepth');
+        break;
+      default:
+        throw UnsupportedError(
+            'Окно первых резолвов применимо только к цепочечным и named-сценариям, '
+            'получен $scenario');
+    }
+  }
+
   @override
   void run() {
     switch (scenario) {
@@ -81,7 +109,10 @@ class UniversalChainBenchmark<TContainer> extends BenchmarkBase {
         _di.resolve<UniversalService>();
         break;
       case UniversalScenario.named:
-        _di.resolve<UniversalService>(named: 'impl2');
+        // Steady-цель named — последняя из chainCount именованных фабрик
+        // (по конвенции цепочки резолвится голова с наибольшим индексом).
+        // Фабрика строит новый экземпляр на каждый вызов, кеша нет.
+        _di.resolve<UniversalService>(named: 'impl$chainCount');
         break;
       case UniversalScenario.chain:
         final serviceName = '${chainCount}_$nestingDepth';

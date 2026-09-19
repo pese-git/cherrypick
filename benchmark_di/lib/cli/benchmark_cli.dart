@@ -68,6 +68,20 @@ class BenchmarkCliRunner {
               'иерархию scope');
           continue;
         }
+        // Окно первых резолвов требует chainCount независимых голов,
+        // адресуемых по имени. Сценарий register имеет один-два биндинга,
+        // поэтому оконно невыразим: его точный первый резолв снимается
+        // прогоном той же цепочки с --nestingDepth=1 (сто голов по одному
+        // звену). named оконно выражается: chainCount именованных биндингов
+        // impl$chain, каждый резолвится один раз.
+        if (phase == ResolvePhase.firstResolveWindow &&
+            scenario == UniversalScenario.register) {
+          stderr.writeln(
+              'пропущено: ${config.di}/$bench — сценарий без независимых '
+              'голов; эквивалент снимается chain-сценарием с '
+              '--nestingDepth=1 в фазе window');
+          continue;
+        }
         for (final c in config.chainCounts) {
           for (final d in config.nestDepths) {
             BenchmarkResult benchResult;

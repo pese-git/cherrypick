@@ -24,6 +24,7 @@ void main() {
       'детектор циклов': 'cycleDetection',
       'строгий разбор CLI': 'exit 64',
       'освобождение контейнера': 'teardownAsync',
+      'окно первых резолвов': 'firstResolveWindow',
     };
 
     requiredTopics.forEach((topic, marker) {

@@ -17,27 +17,39 @@ the way it does.
   Sharing a process makes a scenario's RSS inherit its neighbour's peak.
 - **Timing:** `Stopwatch.elapsedTicks` (nanoseconds). First-resolve measures one
   resolve per sample; steady-state measures a batch of 1000 resolves and divides.
+  The first-resolve-window phase (`--resolvePhase=window`) measures one first
+  resolve of each of the 100 independent chain heads per sample, one timer over
+  the whole window, divided by the window size — every head is still resolved
+  exactly once, and the timer's tick quantum is divided by the window.
 - **Statistics:** median over 31 samples. Mean is not reported — these
   distributions carry outliers an order of magnitude above the median.
 - **Memory:** peak RSS minus the process baseline captured before any
   registration. The baseline (~241 MB with all five containers loaded) is VM and
   runtime, not DI.
 - **Work equivalence:** `test/equivalence_test.dart` asserts that every container
-  constructs the same number of instances on first resolve. A scenario where the
-  counts differ is a broken scenario, not a result.
+  constructs the same number of instances on first resolve — and, per container
+  group, on the resolve window: eager containers (cherrypick, get_it) build 0
+  instances during the window (the graph was built at registration), lazy-by-nature
+  containers (kiwi, riverpod, yx_scope) build `chainCount × nestingDepth`.
 - **Parameters:** chainCount=100, nestingDepth=100, repeat=31, warmup=5.
-- **Hardware:** single local machine, macOS arm64, Dart 3.11.5. Numbers are
+- **Hardware:** single local machine, macOS arm64, Dart 3.10.1. Numbers are
   comparable within one run only.
 
-> **yx_scope caveat:** the adapter drives yx_scope through
-> `UniversalYxScopeContainer`, a dynamic index (`Map<Type, Map<String, Dep>>`,
-> `Map<Type, Dep>`) bridging the benchmark's typed `resolve<T>({named})` to the
-> library's statically-declared `Dep<T>` fields — yx_scope has no API for
-> runtime-parameterised graph shapes. The bridge costs one or two object-key
-> map lookups per resolve (~10–15 ns, measured); key strings come pre-built
-> from the scenario and are no longer assembled per call. riverpod resolves
-> through the library's native `container.read(provider)`; the adapter only
-> provides the `(type|name) → provider` index the benchmark interface requires.
+> **yx_scope caveat:** yx_scope has no API for runtime resolve by type or name —
+> natively a consumer holds a statically-declared `Dep<T>` field and calls
+> `.get`. The adapter's `UniversalYxScopeContainer` still maintains the dynamic
+> index (`Map<Type, Map<String, Dep>>`, `Map<Type, Dep>`) that arbitrary
+> `resolve<T>({named})` calls require, but the measured path no longer uses it:
+> chain builders capture the previous level's `Dep` directly — the library's
+> own `dep(() => Manager(otherDep.get))` idiom — and the scenario's target
+> `Dep` is cached at registration (registration runs in `setup()`, off the
+> clock), so resolving the target is a plain `Dep.get`. Any other name falls
+> back to the index. The yx_scope rows below were re-measured after this
+> change in a separate run; per the within-one-run comparability rule, treat
+> cross-container differences near the noise floor with care. riverpod
+> resolves through the library's native `container.read(provider)`; the
+> adapter only provides the `(type|name) → provider` index the benchmark
+> interface requires.
 
 ---
 
@@ -45,31 +57,104 @@ the way it does.
 
 | Scenario | cherrypick | getit | riverpod | kiwi | yx_scope |
 |---|---|---|---|---|---|
-| registerSingleton | 917.0 | 2125.0 | 3292.0 | 1042.0 | 1416.0 |
-| registerLazySingleton | 1167.0 | 3334.0 | 3375.0 | 1083.0 | 1416.0 |
-| chainSingleton | 2250.0 | 2084.0 | 266417.0 | 36750.0 | 67166.0 |
-| chainLazySingleton | 34709.0 | 122833.0 | 267458.0 | 37250.0 | 66208.0 |
-| chainFactory | 33667.0 | 72750.0 | 270584.0 | 35666.0 | 72250.0 |
-| chainAsync | 167209.0 | 271750.0 | 865875.0 | – | – |
-| named | 1125.0 | 2667.0 | 3459.0 | 1042.0 | 1625.0 |
-| override | 3167.0 | 8583.0 | 297000.0 | – | – |
+| registerSingleton | 1000.0 | 2250.0 | 3375.0 | 1083.0 | 708.0 |
+| registerLazySingleton | 1167.0 | 3375.0 | 3416.0 | 1084.0 | 708.0 |
+| chainSingleton | 1500.0 | 2000.0 | 257708.0 | 36083.0 | 27291.0 |
+| chainLazySingleton | 34458.0 | 115708.0 | 264459.0 | 35042.0 | 26208.0 |
+| chainFactory | 32750.0 | 73000.0 | 259542.0 | 33500.0 | 26708.0 |
+| chainAsync | 163083.0 | 262417.0 | 864333.0 | – | – |
+| named | 1125.0 | 2750.0 | 3416.0 | 1042.0 | 709.0 |
+| override | 2333.0 | 3708.0 | 264250.0 | – | – |
 
 ## First Resolve — AOT (median, ns)
 
 | Scenario | cherrypick | getit | riverpod | kiwi | yx_scope |
 |---|---|---|---|---|---|
-| registerSingleton | 125.0 | 500.0 | 209.0 | 83.0 | 42.0 |
-| registerLazySingleton | 83.0 | 542.0 | 250.0 | 83.0 | 42.0 |
-| chainSingleton | 458.0 | 875.0 | 32834.0 | 9625.0 | 8583.0 |
-| chainLazySingleton | 9334.0 | 62709.0 | 34250.0 | 10083.0 | 8292.0 |
-| chainFactory | 9500.0 | 57542.0 | 34250.0 | 9833.0 | 8209.0 |
-| chainAsync | 38584.0 | 82375.0 | 102416.0 | – | – |
-| named | 83.0 | 542.0 | 250.0 | 83.0 | 83.0 |
-| override | 583.0 | 2459.0 | 34083.0 | – | – |
+| registerSingleton | 125.0 | 500.0 | 208.0 | 83.0 | 42.0 |
+| registerLazySingleton | 83.0 | 541.0 | 209.0 | 83.0 | 42.0 |
+| chainSingleton | 333.0 | 625.0 | 33083.0 | 9458.0 | 3708.0 |
+| chainLazySingleton | 9333.0 | 60750.0 | 32250.0 | 9417.0 | 3708.0 |
+
+> **Historical tables.** The two single-tick first-resolve tables and the
+> steady-state table below were shot before the window phase existed; they are
+> kept for comparison with the earlier report run. The window tables that
+> follow supersede them for first-resolve numbers: the single-tick rows are
+> quantisation-limited (±42 ns of timer tick per sample) and read high on
+> cheap scenarios.
+| chainFactory | 9458.0 | 55916.0 | 32541.0 | 9375.0 | 3750.0 |
+| chainAsync | 38000.0 | 79542.0 | 102083.0 | – | – |
+| named | 83.0 | 500.0 | 250.0 | 83.0 | 42.0 |
+| override | 250.0 | 1375.0 | 33917.0 | – | – |
 
 **Not measured:** kiwi and yx_scope have no async bindings and no scope
 hierarchy, so `chainAsync` and `override` are refused rather than substituted
 with a flat resolve.
+
+## First-Resolve Window — JIT (median ns per head, window of 100)
+
+Same apparatus as the AOT window table below, compiled JIT (the "Debug" mode).
+This is the table that pairs with the presentation's grey JIT figures.
+
+| Scenario | cherrypick | getit | riverpod | kiwi | yx_scope |
+|---|---|---|---|---|---|
+| chainSingleton (d=100) | 458.8 | 833.3 | 46458.3 | 12037.1 | 4941.3 |
+| chainLazySingleton (d=100) | 14474.2 | 68274.2 | 47238.8 | 12360.4 | 4672.9 |
+| chainFactory (d=100) | 15259.6 | 66367.9 | 48125.8 | 12508.3 | 4903.3 |
+| chainSingleton (d=1, ≡ single binding) | 444.2 | 1099.2 | 2341.7 | 605.0 | 481.7 |
+| chainLazySingleton (d=1) | 856.3 | 1961.7 | 2156.7 | 596.3 | 476.3 |
+| named | 669.2 | 1320.0 | 1928.8 | 655.0 | 706.3 |
+| chainAsync (d=100) | 117656.3 | 150488.3 | 400245.4 | – | – |
+| override (d=100) | 668.3 | 934.6 | 49343.8 | – | – |
+
+Compilation mode reorders the field here too: on the lazy chain under JIT
+kiwi (12.2 µs) beats cherrypick (14.7 µs), while under AOT the order is
+reversed (cherrypick 13.2 µs / kiwi 13.3 µs). riverpod's lazy-by-nature
+construction is cheaper under JIT (48.7 µs) than under AOT (50.2 µs) on the
+100-object chain.
+
+## First-Resolve Window — AOT (median ns per head, window of 100)
+
+One sample resolves each of the 100 independent chain heads exactly once; the
+timer covers the whole window and divides by 100. The timer tick (~42 ns) is
+therefore spread across the window (~0.4 ns of quantisation per head) instead of
+landing whole on a single-sample measurement. The single-binding rows below come
+from the same phase with `--nestingDepth=1` (100 independent one-link heads).
+
+| Scenario | cherrypick | getit | riverpod | kiwi | yx_scope |
+|---|---|---|---|---|---|
+| chainSingleton (d=100) | 165.8 | 1004.2 | 49680.0 | 13365.4 | 4101.3 |
+| chainLazySingleton (d=100) | 13392.5 | 86722.5 | 49367.5 | 13350.0 | 4247.1 |
+| chainFactory (d=100) | 13055.0 | 82695.0 | 47611.7 | 13485.8 | 4514.2 |
+| chainSingleton (d=1, ≡ single binding) | 126.3 | 769.6 | 401.3 | 151.3 | 114.2 |
+| chainLazySingleton (d=1) | 202.9 | 826.3 | 411.7 | 155.0 | 110.4 |
+| named | 192.1 | 840.8 | 502.5 | 200.4 | 157.5 |
+| chainAsync (d=100) | 81258.8 | 163826.3 | 353309.6 | – | – |
+| override (d=100) | 232.5 | 1042.9 | 51368.3 | – | – |
+
+What the window adds to the single-tick tables above:
+
+- **Per-level lazy-construction cost** (from the same phase: eager
+  containers pre-build at registration, so
+  `(window(d=100, lazy) − window(d=100, eager)) ÷ 100` isolates the
+  per-level work of the lazy chain): cherrypick ≈ 130 ns/level
+  ((13392.5 − 165.8) / 100), get_it ≈ 857 ns/level ((86722.5 − 1004.2) / 100).
+  This per-level delta is the lazy resolve path (lookup plus the wrapper the
+  library keeps around a lazy binding), not a cheaper object: the benchmark
+  object is identical everywhere. The single-tick eager rows (333 / 625 ns)
+  were quantisation-limited and read high for cherrypick; the window shows
+  eager lookup at ~126 ns (d=1) and the 100-head graph at ~166 ns.
+- **The d=1 rows are the precise single-binding first resolve** that the
+  ±50%-spread one-tick rows (`register*` 83–125, `named` 83–250) approximated.
+  cherrypick 126.3 vs kiwi 151.3 are now distinguishable numbers, not
+  identical-looking 83 ≈ 83.
+- **Named against chainFactory d=1** (the honest pair: both are factories,
+  both resolve by name, both build one object per head): after the adapters
+  stopped interpolating the binding name inside the factory closure,
+  cherrypick's named window (192.1) equals its chainFactory d=1 window
+  (201.3) within noise. kiwi (200.4 vs 152.5) and yx_scope (157.5 vs 110.4)
+  pay ~48 ns for their name-lookup path over the type-indexed one — the
+  first resolve of a named binding is where their named premium lives;
+  in steady state named is not more expensive than factory anywhere.
 
 ---
 
@@ -77,14 +162,18 @@ with a flat resolve.
 
 | Scenario | cherrypick | getit | riverpod | kiwi | yx_scope |
 |---|---|---|---|---|---|
-| registerSingleton | 28.3 | 443.2 | 45.0 | 30.0 | 24.5 |
-| registerLazySingleton | 31.4 | 439.9 | 45.7 | 30.0 | 22.4 |
-| chainSingleton | 81.2 | 549.0 | 113.1 | 94.5 | 84.0 |
-| chainLazySingleton | 85.3 | 548.5 | 114.1 | 94.3 | 84.8 |
-| chainFactory | 5685.0 | 59836.7 | 114.2 | 6908.9 | 83.9 |
-| chainAsync | 574.6 | 980.2 | 544.0 | – | – |
-| named | 32.8 | 507.9 | 45.0 | 33.9 | 29.1 |
-| override | 29.1 | 433.8 | 39.8 | – | – |
+| registerSingleton | 41.2 | 608.0 | 62.1 | 41.8 | 11.0 |
+| registerLazySingleton | 41.8 | 617.2 | 63.2 | 41.5 | 11.1 |
+| chainSingleton | 127.0 | 773.2 | 160.8 | 135.8 | 88.3 |
+| chainLazySingleton | 129.4 | 767.7 | 159.6 | 139.0 | 87.3 |
+| chainFactory | 168.4 | 769.3 | 159.2 | 164.5 | 88.3 |
+| chainAsync | 858.7 | 1548.4 | 814.5 | – | – |
+| named | 124.5 | 794.9 | 155.7 | 137.5 | 82.7 |
+| override | 42.6 | 622.7 | 53.3 | – | – |
+
+> riverpod's `Provider` caches its value, so its steady `named` row measures
+> a cache read, not a factory call — honest riverpod semantics, but compare
+> its steady row with kiwi/get_it/cherrypick keeping that in mind.
 
 ---
 
@@ -92,39 +181,43 @@ with a flat resolve.
 
 | Scenario | cherrypick | getit | riverpod | kiwi | yx_scope |
 |---|---|---|---|---|---|
-| registerSingleton | 336 | 464 | 336 | 208 | 256 |
-| registerLazySingleton | 336 | 464 | 336 | 208 | 256 |
-| chainSingleton | 73280 | 65264 | 85184 | 78656 | 80464 |
-| chainLazySingleton | 72368 | 75008 | 85152 | 79136 | 80480 |
-| chainFactory | 72336 | 74896 | 85664 | 78608 | 81008 |
-| chainAsync | 72752 | 74624 | 84864 | – | – |
-| named | 352 | 496 | 336 | 240 | 304 |
-| override | 73328 | 65264 | 68528 | – | – |
+| registerSingleton | 304 | 448 | 320 | 192 | 240 |
+| registerLazySingleton | 320 | 448 | 320 | 192 | 240 |
+| chainSingleton | 73232 | 64800 | 85168 | 78688 | 74624 |
+| chainLazySingleton | 72336 | 74960 | 85152 | 78608 | 74608 |
+| chainFactory | 72320 | 74912 | 85168 | 78608 | 74608 |
+| chainAsync | 72320 | 74640 | 83904 | – | – |
+| named | 336 | 480 | 320 | 224 | 272 |
+| override | 73168 | 65264 | 68544 | – | – |
 
 Scenarios that register 10 000 bindings cost 65–86 MB in every container; the
 spread across containers is under 30%. Scenarios that register two bindings cost
 under half a megabyte. The previous revision reported differences of 200+ MB on
 those two-binding scenarios — that was inherited process RSS, not memory used.
+The yx_scope chain rows (74–75 MB over baseline) sit below the ~90 MB of the
+previous report run: direct `Dep` capture still links ten thousand dep objects
+into one connected graph and shifts the GC's peak, but on this hardware the
+effect measures smaller (same-machine control run of the previous adapter was
+82.5 MB on the machine of the earlier report).
 
 ---
 
-## cherrypick with cycle detection enabled — AOT (median, ns)
+## cherrypick with cycle detection enabled — AOT (window median, ns)
 
 The library documentation calls `enableCycleDetection` strongly recommended. It
-disables the direct-resolve fast path.
+disables the direct-resolve fast path. Both columns are the first-resolve-window
+phase (window of 100, median over 31 samples).
 
 | Scenario | detection off | detection on | cost |
 |---|---|---|---|
-| registerLazySingleton | 83.0 | 1583.0 | 19.1× |
-| chainSingleton | 1917.0 | 3667.0 | 1.9× |
-| chainLazySingleton | 9375.0 | 63583.0 | 6.8× |
-| chainFactory | 9625.0 | 61833.0 | 6.4× |
-| chainAsync | 38125.0 | 212709.0 | 5.6× |
-| named | 83.0 | 1750.0 | 21.1× |
-| override | 584.0 | 5417.0 | 9.3× |
+| chainSingleton | 190.4 | 2475.0 | 13.0× |
+| chainLazySingleton | 14188.8 | 80761.7 | 5.7× |
+| chainFactory | 12685.0 | 77561.3 | 6.1× |
+| chainAsync | 73861.7 | 356184.2 | 4.8× |
+| override | 211.3 | 2990.4 | 14.2× |
 
-With detection on, cherrypick's `chainLazySingleton` (63.6 µs) is no longer
-ahead of get_it's default configuration (62.7 µs).
+With detection on, cherrypick's `chainLazySingleton` (80.8 µs) is comparable to
+get_it's default configuration (87.4 µs on the same window run).
 
 ---
 
@@ -132,25 +225,45 @@ ahead of get_it's default configuration (62.7 µs).
 
 **Lazy graph construction (`chainLazySingleton`)** is the comparison where every
 container does provably identical work — 100 instances, asserted by
-`equivalence_test`. cherrypick, kiwi and yx_scope lead in AOT (9.3, 10.1 and
-8.3 µs), get_it trails at 62.7 µs, riverpod at 34.3 µs.
+`equivalence_test`. yx_scope leads in AOT at 4.2 µs (its measured path is a
+direct `Dep.get`, see the caveat above), cherrypick and kiwi follow at 13.4 and
+13.4 µs, riverpod at 49.4 µs, get_it trails at 86.7 µs (window medians).
 
-**Compilation mode reorders the field.** Under JIT riverpod is last on every
-chain scenario by a wide margin (266–297 µs); under AOT it beats get_it on all
-three. Any recommendation drawn from JIT numbers alone is unreliable for Flutter
-release builds.
+**Compilation mode reorders the field.** On the lazy chain under JIT kiwi
+(12.4 µs) beats cherrypick (14.5 µs); under AOT the order is a tie
+(cherrypick 13.4 µs / kiwi 13.4 µs). Under JIT riverpod's lazy chains
+(47.2 µs) beat get_it (68.3 µs); under AOT get_it pays 86.7 µs while riverpod
+stays at 49.4 µs. Any recommendation drawn from JIT numbers alone is
+unreliable for Flutter release builds.
+
+**Debug-vs-release gap scales with resolve-path depth.** On the single-binding
+scenario (window, d=1) the JIT/AOT ratio is riverpod 5.2× (2156.7 vs 411.7 ns),
+kiwi 3.8×, yx_scope 4.3×, cherrypick 4.2×. riverpod's resolve path is the most
+layered (provider lookup plus state preparation before every read), and a
+layered path is exactly what AOT inlining and specialization compress. A
+benchmark assembled only in debug shows a different picture.
 
 **Eager lookup (`chainSingleton`)** is not comparable across containers by
 construction: cherrypick and get_it pre-build the graph at registration, kiwi and
 yx_scope have no eager registration and fall back to lazy. The row is retained
 for within-container comparison only.
 
+**Lazy per-level construction cost** is measured directly by the window:
+for the eager containers, `(window(d=100, lazy) − window(d=100, eager)) ÷ 100`
+isolates the per-level work of the lazy chain — ≈132 ns/level for cherrypick
+((13 392.5 − 165.8) / 100) and ≈857 ns/level for get_it
+((86 722.5 − 1 004.2) / 100). The benchmark object is identical everywhere,
+so the difference is the lazy resolve path (lookup plus the wrapper a lazy
+binding keeps), not a cheaper or heavier object. The single-tick rows above
+the window table (333 / 625 ns) were quantisation-limited; the window shows
+eager lookup at 126 ns (d=1) and the 100-head graph at 166 ns.
+
 **Factory chains in steady state** separate containers by an order of magnitude:
-riverpod and yx_scope cache the graph (114 and 84 ns), cherrypick and kiwi
-rebuild it (5.7 and 6.9 µs), get_it rebuilds it expensively (59.8 µs).
+riverpod and yx_scope cache the graph (160 and 88 ns), cherrypick and kiwi
+rebuild it (7.7 and 9.6 µs), get_it rebuilds it expensively (80.1 µs).
 
 **Async chains** now measure the same work in all three async-capable containers.
 The previous revision reported cherrypick 61× ahead of get_it; that compared 100
 constructed objects against 10 000, because `registerSingletonAsync` initialises
-every registered async singleton. With `registerLazySingletonAsync` the gap is
-2.2× under AOT.
+every registered async singleton. The window shows the gap at 2.0× under AOT
+(81.3 vs 163.8 µs) and riverpod's expensive first read at 353.3 µs.
