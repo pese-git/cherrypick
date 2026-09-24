@@ -60,6 +60,37 @@ class YxScopeAdapter extends DIAdapter<UniversalYxScopeContainer> {
   }
 
   @override
+  Object? nativeBindingFor({String? named}) {
+    // Тот же порядок поиска, что в resolve: кеши цели и голов покрывают все
+    // измеряемые пути, динамический индекс остаётся фолбэком для остальных
+    // имён. Сам запрос выполняется в setup(), вне секундомера.
+    final dep = _resolveDep(named);
+    return dep;
+  }
+
+  @override
+  T resolveNative<T extends Object>(Object binding, {String? named}) {
+    // Нативный потребительский путь yx_scope: потребитель держит Dep
+    // напрямую и вызывает .get. Никакого поиска по строке в измеряемом
+    // пути нет — хендл получен в setup().
+    return (binding as Dep).get as T;
+  }
+
+  Dep<dynamic>? _resolveDep(String? named) {
+    if (named != null) {
+      final head = _headDeps[named];
+      if (head != null) return head;
+    }
+    final target = _targetDep;
+    if (target != null && named == _targetName) return target;
+    try {
+      return _scope.depFor<dynamic>(name: named);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<T> resolveAsync<T extends Object>({String? named}) async {
     return resolve<T>(named: named);
   }

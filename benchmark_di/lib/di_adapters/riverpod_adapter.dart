@@ -8,6 +8,7 @@ import 'di_adapter.dart';
 class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
   rp.ProviderContainer? _container;
   final Map<String, rp.ProviderBase<Object?>> _namedProviders;
+
   /// Типизированный индекс для безымянного резолва: контейнер ищет провайдер
   /// по объекту, мост «тип → провайдер» нужен только интерфейсу адаптера
   /// `resolve<T>()`. Один O(1) lookup, без сборки строк на вызов.
@@ -49,6 +50,22 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
       throw Exception('Provider not found for $named');
     }
     return _container!.read(provider) as T;
+  }
+
+  @override
+  Object? nativeBindingFor({String? named}) {
+    // Хендл нативного биндинга riverpod — сам провайдер. Поиск по карте
+    // выполняется здесь, в setup(), вне секундомера; измеряемый путь —
+    // только container.read(provider).
+    if (named == null) {
+      return _typedProviders[UniversalService];
+    }
+    return _namedProviders[named];
+  }
+
+  @override
+  T resolveNative<T extends Object>(Object binding, {String? named}) {
+    return _container!.read(binding as rp.ProviderBase<Object?>) as T;
   }
 
   @override
@@ -142,8 +159,8 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
               }
             }
             final depName = '${chainCount}_$nestingDepth';
-            final headProvider = rp.Provider<UniversalService>(
-                (ref) => ref.watch(
+            final headProvider = rp.Provider<UniversalService>((ref) =>
+                ref.watch(
                     providers[depName] as rp.ProviderBase<UniversalService>));
             providers['UniversalService'] = headProvider;
             _typedProviders[UniversalService] = headProvider;
@@ -151,8 +168,8 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
           case UniversalScenario.override:
             // Ребёнок переопределяет только алиас; цепочка остаётся у родителя.
             final depName = '${chainCount}_$nestingDepth';
-            final overrideProvider = rp.Provider<UniversalService>(
-                (ref) => ref.watch(
+            final overrideProvider = rp.Provider<UniversalService>((ref) =>
+                ref.watch(
                     providers[depName] as rp.ProviderBase<UniversalService>));
             providers['UniversalService'] = overrideProvider;
             _typedProviders[UniversalService] = overrideProvider;
@@ -176,7 +193,8 @@ class RiverpodAdapter extends DIAdapter<Map<String, rp.ProviderBase<Object?>>> {
               }
             }
             final depName = '${chainCount}_$nestingDepth';
-            final headProvider = rp.FutureProvider<UniversalService>((ref) async {
+            final headProvider =
+                rp.FutureProvider<UniversalService>((ref) async {
               return await ref.watch(
                   (providers[depName] as rp.FutureProvider<UniversalService>)
                       .future);

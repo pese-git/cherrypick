@@ -19,6 +19,27 @@ abstract class DIAdapter<TContainer> {
   /// Резолвит (возвращает) экземпляр типа [T] (по имени, если требуется).
   T resolve<T extends Object>({String? named});
 
+  /// Возвращает хендл нативного биндинга контейнера для [named]
+  /// (или безымянного биндинга, если [named] null), либо null.
+  ///
+  /// У handle-ориентированных контейнеров (yx_scope — `Dep`, riverpod —
+  /// `ProviderBase`) нативный потребительский путь — разыменование хендла,
+  /// а не поиск по строке. Для них адаптер возвращает хендл, и бенчмарк
+  /// измеряет [resolveNative]. У service locator'ов (cherrypick, get_it,
+  /// kiwi) строковый/типовой поиск — сам нативный API, хендлов нет, и
+  /// дефолтный null оставляет бенчмарк на [resolve].
+  ///
+  /// Вызывать вне секундомера (в setup): сам запрос хендла может идти
+  /// через индекс адаптера и не обязан быть нативным путём.
+  Object? nativeBindingFor({String? named}) => null;
+
+  /// Резолвит биндинг по хендлу, полученному от [nativeBindingFor].
+  ///
+  /// Дефолт бросает: вызывать только если [nativeBindingFor] вернул не-null.
+  T resolveNative<T extends Object>(Object binding, {String? named}) {
+    throw UnsupportedError('$runtimeType does not support native bindings');
+  }
+
   /// Асинхронно резолвит экземпляр типа [T] (если нужно).
   Future<T> resolveAsync<T extends Object>({String? named});
 
