@@ -6,19 +6,22 @@ class CsvReport extends ReportGenerator {
   @override
   final List<String> keys = [
     'benchmark',
+    'di',
     'phase',
     'chainCount',
     'nestingDepth',
-    'mean_us',
-    'median_us',
-    'stddev_us',
-    'min_us',
-    'max_us',
+    'median_ns',
+    'min_ns',
+    'p95_ns',
+    'mad_ns',
+    'ops_per_sample',
     'trials',
-    'timings_us',
+    'timings_ns',
     'memory_diff_kb',
     'delta_peak_kb',
-    'peak_rss_kb'
+    'peak_rss_kb',
+    'baseline_rss_kb',
+    'rss_over_baseline_kb'
   ];
 
   /// Renders rows as a CSV table string.

@@ -8,18 +8,21 @@ class PrettyReport extends ReportGenerator {
   @override
   final List<String> keys = [
     'benchmark',
+    'di',
     'phase',
     'chainCount',
     'nestingDepth',
-    'mean_us',
-    'median_us',
-    'stddev_us',
-    'min_us',
-    'max_us',
+    'median_ns',
+    'min_ns',
+    'p95_ns',
+    'mad_ns',
+    'ops_per_sample',
     'trials',
     'memory_diff_kb',
     'delta_peak_kb',
-    'peak_rss_kb'
+    'peak_rss_kb',
+    'baseline_rss_kb',
+    'rss_over_baseline_kb'
   ];
 
   /// Mappings from internal benchmark IDs to display names.
@@ -40,36 +43,40 @@ class PrettyReport extends ReportGenerator {
   String render(List<Map<String, dynamic>> rows) {
     final headers = [
       'Benchmark',
+      'DI',
       'Phase',
       'Chain Count',
       'Depth',
-      'Mean (us)',
-      'Median',
-      'Stddev',
-      'Min',
-      'Max',
+      'Median (ns)',
+      'Min (ns)',
+      'p95 (ns)',
+      'MAD (ns)',
+      'Ops',
       'N',
       'ΔRSS(KB)',
       'ΔPeak(KB)',
-      'PeakRSS(KB)'
+      'PeakRSS(KB)',
+      'RSS-base(KB)'
     ];
     final header = headers.join('\t');
     final lines = rows.map((r) {
       final readableName = nameMap[r['benchmark']] ?? r['benchmark'];
       return [
         readableName,
+        r['di'],
         r['phase'],
         r['chainCount'],
         r['nestingDepth'],
-        r['mean_us'],
-        r['median_us'],
-        r['stddev_us'],
-        r['min_us'],
-        r['max_us'],
+        r['median_ns'],
+        r['min_ns'],
+        r['p95_ns'],
+        r['mad_ns'],
+        r['ops_per_sample'],
         r['trials'],
         r['memory_diff_kb'],
         r['delta_peak_kb'],
         r['peak_rss_kb'],
+        r['rss_over_baseline_kb'],
       ].join('\t');
     }).toList();
     return ([header] + lines).join('\n');

@@ -30,6 +30,12 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
         throw UnsupportedError(
             'Kiwi does not support async dependencies or async binding scenarios.');
       }
+      if (scenario == UniversalScenario.override) {
+        throw UnsupportedError(
+            'Kiwi не поддерживает иерархию scope: KiwiContainer.scoped() '
+            'создаёт независимый контейнер, поэтому сценарий override был бы '
+            'плоским резолвом под чужим именем.');
+      }
       return (container) {
         switch (scenario) {
           case UniversalScenario.asyncChain:
@@ -40,12 +46,14 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
             );
             break;
           case UniversalScenario.named:
-            container.registerFactory<UniversalService>(
-                (c) => UniversalServiceImpl(value: 'impl1'),
-                name: 'impl1');
-            container.registerFactory<UniversalService>(
-                (c) => UniversalServiceImpl(value: 'impl2'),
-                name: 'impl2');
+            // Имя строится при регистрации и захватывается константой —
+            // симметрично chain-фабрикам.
+            for (var chain = 1; chain <= chainCount; chain++) {
+              final implName = 'impl$chain';
+              container.registerFactory<UniversalService>(
+                  (c) => UniversalServiceImpl(value: implName),
+                  name: implName);
+            }
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {
@@ -105,7 +113,7 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
   }
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     _container.clear();
   }
 

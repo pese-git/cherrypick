@@ -10,6 +10,13 @@ class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
   final int nestingDepth;
   final UniversalBindingMode mode;
 
+  /// Имя цели и имена голов окна, вычисленные один раз в setup().
+  /// Интерполяция строки внутри run() добавляла бы в секундомер ~40-50 нс
+  /// аллокации, не имеющей отношения к работе контейнера, — как в
+  /// синхронном бенчмарке.
+  String? _targetName;
+  List<String> _headNames = const [];
+
   UniversalChainAsyncBenchmark(
     this.di, {
     this.chainCount = 1,
@@ -25,6 +32,10 @@ class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
       bindingMode: mode,
       scenario: UniversalScenario.asyncChain,
     ));
+    _targetName = '${chainCount}_$nestingDepth';
+    _headNames = [
+      for (var chain = 1; chain <= chainCount; chain++) '${chain}_$nestingDepth'
+    ];
   }
 
   Future<void> prewarm() async {
@@ -33,13 +44,28 @@ class UniversalChainAsyncBenchmark<TContainer> extends AsyncBenchmarkBase {
   }
 
   @override
-  Future<void> teardown() async {
-    di.teardown();
+  Future<void> teardown() => teardownAsync();
+
+  /// Освобождает контейнер и ждёт завершения. Одноимённый метод есть и у
+  /// синхронного бенчмарка — раннер вызывает его, не различая их.
+  Future<void> teardownAsync() async {
+    await di.teardown();
   }
 
   @override
   Future<void> run() async {
-    final serviceName = '${chainCount}_$nestingDepth';
-    await di.resolveAsync<UniversalService>(named: serviceName);
+    // Async остаётся на named-пути у всех контейнеров: хендловая сигнатура
+    // resolveNative синхронна, а отдельный async-хендл (FutureProvider.future
+    // у riverpod) закрывал бы лишь ~1% lookup — меньше MAD-шума.
+    await di.resolveAsync<UniversalService>(named: _targetName);
+  }
+
+  /// Резолвит голову [chain]-й цепочки по имени — окно первых резолвов.
+  ///
+  /// Каждая из chainCount независимых цепочек резолвится ровно один раз,
+  /// поэтому измерение остаётся честным первым резолвом, а шаг таймера
+  /// делится на размер окна.
+  Future<void> runHeadAsync(int chain) async {
+    await di.resolveAsync<UniversalService>(named: _headNames[chain - 1]);
   }
 }

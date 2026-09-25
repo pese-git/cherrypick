@@ -44,12 +44,12 @@ class GetItAdapter extends DIAdapter<GetIt> {
       _getIt.getAsync<T>(instanceName: named);
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     if (_isSubScope && _scopePushed) {
-      _getIt.popScope();
+      await _getIt.popScope();
       _scopePushed = false;
     } else {
-      _getIt.reset();
+      await _getIt.reset();
     }
   }
 
@@ -59,6 +59,9 @@ class GetItAdapter extends DIAdapter<GetIt> {
 
   @override
   Future<void> waitForAsyncReady() async {
+    // registerLazySingletonAsync не участвует в allReady: прогрев обеспечивает
+    // prewarm() в раннере, одинаково для всех адаптеров. Вызов оставлен —
+    // он корректен, если в сценарии появятся eager-async привязки.
     await _getIt.allReady();
   }
 
@@ -73,11 +76,17 @@ class GetItAdapter extends DIAdapter<GetIt> {
       return (getIt) {
         switch (scenario) {
           case UniversalScenario.asyncChain:
+            // registerSingletonAsync инициализирует ВСЕ зарегистрированные
+            // async-синглтоны сразу, независимо от того, что резолвит бенчмарк.
+            // При chainCount=100/depth=100 это 10 000 объектов против 100 у
+            // ленивых контейнеров. registerLazySingletonAsync строит только
+            // запрошенную цепочку — та же семантика, что у
+            // toProvideAsync().singleton() в cherrypick.
             for (int chain = 1; chain <= chainCount; chain++) {
               for (int level = 1; level <= nestingDepth; level++) {
                 final prevDepName = '${chain}_${level - 1}';
                 final depName = '${chain}_$level';
-                getIt.registerSingletonAsync<UniversalService>(
+                getIt.registerLazySingletonAsync<UniversalService>(
                   () async {
                     final prev = level > 1
                         ? await getIt.getAsync<UniversalService>(
@@ -101,12 +110,14 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.named:
-            getIt.registerFactory<UniversalService>(
-                () => UniversalServiceImpl(value: 'impl1'),
-                instanceName: 'impl1');
-            getIt.registerFactory<UniversalService>(
-                () => UniversalServiceImpl(value: 'impl2'),
-                instanceName: 'impl2');
+            // Имя строится при регистрации и захватывается константой —
+            // симметрично chain-фабрикам.
+            for (var chain = 1; chain <= chainCount; chain++) {
+              final implName = 'impl$chain';
+              getIt.registerFactory<UniversalService>(
+                  () => UniversalServiceImpl(value: implName),
+                  instanceName: implName);
+            }
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {
@@ -148,7 +159,8 @@ class GetItAdapter extends DIAdapter<GetIt> {
                     );
                     break;
                   case UniversalBindingMode.asyncStrategy:
-                    getIt.registerSingletonAsync<UniversalService>(
+                    // Ленивая регистрация — см. комментарий в ветке asyncChain.
+                    getIt.registerLazySingletonAsync<UniversalService>(
                       () async => UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
@@ -164,11 +176,15 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.override:
-            // handled at benchmark level
+            // Ребёнок регистрирует только алиас последнего звена; сама цепочка
+            // остаётся у родителя и резолвится через границу scope.
+            final depName = '${chainCount}_$nestingDepth';
+            getIt.registerLazySingleton<UniversalService>(
+              () => getIt<UniversalService>(instanceName: depName),
+            );
             break;
         }
-        if (scenario == UniversalScenario.chain ||
-            scenario == UniversalScenario.override) {
+        if (scenario == UniversalScenario.chain) {
           final depName = '${chainCount}_$nestingDepth';
           if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
             getIt.registerLazySingleton<UniversalService>(
