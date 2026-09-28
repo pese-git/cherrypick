@@ -159,21 +159,21 @@ packages:
       path: "../../cherrypick"
       relative: true
     source: path
-    version: "4.0.0-dev.5"
+    version: "4.0.0-dev.6"
   cherrypick_annotations:
     dependency: "direct main"
     description:
       path: "../../cherrypick_annotations"
       relative: true
     source: path
-    version: "4.0.0-dev.1"
+    version: "4.0.0-dev.2"
   cherrypick_generator:
     dependency: "direct dev"
     description:
       path: "../../cherrypick_generator"
       relative: true
     source: path
-    version: "4.0.0-dev.6"
+    version: "4.0.0-dev.7"
   cli_launcher:
     dependency: transitive
     description:
@@ -832,7 +832,7 @@ packages:
       path: "../../talker_cherrypick_logger"
       relative: true
     source: path
-    version: "4.0.0-dev.5"
+    version: "4.0.0-dev.6"
   talker_dio_logger:
     dependency: "direct main"
     description:
