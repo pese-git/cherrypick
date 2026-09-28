@@ -1,3 +1,7 @@
+## 4.0.0-dev.7
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
 ## 4.0.0-dev.6
 
  - **DOCS**(cherrypick_generator): объяснить пин analyzer 9.x.

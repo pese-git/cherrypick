@@ -1,3 +1,7 @@
+## 4.0.0-dev.2
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
 ## 4.0.0-dev.1
 
  - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.

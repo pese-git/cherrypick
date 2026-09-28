@@ -1,3 +1,9 @@
+## 4.0.0-dev.6
+
+ - **DOCS**(cherrypick_lint): описать подключение через plugins: и релиз 2.0.0.
+ - **DOCS**: добавить гайд по использованию cherrypick_lint.
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
 ## 4.0.0-dev.5
 
  - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.

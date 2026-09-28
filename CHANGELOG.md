@@ -15,6 +15,48 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`cherrypick` - `v4.0.0-dev.6`](#cherrypick---v400-dev6)
+ - [`cherrypick_annotations` - `v4.0.0-dev.2`](#cherrypick_annotations---v400-dev2)
+ - [`cherrypick_generator` - `v4.0.0-dev.7`](#cherrypick_generator---v400-dev7)
+ - [`cherrypick_flutter` - `v4.0.0-dev.6`](#cherrypick_flutter---v400-dev6)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.6`](#talker_cherrypick_logger---v400-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v4.0.0-dev.6`
+ - `talker_cherrypick_logger` - `v4.0.0-dev.6`
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.6`
+
+ - **DOCS**(cherrypick_lint): описать подключение через plugins: и релиз 2.0.0.
+ - **DOCS**: добавить гайд по использованию cherrypick_lint.
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+#### `cherrypick_annotations` - `v4.0.0-dev.2`
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+#### `cherrypick_generator` - `v4.0.0-dev.7`
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+
+## 2026-09-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`cherrypick_generator` - `v4.0.0-dev.6`](#cherrypick_generator---v400-dev6)
 
 ---
