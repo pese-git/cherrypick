@@ -21,14 +21,13 @@ Name it in the top-level `plugins` section of `analysis_options.yaml`:
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.1.0
+  cherrypick_lint: ^4.0.0-dev.0
 ```
 
 Requires Dart >=3.10 (Flutter >=3.38).
 
-**Not on pub.dev yet.** The version-constraint form above starts working once
-the package is published; until then point the plugin at a local checkout of
-this repository:
+The package is on [pub.dev](https://pub.dev/packages/cherrypick_lint). To try an unreleased
+change, point the plugin at a local checkout of this repository instead:
 
 ```yaml
 # analysis_options.yaml
@@ -327,7 +326,7 @@ bind<Api>().toProvide(() => ApiMock());
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.1.0
+    version: ^4.0.0-dev.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```

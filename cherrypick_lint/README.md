@@ -20,12 +20,12 @@ resolves it itself. Name it in the top-level `plugins` section of your
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.1.0
+  cherrypick_lint: ^4.0.0-dev.0
 ```
 
-**Not on pub.dev yet.** The version-constraint form above starts working once
-the package is published; until then point the plugin at a local checkout of
-this repository:
+The package is on [pub.dev](https://pub.dev/packages/cherrypick_lint). To try
+an unreleased change, point the plugin at a local checkout of this repository
+instead:
 
 ```yaml
 # analysis_options.yaml
@@ -157,7 +157,7 @@ Every rule is enabled by default. Switch one off under the plugin's
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.1.0
+    version: ^4.0.0-dev.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```
@@ -209,18 +209,20 @@ generator enforces; the behavior they rely on (a `PartBuilder` writing
 present in the `cherrypick_generator` sources of every release from 1.1.0.
 
 Versions 0.1.x were built on [`custom_lint`](https://pub.dev/packages/custom_lint),
-whose repository is archived and which its author no longer publishes; see
-[Migration from 0.x](#migration-from-0x) below.
+whose repository is archived and which its author no longer publishes. They were
+never published to pub.dev — only relevant if you used the plugin from a
+checkout of this repository; see [Migration from 0.x](#migration-from-0x)
+below.
 
 ## Migration from 0.x
 
 The rules, their messages, severities and quick fixes are unchanged. Only
 installation changes:
 
-| 0.1.x (`custom_lint`) | 1.0.0 (analyzer plugin) |
+| 0.1.x (`custom_lint`) | 1.0.0+ (analyzer plugin) |
 |---|---|
 | `dev_dependencies: custom_lint`, `cherrypick_lint` | no dependency at all |
-| `analyzer: plugins: [custom_lint]` | top-level `plugins: cherrypick_lint: ^1.0.0` |
+| `analyzer: plugins: [custom_lint]` | top-level `plugins: cherrypick_lint: ^4.0.0-dev.0` |
 | `custom_lint: rules: - <rule>: false` | `plugins: cherrypick_lint: diagnostics: <rule>: false` |
 | `dart run custom_lint` in CI | plain `dart analyze` |
 | `// ignore: <rule>` | `// ignore: cherrypick_lint/<rule>` |

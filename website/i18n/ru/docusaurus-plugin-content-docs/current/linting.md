@@ -21,13 +21,13 @@ sidebar_position: 5.5
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.1.0
+  cherrypick_lint: ^4.0.0-dev.0
 ```
 
 Требуется Dart >=3.10 (Flutter >=3.38).
 
-**Пока не опубликован на pub.dev.** Форма с версионным констрейнтом заработает
-после публикации; до этого укажите плагину путь к локальной копии репозитория:
+Пакет опубликован на [pub.dev](https://pub.dev/packages/cherrypick_lint). Чтобы попробовать
+ещё не выпущенное изменение, укажите плагину путь к локальной копии репозитория:
 
 ```yaml
 # analysis_options.yaml
@@ -328,7 +328,7 @@ bind<Api>().toProvide(() => ApiMock());
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.1.0
+    version: ^4.0.0-dev.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```
