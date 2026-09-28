@@ -9,15 +9,23 @@ import '../utils.dart';
 
 /// Flags `class Foo extends SilentCherryPickObserver`.
 ///
-/// `Scope` fast-paths `if (_observer is SilentCherryPickObserver)`, so a
-/// subclass silently receives none of the 14 observer callbacks. Use
+/// On `cherrypick` 4.x, `Scope` fast-paths
+/// `if (_observer is SilentCherryPickObserver)`, so a subclass silently
+/// receives none of the 14 observer callbacks. Use
 /// `implements CherryPickObserver` instead.
+///
+/// The fast path does not exist in `cherrypick` 3.x, where a subclass still
+/// receives its callbacks — the warning does not apply there and the rule
+/// can be switched off. The plugin cannot tell which `cherrypick` version a
+/// project uses, so it reports either way.
 class AvoidExtendsSilentObserver extends AnalysisRule {
   static const LintCode code = LintCode(
     'avoid_extends_silent_observer',
-    'Extending SilentCherryPickObserver silently drops every observer '
-        'callback — Scope fast-paths past it.',
-    correctionMessage: 'Use implements CherryPickObserver instead.',
+    'Extending SilentCherryPickObserver drops every observer callback on '
+        'cherrypick 4.x — Scope fast-paths past it.',
+    correctionMessage:
+        'Use implements CherryPickObserver instead. (Harmless on cherrypick '
+        '3.x, where this rule can be disabled.)',
     severity: DiagnosticSeverity.WARNING,
   );
 
@@ -26,7 +34,8 @@ class AvoidExtendsSilentObserver extends AnalysisRule {
         name: 'avoid_extends_silent_observer',
         description:
             'Implement CherryPickObserver instead of extending '
-            'SilentCherryPickObserver, which Scope fast-paths past.',
+            'SilentCherryPickObserver, which cherrypick 4.x Scope fast-paths '
+            'past.',
       );
 
   @override
