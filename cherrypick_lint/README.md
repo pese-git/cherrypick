@@ -8,6 +8,9 @@ IDE and in `dart analyze` — no `build_runner` required.
 codegen. `cherrypick_lint` surfaces the same class of mistakes (plus a few
 runtime traps `codegen` can't see) as you type.
 
+> **Built for `cherrypick` 4.x, usable with 3.x, not for 2.x.** See
+> [Which `cherrypick` versions](#which-cherrypick-versions) for what changes.
+
 ## Install
 
 The plugin is **not** a dependency of your project — the analysis server
@@ -110,10 +113,12 @@ class, not to add an annotation.
 | `avoid_resolve_in_to_instance` | `warning` | `scope.resolve()`/`resolveAsync()`/`tryResolve()`/`tryResolveAsync()` inside `.toInstance(...)`/`.toInstanceAsync(...)` | — |
 | `avoid_precomputed_value_in_provide` | `warning` | `.toProvide(...)`/`.toProvideAsync(...)`/`.toProvideWithParams(...)`/`.toProvideAsyncWithParams(...)` closure that just returns a variable built outside it | — |
 
-`SilentCherryPickObserver` is deliberately skipped by `Scope`'s fast path
-(`if (_observer is SilentCherryPickObserver)`), so an `extends` subclass
-silently receives none of the 14 observer callbacks — `implements
-CherryPickObserver` is always what you want instead.
+On `cherrypick` 4.x, `SilentCherryPickObserver` is deliberately skipped by
+`Scope`'s fast path (`if (_observer is SilentCherryPickObserver)`), so an
+`extends` subclass silently receives none of the 14 observer callbacks —
+`implements CherryPickObserver` is what you want instead. That fast path does
+not exist in 3.x, where extending the class is harmless: disable the rule
+there (see [Disabling a rule](#disabling-a-rule)).
 
 `.singleton()` after `.toInstance(...)` is a documented no-op (see
 `Binding.singleton()`'s doc comment): the bound value is already a single,
@@ -181,6 +186,27 @@ sources:
 | `analyzer_plugin` | 0.14.8 | 0.14.16 |
 
 The rules and fixes compile against both `analyzer` majors unchanged.
+
+### Which `cherrypick` versions
+
+The plugin does not depend on `cherrypick` — it only reads your code — so
+nothing stops you enabling it on any version. What differs is whether each
+rule's claim is true for the API you actually have. This was checked by
+running the plugin on a file that violates every rule, and by executing each
+claimed runtime behaviour, against `cherrypick` 2.2.0, 3.0.0, 3.0.2 and
+4.0.0-dev.6:
+
+| `cherrypick` | Rules that apply |
+|---|---|
+| 4.x | All 15. |
+| 3.x (tested: 3.0.0, 3.0.2) | 14 of 15. Not `avoid_extends_silent_observer`: the fast path it warns about exists only in 4.x, and on 3.x a subclass of `SilentCherryPickObserver` still receives its callbacks. Disable it there. |
+| 2.x and older | Not supported. `closeScope` and `closeSubScope` are synchronous `void` and `Scope.dispose()` does not exist, so the await-rules flag calls with nothing to await, and their quick fix produces a `use_of_void_result` error. `avoid_resolve_in_to_instance` and `avoid_singleton_on_provide_with_params` describe behavior 2.x does not have (an eager `resolve` inside `toInstance` works, and `.singleton()` honors params on every resolve). |
+
+Use the matching major of `cherrypick_annotations` and `cherrypick_generator`.
+The `module_*`, `inject_*`, `named_*` and `params_*` rules mirror what the
+generator enforces; the behavior they rely on (a `PartBuilder` writing
+`<file>.module.cherrypick.g.dart`, the `@provide`/`@instance` validator) is
+present in the `cherrypick_generator` sources of every release from 1.1.0.
 
 Versions 0.1.x were built on [`custom_lint`](https://pub.dev/packages/custom_lint),
 whose repository is archived and which its author no longer publishes; see

@@ -43,6 +43,21 @@ plugins:
 плагины анализатора подхватываются только при старте. Дальше правила видны и в IDE, и в
 `dart analyze` / `flutter analyze`, так что отдельного шага в CI не нужно.
 
+## С какими версиями `cherrypick` работает
+
+Плагин не зависит от `cherrypick` — он только читает ваш код, поэтому включить его можно на любой
+версии. Различается другое: верно ли утверждение каждого правила для того API, который у вас
+реально есть. Это проверено запуском плагина на файле, нарушающем все правила, и выполнением
+каждого заявленного рантайм-поведения на `cherrypick` 2.2.0, 3.0.0, 3.0.2 и 4.0.0-dev.6.
+
+| `cherrypick` | Какие правила применимы |
+|---|---|
+| 4.x | Все 15. |
+| 3.x (проверено: 3.0.0, 3.0.2) | 14 из 15. Кроме [`avoid_extends_silent_observer`](#avoid_extends_silent_observer): fast-path, о котором оно предупреждает, есть только в 4.x. Там правило стоит отключить. |
+| 2.x и старше | Не поддерживается. `closeScope` и `closeSubScope` — синхронные `void`, а `Scope.dispose()` не существует, поэтому await-правила ругаются на вызовы, которым нечего ждать, а их quick fix даёт ошибку `use_of_void_result`. `avoid_resolve_in_to_instance` и `avoid_singleton_on_provide_with_params` описывают поведение, которого в 2.x нет. |
+
+Берите ту же мажорную версию `cherrypick_annotations` и `cherrypick_generator`.
+
 ## await-rules
 
 Пропущенный `await` на закрытии скоупа означает, что ресурсы могут быть ещё не освобождены к
@@ -224,8 +239,13 @@ abstract class FeatureModule {
 
 ### `avoid_extends_silent_observer`
 
-`Scope` содержит fast-path `if (_observer is SilentCherryPickObserver)`, поэтому наследник через
-`extends` молча не получает **ни одного** из 14 колбэков наблюдателя.
+В `cherrypick` 4.x `Scope` содержит fast-path `if (_observer is SilentCherryPickObserver)`, поэтому
+наследник через `extends` молча не получает **ни одного** из 14 колбэков наблюдателя.
+
+:::note
+В `cherrypick` 3.x такого fast-path нет: наследник по-прежнему получает свои колбэки, так что
+предупреждение неприменимо, а правило можно [отключить](#отключение-правила).
+:::
 
 ```dart
 // ❌ avoid_extends_silent_observer
