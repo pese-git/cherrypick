@@ -9,6 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: build (Flutter ${{ matrix.flutter }})
+    strategy:
+      # Обе версии должны отчитаться: падение на 3.38 — это регрессия
+      # совместимости, а не повод прятать результат прогона на 3.41.
+      fail-fast: false
+      matrix:
+        # 3.41.7 — версия разработки (.fvmrc). 3.38.5 держим в матрице,
+        # потому что пакеты заявляют совместимость со старыми SDK, и без
+        # прогона это утверждение ничем не проверено.
+        flutter: [ "3.38.5", "3.41.7" ]
     steps:
       - uses: actions/checkout@v4
 
@@ -18,8 +28,8 @@ jobs:
       - name: Install FVM
         run: dart pub global activate fvm
 
-      - name: Install Flutter version via FVM
-        run: fvm install
+      - name: Install Flutter ${{ matrix.flutter }} via FVM
+        run: fvm use ${{ matrix.flutter }} --force
 
       # ВАЖНО: активируем melos через flutter, чтобы не было несовместимости
       - name: Install Melos
