@@ -1,3 +1,7 @@
+## 4.0.0-dev.6
+
+ - **DOCS**(cherrypick_generator): объяснить пин analyzer 9.x.
+
 ## 4.0.0-dev.5
 
  - Update a dependency to the latest release.
