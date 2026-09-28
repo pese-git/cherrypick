@@ -20,10 +20,11 @@ environment:
 # Add regular dependencies here.
 dependencies:
   cherrypick_annotations: ^4.0.0-dev.2
-  # Capped by meta, not by Dart: analyzer >=10 needs meta ^1.18, Flutter
-  # pins meta 1.17.0 through 3.41, so anything newer breaks resolution in
-  # Flutter apps. Unblocked by Flutter 3.47; then go straight to 14.x.
-  analyzer: ^9.0.0
+  # Deliberately spans the whole supported range instead of a caret: on
+  # Flutter 3.38 the meta 1.17.0 pin forces analyzer 9.x, on 3.47 the
+  # resolver reaches 14.x, and Flutter apps running auto_route_generator
+  # sit at 13.x in between. The generator sources build against all three.
+  analyzer: ">=9.0.0 <16.0.0"
   dart_style: ^3.0.0
   build: ^4.0.0
   source_gen: ^4.2.0
