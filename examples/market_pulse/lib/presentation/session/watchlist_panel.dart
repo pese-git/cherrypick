@@ -21,7 +21,10 @@ class WatchlistPanel extends StatelessWidget {
       context,
     ).openRootScope().resolve<InstrumentUniverse>();
 
-    return Container(
+    // Material, а не Container: начиная с Flutter 3.47 ListTile внутри
+    // ColoredBox (во что разворачивается Container(color:)) роняет ассерт —
+    // фон и ink-эффекты рисуются на ближайшем Material-предке.
+    return Material(
       color: MarketColors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
