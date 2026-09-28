@@ -15,6 +15,17 @@ packages:
   - examples/postly
   - examples/market_pulse
 
+command:
+  version:
+    hooks:
+      # melos стейджит только pubspec.yaml и CHANGELOG.md, поэтому локи
+      # примеров после бампа версий оставались протухшими до следующей
+      # ручной уборки. Перегенерируем и добавляем их сами — preCommit
+      # выполняется до git commit, так что всё попадает в релизный коммит.
+      preCommit: |
+        melos bootstrap
+        git add "*pubspec.lock"
+
 scripts:
   clean_all:
     run: |
