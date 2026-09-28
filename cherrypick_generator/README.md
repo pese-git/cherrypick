@@ -189,6 +189,7 @@ final class $MyModule extends MyModule {
 - The generator relies on the Dart analyzer, `source_gen`, and `build` packages.
 - All classes and methods are parsed for annotations.
 - Improper annotation usage will result in generator errors.
+- [`cherrypick_lint`](../cherrypick_lint) catches many of these same annotation mistakes in the IDE, before you run `build_runner`.
 
 ---
 

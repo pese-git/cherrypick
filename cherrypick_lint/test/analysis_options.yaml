@@ -1,0 +1,7 @@
+include: ../analysis_options.yaml
+
+analyzer:
+  errors:
+    # test_reflective_loader discovers test cases by their `test_` prefix, so
+    # snake_case method names are the convention here, not a style slip.
+    non_constant_identifier_names: ignore

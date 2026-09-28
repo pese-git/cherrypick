@@ -8,6 +8,8 @@ packages:
   - cherrypick_flutter
   - cherrypick_annotations
   - cherrypick_generator
+  - cherrypick_lint
+  - cherrypick_lint/example
   - talker_cherrypick_logger
   - examples/client_app
   - examples/postly
@@ -38,6 +40,10 @@ scripts:
 
   analyze:
     exec: dart analyze
+    description: >
+      Analyze every package. cherrypick_lint's rules are surfaced here too:
+      the plugin is enabled for cherrypick_lint/example via the top-level
+      plugins: section of its analysis_options.yaml.
 
   format:
     exec: dart format lib
@@ -52,7 +58,13 @@ scripts:
     description: "Run tests for Dart packages only"
     exec: dart test --reporter=compact
     packageFilters:
-      scope: ["cherrypick", "cherrypick_annotations", "cherrypick_generator"]
+      scope:
+        [
+          "cherrypick",
+          "cherrypick_annotations",
+          "cherrypick_generator",
+          "cherrypick_lint",
+        ]
 
   test:flutter:
     description: "Run tests for Flutter packages only"

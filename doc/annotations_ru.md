@@ -63,16 +63,28 @@ class MyWidget with _$MyWidget {
 ### B. Binding через модуль (вариант для глобальных сервисов)
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
+import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
+
 @module()
 abstract class AppModule extends Module {
-  @singleton
+  @provide()
+  @singleton()
   AuthService provideAuth(Api api) => AuthService(api);
 
-  @provide
+  @provide()
   @named('logging')
-  Future<Logger> provideLogger(@params Map<String, dynamic> args) async => ...
+  Future<Logger> provideLogger(@params() Map<String, dynamic> args) async => ...
 }
 ```
+
+part-директива, `extends Module` и `@provide`/`@instance` на каждом методе
+обязательны: без первой генератор ничего не создаёт, без остальных его
+результат не компилируется.
+
 - Методы-провайдеры поддерживают async (Future<T>) и singleton.
 
 ---
@@ -125,12 +137,14 @@ abstract class AppModule extends Module {
 - Проверьте аннотации, пути import и запускайте build_runner после каждого изменения DI/кода.
 - Ошибки применения аннотаций появляются на этапе генерации.
 - Никогда не редактируйте .g.dart файлы вручную.
+- Подключите [`cherrypick_lint`](../cherrypick_lint), чтобы ловить многие из тех же ошибок в аннотациях (отсутствие part-директивы, `@module`-класс без `extends Module` или без `abstract`, метод без `@provide`/`@instance` — включая приватные и `static`, `@inject`-поле не `late final` и другие) прямо в IDE, ещё до запуска генератора.
 
 ---
 
 ## 7. Полезные ссылки
 
 - [README по генератору](../cherrypick_generator/README.md)
+- [README по lint-плагину](../cherrypick_lint/README.md) · [Гайд по линтингу](lint_ru.md)
 - Пример интеграции: `examples/postly`
 - [API Reference](../cherrypick/doc/api/)
 
