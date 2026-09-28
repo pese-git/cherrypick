@@ -1,3 +1,22 @@
+## 4.0.0-dev.0
+
+Pre-release. The major version now follows the `cherrypick` family
+(`cherrypick`, `cherrypick_annotations`, `cherrypick_generator` are on 4.x). It
+skips 2.x and 3.x, as those packages did. The stable `1.1.0` is already on
+pub.dev; nothing here changes how the plugin is installed or which
+rules exist — it is the same plugin, versioned to match the family.
+
+- Built for `cherrypick` 4.x and usable with 3.x, where `avoid_extends_silent_observer`
+  does not apply (the fast path it warns about exists only in 4.x). Not for
+  2.x. Checked by running the plugin against `cherrypick` 2.2.0, 3.0.0, 3.0.2 and
+  4.0.0-dev.6; see "Which `cherrypick` versions" in the README.
+- `avoid_extends_silent_observer` now names 4.x in its message and notes that it
+  can be disabled on 3.x.
+- Requires Dart >=3.10.0 (Flutter >=3.38).
+
+Of the entries below only 1.1.0 was published to pub.dev; 0.1.0 and 1.0.0 were
+internal iterations in this repository, kept as history.
+
 ## 1.1.0
 
 Two new rules for the `@module` requirements that codegen actually enforces,
