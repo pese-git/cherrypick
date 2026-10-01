@@ -3,9 +3,11 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightVersions from 'starlight-versions';
 
+const SITE = 'https://cherrypick.openidealab.com';
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://cherrypick-di.dev',
+  site: SITE,
   // Pages merged into others; archived versions (/vN/…) keep their own copies.
   redirects: {
     '/key-features': '/intro/',
@@ -43,11 +45,11 @@ export default defineConfig({
       favicon: '/favicon.svg',
       // Social preview; regenerate with `node scripts/og-image.mjs`.
       head: [
-        { tag: 'meta', attrs: { property: 'og:image', content: 'https://cherrypick-di.dev/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/og.png` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
         { tag: 'meta', attrs: { property: 'og:image:alt', content: 'CherryPick — Dependency Injection for Dart & Flutter' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://cherrypick-di.dev/og.png' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/og.png` } },
       ],
       defaultLocale: 'root',
       locales: {

@@ -34,7 +34,7 @@ const svg = `
   <text x="80" y="270" font-family="${font}" font-size="96" font-weight="700" fill="#ffffff">CherryPick</text>
   <text x="80" y="345" font-family="${font}" font-size="40" fill="#c0c2c7">Dependency Injection</text>
   <text x="80" y="397" font-family="${font}" font-size="40" fill="#c0c2c7">for Dart &amp; Flutter</text>
-  <text x="80" y="520" font-family="${font}" font-size="28" fill="#888b96">cherrypick-di.dev</text>
+  <text x="80" y="520" font-family="${font}" font-size="28" fill="#888b96">cherrypick.openidealab.com</text>
 </svg>`;
 
 const out = new URL('../public/og.png', import.meta.url).pathname;
