@@ -1,7 +1,7 @@
 name: cherrypick_workspace
 description: Cherrypick is a small dependency injection (DI) library for dart/flutter projects.
 version: 2.0.0
-homepage: https://pese-git.github.io/cherrypick-site/
+homepage: https://cherrypick.openidealab.com
 documentation: https://github.com/pese-git/cherrypick/wiki
 repository: https://github.com/pese-git/cherrypick
 issue_tracker: https://github.com/pese-git/cherrypick/issues

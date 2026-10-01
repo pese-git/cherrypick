@@ -4,9 +4,9 @@ description: >
   in dart analyze: missing await on scope disposal, misused annotations, and
   runtime traps.
 version: 4.0.0-dev.0
-homepage: https://cherrypick-di.netlify.app
-documentation: https://cherrypick-di.netlify.app/docs/intro
-repository: https://github.com/pese-git/cherrypick/cherrypick_lint
+homepage: https://cherrypick.openidealab.com
+documentation: https://cherrypick.openidealab.com/intro/
+repository: https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 topics:
   - lint
