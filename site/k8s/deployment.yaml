@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: site
+  namespace: cherrypick
+  labels:
+    app: site
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: site
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: site
+    spec:
+      # Static nginx site, no need to talk to the Kubernetes API.
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+      containers:
+        - name: site
+          # Тег — короткий SHA коммита, из которого собран образ.
+          image: harbor.openidealab.com/cherrypick/site:8799d1e
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+              # nginx master binds port 80; without root it needs this
+              # capability explicitly instead of running as root.
+              add: ["NET_BIND_SERVICE"]
+          volumeMounts:
+            # nginx writes its pid file, worker temp dirs (client_temp,
+            # proxy_temp, ...) and default access/error logs under these —
+            # the rest of the image stays read-only.
+            - name: run
+              mountPath: /run
+            - name: cache
+              mountPath: /var/cache/nginx
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: run
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

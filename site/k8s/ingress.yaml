@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: site
+  namespace: cherrypick
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - cherrypick.openidealab.com
+      secretName: cherrypick-site-tls
+  rules:
+    - host: cherrypick.openidealab.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: site
+                port:
+                  number: 80
