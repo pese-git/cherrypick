@@ -5,7 +5,7 @@ description: What CherryPick 1.x is and the core building blocks it provides.
 
 :::caution[Archived version]
 This documents CherryPick **1.x** (1.0.3). For the current release, see the
-[latest documentation](/getting-started/).
+[latest documentation](/v1/getting-started/).
 :::
 
 **CherryPick** is a lightweight dependency injection (DI) library for Dart and

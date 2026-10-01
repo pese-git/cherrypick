@@ -5,7 +5,7 @@ description: What CherryPick 2.x offers and how its packages fit together.
 
 :::caution[Archived version]
 This documents CherryPick **2.x** (2.2.0). For the current release, see the
-[latest documentation](/getting-started/).
+[latest documentation](/v2/getting-started/).
 :::
 
 **CherryPick** is a modern dependency injection (DI) toolkit for Dart and
