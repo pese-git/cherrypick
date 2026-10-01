@@ -6,6 +6,17 @@ import starlightVersions from 'starlight-versions';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://cherrypick-di.dev',
+  // Pages merged into others; archived versions (/vN/…) keep their own copies.
+  redirects: {
+    '/key-features': '/intro/',
+    '/advanced-features/performance-improvements': '/faq/',
+    '/additional-modules': '/documentation-links/',
+    '/license': '/contributing/',
+    '/ru/key-features': '/ru/intro/',
+    '/ru/advanced-features/performance-improvements': '/ru/faq/',
+    '/ru/additional-modules': '/ru/documentation-links/',
+    '/ru/license': '/ru/contributing/',
+  },
   integrations: [
     starlight({
       title: 'CherryPick',
@@ -59,10 +70,9 @@ export default defineConfig({
           label: 'Getting Started',
           translations: { ru: 'Начало работы' },
           items: [
-            { label: 'Introduction', translations: { ru: 'Введение' }, slug: 'intro' },
-            { label: 'Key Features', translations: { ru: 'Ключевые возможности' }, slug: 'key-features' },
+            { label: 'Overview', translations: { ru: 'Обзор' }, slug: 'intro' },
             { label: 'Installation', translations: { ru: 'Установка' }, slug: 'installation' },
-            { label: 'Getting Started', translations: { ru: 'Быстрый старт' }, slug: 'getting-started' },
+            { label: 'Quick Start', translations: { ru: 'Быстрый старт' }, slug: 'getting-started' },
           ],
         },
         {
@@ -92,7 +102,6 @@ export default defineConfig({
             { label: 'Hierarchical Subscopes', translations: { ru: 'Иерархические подскоупы' }, slug: 'advanced-features/hierarchical-subscopes' },
             { label: 'Logging', translations: { ru: 'Логирование' }, slug: 'advanced-features/logging' },
             { label: 'Circular Dependency Detection', translations: { ru: 'Обнаружение циклов' }, slug: 'advanced-features/circular-dependency-detection' },
-            { label: 'Performance Improvements', translations: { ru: 'Производительность' }, slug: 'advanced-features/performance-improvements' },
           ],
         },
         {
@@ -100,10 +109,8 @@ export default defineConfig({
           translations: { ru: 'Справка' },
           items: [
             { label: 'FAQ', translations: { ru: 'FAQ' }, slug: 'faq' },
-            { label: 'Documentation Links', translations: { ru: 'Ссылки на документацию' }, slug: 'documentation-links' },
-            { label: 'Additional Modules', translations: { ru: 'Дополнительные модули' }, slug: 'additional-modules' },
-            { label: 'Contributing', translations: { ru: 'Участие в разработке' }, slug: 'contributing' },
-            { label: 'License', translations: { ru: 'Лицензия' }, slug: 'license' },
+            { label: 'Packages & Resources', translations: { ru: 'Пакеты и ресурсы' }, slug: 'documentation-links' },
+            { label: 'Contributing & License', translations: { ru: 'Участие и лицензия' }, slug: 'contributing' },
           ],
         },
       ],

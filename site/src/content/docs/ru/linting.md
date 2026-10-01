@@ -345,4 +345,4 @@ scope.dispose();
 
 - [README cherrypick_lint](https://github.com/pese-git/cherrypick/blob/master/cherrypick_lint/README.md) — полная таблица правил, совместимость, контрибьютинг
 - [Аннотации](/ru/using-annotations/)
-- [Ссылки на документацию](/ru/documentation-links/)
+- [Пакеты и ресурсы](/ru/documentation-links/)
