@@ -6,7 +6,14 @@
   --sl-color-accent: #d4234a;
   --sl-color-accent-high: #f6b8c6;
 
-  /* Slightly warmer neutral grays. */
+  --cp-cherry: #e11d48;
+  --cp-leaf: #63b846;
+}
+
+/* Slightly warmer neutral grays — dark theme only. Starlight inverts this
+   scale for the light theme inside a cascade layer, so an unlayered `:root`
+   override here would leak dark grays into light mode. */
+:root:not([data-theme='light']) {
   --sl-color-white: #ffffff;
   --sl-color-gray-1: #eceef2;
   --sl-color-gray-2: #c0c2c7;
@@ -15,9 +22,6 @@
   --sl-color-gray-5: #363841;
   --sl-color-gray-6: #24262f;
   --sl-color-black: #17181c;
-
-  --cp-cherry: #e11d48;
-  --cp-leaf: #63b846;
 }
 
 /* Light mode accent tuning. */
@@ -50,13 +54,14 @@
   box-shadow: 0 8px 24px -8px var(--cp-cherry);
 }
 
-/* Card grid accent border on hover. */
+/* Card grid accent border on hover. Uses `translate` rather than `transform`
+   so it composes with the `<CardGrid stagger>` offset instead of replacing it. */
 .card {
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, translate 0.15s ease;
 }
 .card:hover {
   border-color: var(--sl-color-accent);
-  transform: translateY(-2px);
+  translate: 0 -2px;
 }
 
 /* Inline code a little tighter. */

@@ -51,6 +51,9 @@ export default defineConfig({
         baseUrl: 'https://github.com/pese-git/cherrypick/edit/master/site/',
       },
       customCss: ['./src/styles/custom.css'],
+      components: {
+        Header: './src/components/Header.astro',
+      },
       sidebar: [
         {
           label: 'Getting Started',
