@@ -31,11 +31,6 @@
   --sl-color-accent-high: #6b0d23;
 }
 
-/* Subtle gradient behind the hero on the splash homepage. */
-.hero {
-  --overlay-blurple: transparent;
-}
-
 .hero > .stack {
   gap: clamp(1.5rem, 4vw, 2.5rem);
 }
@@ -43,6 +38,16 @@
 /* Tagline under the hero title reads a touch softer. */
 .hero .tagline {
   color: var(--sl-color-gray-2);
+}
+
+/* Starlight fills primary buttons with the text accent, which in the dark theme
+   is the pale pink accent-high. Use the saturated cherry with white text there
+   (~5:1 contrast); the light theme already gets cherry on white. */
+:root:not([data-theme='light']) .sl-link-button.primary,
+:root:not([data-theme='light']) .sl-link-button.primary:hover {
+  background: var(--sl-color-accent);
+  border-color: var(--sl-color-accent);
+  color: var(--sl-color-white);
 }
 
 /* Cherry-tinted CTA hover. */
