@@ -8,9 +8,11 @@ description: Catch CherryPick API misuse in the IDE with cherrypick_lint.
 misuse in the IDE and in `dart analyze` — no `build_runner` required. This page shows what each rule catches, with a
 bad/good example, and how to install and configure it.
 
-> `cherrypick_generator` already validates annotations, but only when you run codegen.
-> `cherrypick_lint` surfaces the same class of mistakes — plus a few runtime traps codegen can't see —
-> as you type.
+:::note
+`cherrypick_generator` already validates annotations, but only when you run codegen.
+`cherrypick_lint` surfaces the same class of mistakes — plus a few runtime traps codegen can't see —
+as you type.
+:::
 
 ## Install
 

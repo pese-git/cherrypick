@@ -26,6 +26,8 @@ CherryPick предоставляет продвинутую эргономик�
 | `@scope`            | поле/параметр | Внедрение/resolve из другого (именованного) скоупа            |
 | `@params`           | параметр      | Добавляет user-defined параметры во время resolve             |
 
+Аннотации можно свободно **комбинировать** для сложных сценариев!
+
 ---
 
 ## Пример Field Injection
@@ -77,18 +79,45 @@ abstract class AppModule extends Module {
 (сгенерированный part переопределяет `builder()` и вызывает `bind<T>()`) и
 `@provide` либо `@instance` на каждом методе — включая приватные и `static`.
 
----
+- Пометьте класс как `@module` и опишите методы-провайдеры.
+- Используйте `@singleton`, `@named`, `@provide`, `@params` для управления жизненным циклом, именами ключей и параметрами.
+- Генератор создаст класс вида `$AppModule` с нужными DI-биндингами.
 
 ## Шаги использования
 
-1. Добавьте зависимости в `pubspec.yaml`.
-2. Аннотируйте классы и модули.
-3. Генерируйте код командой build_runner.
-4. Регистрируйте модули и используйте автосвязь.
+1. **Добавьте зависимости в `pubspec.yaml`:**
 
----
+   ```yaml
+   dependencies:
+     cherrypick: any
+     cherrypick_annotations: any
 
-## Расширенные возможности
+   dev_dependencies:
+     cherrypick_generator: any
+     build_runner: any
+   ```
+
+2. **Аннотируйте** классы и модули, как показано выше.
+
+3. **Запустите генерацию кода:**
+
+   ```shell
+   dart run build_runner build --delete-conflicting-outputs
+   # или во Flutter:
+   flutter pub run build_runner build --delete-conflicting-outputs
+   ```
+
+4. **Зарегистрируйте модули и используйте автовнедрение:**
+
+   ```dart
+   final scope = CherryPick.openRootScope()
+     ..installModules([\$AppModule()]);
+
+   final profile = ProfilePage();
+   profile.injectFields(); // внедряет все поля с @inject
+   ```
+
+## Расширенные возможности: параметры, именованные экземпляры и скоупы
 
 - Используйте `@named` для внедрения по ключу.
 - Используйте `@scope` для внедрения из разных скоупов.
@@ -100,7 +129,7 @@ abstract class AppModule extends Module {
 
 - После изменений в DI-коде запускайте build_runner заново.
 - Не редактируйте `.g.dart` вручную.
-- Ошибки некорректных аннотаций определяются автоматически.
+- Ошибки в использовании аннотаций (например, `@singleton` не на том элементе) показываются во время сборки.
 - Подключите [`cherrypick_lint`](https://github.com/pese-git/cherrypick/tree/master/cherrypick_lint), чтобы ловить многие из тех же ошибок прямо в IDE, ещё до запуска генератора — отсутствие part-директивы, `@module`-класс без `extends Module` или без `abstract`, метод без `@provide`/`@instance` и другие.
 
 ---

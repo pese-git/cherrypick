@@ -12,13 +12,13 @@ export default defineConfig({
       plugins: [
         starlightVersions({
           // The unversioned docs at the root are the latest (development) line.
-          current: { label: '4.x.x (dev)' },
+          current: { label: '4.x (dev)' },
           // Archived versions. Add one at a time — the plugin snapshots a single
           // new version per build run.
           versions: [
-            { slug: 'v3', label: '3.x.x' },
-            { slug: 'v2', label: '2.x.x' },
-            { slug: 'v1', label: '1.x.x' },
+            { slug: 'v3', label: '3.x' },
+            { slug: 'v2', label: '2.x' },
+            { slug: 'v1', label: '1.x' },
           ],
         }),
       ],
@@ -79,9 +79,9 @@ export default defineConfig({
           label: 'Core Concepts',
           translations: { ru: 'Основные концепции' },
           items: [
-            { label: 'Binding', translations: { ru: 'Binding' }, slug: 'core-concepts/binding' },
-            { label: 'Module', translations: { ru: 'Module' }, slug: 'core-concepts/module' },
-            { label: 'Scope', translations: { ru: 'Scope' }, slug: 'core-concepts/scope' },
+            { label: 'Binding', translations: { ru: 'Привязка (Binding)' }, slug: 'core-concepts/binding' },
+            { label: 'Module', translations: { ru: 'Модуль' }, slug: 'core-concepts/module' },
+            { label: 'Scope', translations: { ru: 'Скоуп (Scope)' }, slug: 'core-concepts/scope' },
             { label: 'Disposable', translations: { ru: 'Disposable' }, slug: 'core-concepts/disposable' },
           ],
         },

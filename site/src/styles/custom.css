@@ -68,3 +68,18 @@
 :not(pre) > code {
   font-size: 0.875em;
 }
+
+/* starlight-versions fixes the selector at 6.5em, which truncates "4.x (dev)".
+   Size it to the longest option instead (`:root` outranks the scoped rule). */
+:root starlight-version-select select {
+  width: auto;
+}
+
+/* Between the desktop breakpoint and ~1024px the header's first column still
+   reserves the full sidebar width for the site title, which pushes the
+   language selector past the right edge. Size it to the title instead. */
+@media (min-width: 50rem) and (max-width: 64rem) {
+  .header > .header {
+    grid-template-columns: auto 1fr auto;
+  }
+}
