@@ -20,14 +20,13 @@ Name it in the top-level `plugins` section of `analysis_options.yaml`:
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^1.1.0
+  cherrypick_lint: ^4.0.0-dev.0
 ```
 
 Requires Dart >=3.10 (Flutter >=3.38).
 
-**Not on pub.dev yet.** The version-constraint form above starts working once
-the package is published; until then point the plugin at a local checkout of
-this repository:
+The package is on [pub.dev](https://pub.dev/packages/cherrypick_lint). To try an unreleased
+change, point the plugin at a local checkout of this repository instead:
 
 ```yaml
 # analysis_options.yaml
@@ -42,6 +41,21 @@ the only forms the `plugins` section accepts.
 Restart the Dart Analysis Server afterwards (in VS Code: *Dart: Restart Analysis Server*) —
 analyzer plugins are only picked up on start-up. The rules then appear both in the IDE and in
 `dart analyze` / `flutter analyze`, so CI needs no extra step.
+
+## Which `cherrypick` versions
+
+The plugin does not depend on `cherrypick` — it only reads your code — so nothing stops you
+enabling it on any version. What differs is whether each rule's claim is true for the API you
+actually have. This was checked by running the plugin on a file that violates every rule, and by
+executing each claimed runtime behavior, against `cherrypick` 2.2.0, 3.0.0, 3.0.2 and 4.0.0-dev.6.
+
+| `cherrypick` | Rules that apply |
+|---|---|
+| 4.x | All 15. |
+| 3.x (tested: 3.0.0, 3.0.2) | 14 of 15. Not [`avoid_extends_silent_observer`](#avoid_extends_silent_observer): the fast path it warns about exists only in 4.x. Disable it there. |
+| 2.x and older | Not supported. `closeScope` and `closeSubScope` are synchronous `void` and `Scope.dispose()` does not exist, so the await-rules flag calls with nothing to await and their quick fix produces a `use_of_void_result` error. `avoid_resolve_in_to_instance` and `avoid_singleton_on_provide_with_params` describe behavior 2.x does not have. |
+
+Use the matching major of `cherrypick_annotations` and `cherrypick_generator`.
 
 ## await-rules
 
@@ -223,8 +237,13 @@ annotation misuse.
 
 ### `avoid_extends_silent_observer`
 
-`Scope` fast-paths `if (_observer is SilentCherryPickObserver)`, so a subclass created via
-`extends` silently receives **none** of the 14 observer callbacks.
+On `cherrypick` 4.x, `Scope` fast-paths `if (_observer is SilentCherryPickObserver)`, so a
+subclass created via `extends` silently receives **none** of the 14 observer callbacks.
+
+:::note
+The fast path does not exist in `cherrypick` 3.x: there a subclass still receives its callbacks,
+so this warning does not apply and the rule can be [disabled](#disabling-a-rule).
+:::
 
 ```dart
 // ❌ avoid_extends_silent_observer
@@ -306,7 +325,7 @@ bind<Api>().toProvide(() => ApiMock());
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^1.1.0
+    version: ^4.0.0-dev.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```
