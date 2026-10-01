@@ -31,7 +31,7 @@ spec:
       containers:
         - name: site
           # Тег — короткий SHA коммита, из которого собран образ.
-          image: harbor.openidealab.com/cherrypick/site:8799d1e
+          image: harbor.openidealab.com/cherrypick/site:8e6606c
           ports:
             - containerPort: 80
               protocol: TCP
