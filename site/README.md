@@ -17,7 +17,7 @@ site/
 │       ├── *.md             # English docs (root locale)
 │       └── ru/              # Russian landing + docs
 ├── public/favicon.svg
-└── scripts/port-docs.mjs    # one-off migration from the old Docusaurus docs
+└── scripts/og-image.mjs     # renders public/og.png (social preview)
 ```
 
 English is the root locale (served at `/`); Russian is served under `/ru/`.
