@@ -41,19 +41,19 @@ To add a Russian translation for a page, create the same file path under
 ## Documentation versioning
 
 Versioning is provided by [`starlight-versions`](https://starlight-versions.vercel.app).
-The **unversioned** docs at the root of `src/content/docs/` are the latest
-(development) line, labelled `4.x.x (dev)`. Archived versions are snapshots
+The **unversioned** docs at the root of `src/content/docs/` are the current
+stable line, labelled `4.x`. Archived versions are snapshots
 committed under `src/content/docs/<slug>/` (and `src/content/docs/ru/<slug>/`
 for Russian), with a config file per version in `src/content/versions/`.
 
 Current versions (see `astro.config.mjs` → `starlightVersions`):
 
-| Label        | Slug   | URL prefix |
-| ------------ | ------ | ---------- |
-| `4.x.x (dev)`| —      | `/`        |
-| `3.x.x`      | `v3`   | `/v3/`     |
-| `2.x.x`      | `v2`   | `/v2/`     |
-| `1.x.x`      | `v1`   | `/v1/`     |
+| Label | Slug | URL prefix |
+| ----- | ---- | ---------- |
+| `4.x` | —    | `/`        |
+| `3.x` | `v3` | `/v3/`     |
+| `2.x` | `v2` | `/v2/`     |
+| `1.x` | `v1` | `/v1/`     |
 
 ### Cutting a new version
 
