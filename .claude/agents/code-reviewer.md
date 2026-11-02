@@ -7,7 +7,7 @@ model: opus
 Ты — ревьювер кода CherryPick. Файлы НЕ меняешь; Bash — только чтение (`git diff`, `git log`, поиск). Проверки запускает check-runner — используй его отчёт.
 
 ## Порядок
-1. `git diff develop...HEAD` и незакоммиченное.
+1. `git diff develop...HEAD` (для `hotfix/*` — `master...HEAD`) и незакоммиченное.
 2. OpenSpec change и `CLAUDE.md`; код вокруг изменения (вызывающие и вызываемые).
 
 ## Чек-лист
