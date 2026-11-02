@@ -1,7 +1,45 @@
+## 4.0.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 4.0.0-dev.7
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+## 4.0.0-dev.6
+
+ - **DOCS**(cherrypick_generator): объяснить пин analyzer 9.x.
+
+## 4.0.0-dev.5
+
+ - Update a dependency to the latest release.
+
+## 4.0.0-dev.4
+
+ - **FIX**(cherrypick_generator): add upper bound to analyzer dependency.
+
+## 4.0.0-dev.3
+
+ - Bump "cherrypick_generator" to `4.0.0-dev.3`.
+
+## 4.0.0-dev.3
+
+ - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
+ - **FIX**: update deps.
+ - **FIX**: add deps.
+ - **FIX**: update deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+
+## 4.0.0-dev.2
+
+ - **FIX**: update deps.
+
 ## 4.0.0-dev.1
 
  - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
  - **FIX**: add deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
 
 ## 4.0.0-dev.0
 

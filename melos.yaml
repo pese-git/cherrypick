@@ -8,9 +8,23 @@ packages:
   - cherrypick_flutter
   - cherrypick_annotations
   - cherrypick_generator
+  - cherrypick_lint
+  - cherrypick_lint/example
   - talker_cherrypick_logger
   - examples/client_app
   - examples/postly
+  - examples/market_pulse
+
+command:
+  version:
+    hooks:
+      # melos стейджит только pubspec.yaml и CHANGELOG.md, поэтому локи
+      # примеров после бампа версий оставались протухшими до следующей
+      # ручной уборки. Перегенерируем и добавляем их сами — preCommit
+      # выполняется до git commit, так что всё попадает в релизный коммит.
+      preCommit: |
+        melos bootstrap
+        git add "*pubspec.lock"
 
 scripts:
   clean_all:
@@ -37,6 +51,10 @@ scripts:
 
   analyze:
     exec: dart analyze
+    description: >
+      Analyze every package. cherrypick_lint's rules are surfaced here too:
+      the plugin is enabled for cherrypick_lint/example via the top-level
+      plugins: section of its analysis_options.yaml.
 
   format:
     exec: dart format lib
@@ -51,19 +69,25 @@ scripts:
     description: "Run tests for Dart packages only"
     exec: dart test --reporter=compact
     packageFilters:
-      scope: ["cherrypick", "cherrypick_annotations", "cherrypick_generator"]
+      scope:
+        [
+          "cherrypick",
+          "cherrypick_annotations",
+          "cherrypick_generator",
+          "cherrypick_lint",
+        ]
 
   test:flutter:
-    description: "Run tests for Flutter packages only"  
+    description: "Run tests for Flutter packages only"
     exec: flutter test --reporter=compact
     packageFilters:
-      scope: ["cherrypick_flutter"]
+      scope: ["cherrypick_flutter", "market_pulse"]
 
   codegen:
     description: "Run build for Flutter packages only" 
     exec: dart run build_runner build --delete-conflicting-outputs
     packageFilters:
-      scope: ["postly"]
+      scope: ["postly", "market_pulse"]
 
   outdated:
     exec: dart pub outdated 

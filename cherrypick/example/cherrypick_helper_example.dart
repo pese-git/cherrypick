@@ -161,7 +161,7 @@ void main() {
       '✅ Detection enabled for root scope: ${CherryPick.isCycleDetectionEnabledForScope()}');
 
   // Создаем дочерний скоуп
-  // ignore: unused_local_variable
+  // ignore: unused_local_variable, experimental_member_use
   final featureScope = CherryPick.openScope(scopeName: 'feature.auth');
   print(
       '   Detection in feature.auth scope: ${CherryPick.isCycleDetectionEnabledForScope(scopeName: 'feature.auth')}');

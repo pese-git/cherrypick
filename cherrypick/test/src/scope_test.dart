@@ -58,6 +58,15 @@ class ModuleCountingDisposable extends Module {
   }
 }
 
+class ModuleAsyncCountingDisposable extends Module {
+  @override
+  void builder(Scope scope) {
+    bind<CountingDisposable>()
+        .toProvideAsync(() async => CountingDisposable())
+        .singleton();
+  }
+}
+
 class ModuleWithDisposable extends Module {
   @override
   void builder(Scope scope) {
@@ -117,6 +126,27 @@ void main() {
       final observer = MockObserver();
       final scope = Scope(null, observer: observer);
       expect(scope.parentScope, null);
+    });
+    // scopeId keys the per-scope entries of GlobalCycleDetector and prefixes
+    // every global resolution key, so two scopes sharing an id would share a
+    // resolution stack and could report a cycle that does not exist.
+    test('Scope ids are unique even when scopes are created in a tight loop',
+        () {
+      final observer = MockObserver();
+      final ids = <String>{};
+      for (var i = 0; i < 5000; i++) {
+        ids.add(Scope(null, observer: observer).scopeId!);
+      }
+      expect(ids, hasLength(5000));
+    });
+    test('SubScope ids are unique across a wide scope tree', () {
+      final observer = MockObserver();
+      final root = Scope(null, observer: observer);
+      final ids = <String>{root.scopeId!};
+      for (var i = 0; i < 2000; i++) {
+        ids.add(root.openSubScope('child_$i').scopeId!);
+      }
+      expect(ids, hasLength(2001));
     });
     test('Can open and retrieve the same subScope by key', () {
       final observer = MockObserver();
@@ -191,6 +221,63 @@ void main() {
       expect(scope.resolve<int>(), 5);
       scope.dropModules();
       expect(() => scope.resolve<int>(), throwsA(isA<StateError>()));
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  group('Module installation errors', () {
+    // A bind<T>() whose chain was never finished has no resolver. That is a
+    // configuration mistake and must be reported as one, naming the type and
+    // the module, instead of surfacing as a null-check TypeError.
+    test('installModules reports a binding left without a target', () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
+      expect(
+        () => scope.installModules([
+          _InlineModule((m, s) {
+            m.bind<int>();
+          }),
+        ]),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('int'),
+              contains('_InlineModule'),
+              contains('toProvide'),
+            ),
+          ),
+        ),
+      );
+    });
+    test('the reported message identifies a named binding by its name', () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer);
+      expect(
+        () => scope.installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().withName('api');
+          }),
+        ]),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('String'), contains('api')),
+          ),
+        ),
+      );
+    });
+    test('a completed binding installs normally', () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<int>().toInstance(1);
+          }),
+        ]);
+      expect(scope.resolve<int>(), 1);
     });
   });
 
@@ -271,7 +358,7 @@ void main() {
           }),
         ]);
       expect(await scope.resolveAsync<int>(params: 2), 6);
-      expect(() => scope.resolveAsync<int>(), throwsA(isA<StateError>()));
+      await expectLater(scope.resolveAsync<int>(), throwsA(isA<StateError>()));
     });
     test('tryResolveAsync returns null for missing', () async {
       final observer = MockObserver();
@@ -283,10 +370,79 @@ void main() {
 
   // --------------------------------------------------------------------------
   group('Optional resolution and error handling', () {
+    // Contract: `null` means "no such binding". A binding that IS registered but
+    // cannot be resolved the way it was asked for reports the misuse instead of
+    // hiding it behind a null.
     test("tryResolve returns null for missing dependency", () {
       final observer = MockObserver();
       final scope = Scope(null, observer: observer);
       expect(scope.tryResolve<int>(), isNull);
+    });
+    test("tryResolve throws for an async provider binding", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().toProvideAsync(() async => 'async value');
+          }),
+        ]);
+      expect(() => scope.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolve throws for an async instance binding", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().toInstance(Future.value('async value'));
+          }),
+        ]);
+      expect(() => scope.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolve throws for an async binding inherited from the parent",
+        () {
+      final observer = MockObserver();
+      final parent = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<String>().toProvideAsync(() async => 'async value');
+          }),
+        ]);
+      final child = parent.openSubScope('child');
+      expect(() => child.tryResolve<String>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolve throws when a parameterized provider gets no params", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<int>().toProvideWithParams((param) => (param as int) * 2);
+          }),
+        ]);
+      expect(scope.tryResolve<int>(params: 3), 6);
+      expect(() => scope.tryResolve<int>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolveAsync throws when a parameterized provider gets no params",
+        () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m.bind<int>().toProvideAsyncWithParams((x) async => (x as int) * 3);
+          }),
+        ]);
+      expect(scope.tryResolveAsync<int>(), throwsA(isA<StateError>()));
+    });
+    test("tryResolveAsync propagates an error thrown by the provider", () {
+      final observer = MockObserver();
+      final scope = Scope(null, observer: observer)
+        ..installModules([
+          _InlineModule((m, s) {
+            m
+                .bind<String>()
+                .toProvideAsync(() async => throw ArgumentError('boom'));
+          }),
+        ]);
+      expect(scope.tryResolveAsync<String>(), throwsA(isA<ArgumentError>()));
     });
   });
 
@@ -356,6 +512,39 @@ void main() {
       await root.closeSubScope('feature');
       expect(d2.disposeCount, 1);
     });
+    test('Closing subScope does not dispose instances owned by the parent',
+        () async {
+      await CherryPick.closeRootScope(); // isolate from shared root singleton
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleCountingDisposable()]);
+      final sub = root.openSubScope('feature');
+
+      // Resolved through the subscope, but the binding lives in the root.
+      final fromSub = sub.resolve<CountingDisposable>();
+      await root.closeSubScope('feature');
+
+      expect(fromSub.disposeCount, 0,
+          reason: 'parent-owned singleton must survive its child scope');
+      expect(identical(root.resolve<CountingDisposable>(), fromSub), isTrue);
+
+      await root.dispose();
+      expect(fromSub.disposeCount, 1);
+    });
+    test('Closing subScope does not dispose parent instances resolved async',
+        () async {
+      await CherryPick.closeRootScope(); // isolate from shared root singleton
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleAsyncCountingDisposable()]);
+      final sub = root.openSubScope('feature');
+
+      final fromSub = await sub.resolveAsync<CountingDisposable>();
+      await root.closeSubScope('feature');
+
+      expect(fromSub.disposeCount, 0);
+
+      await root.dispose();
+      expect(fromSub.disposeCount, 1);
+    });
     test('Dispose for all nested subScopes on root disposeAsync', () async {
       final root = CherryPick.openRootScope();
       root
@@ -368,6 +557,60 @@ void main() {
           .resolve<CountingDisposable>();
       await root.dispose();
       expect(d.disposeCount, 1);
+    });
+
+    test(
+        'Disposable owned by root and resolved through a deep parent chain is '
+        'disposed exactly once', () async {
+      await CherryPick.closeRootScope(); // isolate from shared root singleton
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleCountingDisposable()]);
+
+      // Build a deep chain of subscopes below the owning (root) scope.
+      var leaf = root;
+      for (var i = 0; i < 50; i++) {
+        leaf = leaf.openSubScope('lvl$i');
+      }
+
+      // Resolving from the deepest scope walks 50 parents up to the owner.
+      final d = leaf.resolve<CountingDisposable>();
+      // Repeated resolves from different depths must not multiply tracking.
+      final d2 = leaf.resolve<CountingDisposable>();
+      final d3 = root.resolve<CountingDisposable>();
+      expect(identical(d, d2), isTrue);
+      expect(identical(d, d3), isTrue);
+      expect(d.disposeCount, 0);
+
+      await root.dispose();
+
+      // Regression: the parent chain previously re-entered the public
+      // `tryResolve` at every level, registering the same instance in each
+      // scope's disposable set — dispose() ran once per level (51 times).
+      expect(d.disposeCount, 1);
+      await CherryPick.closeRootScope();
+    });
+
+    test(
+        'Async disposable owned by root and resolved through a deep parent '
+        'chain is disposed exactly once', () async {
+      await CherryPick.closeRootScope(); // isolate from shared root singleton
+      final root = CherryPick.openRootScope()
+        ..installModules([ModuleAsyncCountingDisposable()]);
+
+      var leaf = root;
+      for (var i = 0; i < 50; i++) {
+        leaf = leaf.openSubScope('lvl$i');
+      }
+
+      final d = await leaf.resolveAsync<CountingDisposable>();
+      final d2 = await leaf.resolveAsync<CountingDisposable>();
+      expect(identical(d, d2), isTrue);
+      expect(d.disposeCount, 0);
+
+      await root.dispose();
+
+      expect(d.disposeCount, 1);
+      await CherryPick.closeRootScope();
     });
   });
 

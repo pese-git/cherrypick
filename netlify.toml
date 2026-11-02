@@ -1,0 +1,34 @@
+# Старый сайт документации (Docusaurus, website/) удалён, документация живёт
+# на https://cherrypick.openidealab.com (site/, Astro + Starlight).
+# Проект Netlify cherrypick-di остаётся только ради старых ссылок —
+# cherrypick-di.netlify.app указан homepage'ем у версий пакетов до 4.0.0 на
+# pub.dev — и отдаёт постоянные редиректы на новый сайт. Сборки нет.
+#
+# Настройки из этого файла перекрывают заданные в UI Netlify
+# (base: website, command: yarn build, publish: website/build).
+
+[build]
+  base = ""
+  publish = "netlify-redirect"
+  command = "echo 'cherrypick-di: redirect-only deploy, nothing to build'"
+
+# Docusaurus отдавал документацию под /docs/ (RU — под /ru/docs/), Starlight —
+# от корня. Старые слаги, которых в новом сайте нет, перенаправляет уже сам
+# новый сайт (redirects в site/astro.config.mjs).
+[[redirects]]
+  from = "/ru/docs/*"
+  to = "https://cherrypick.openidealab.com/ru/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/docs/*"
+  to = "https://cherrypick.openidealab.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "https://cherrypick.openidealab.com/:splat"
+  status = 301
+  force = true

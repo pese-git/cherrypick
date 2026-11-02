@@ -12,7 +12,6 @@
 //
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/element2.dart';
 import 'exceptions.dart';
 import 'metadata_utils.dart';
 
@@ -53,10 +52,8 @@ class AnnotationValidator {
   ///   - Parameter validation for method arguments.
   ///
   /// Throws [AnnotationValidationException] on any violation.
-  static void validateMethodAnnotations(MethodElement2 method) {
-    final annotations = _getAnnotationNames(
-      method.firstFragment.metadata2.annotations,
-    );
+  static void validateMethodAnnotations(MethodElement method) {
+    final annotations = _getAnnotationNames(method.metadata.annotations);
 
     _validateMutuallyExclusiveAnnotations(method, annotations);
     _validateAnnotationCombinations(method, annotations);
@@ -71,10 +68,8 @@ class AnnotationValidator {
   ///   - Correct scope naming if present.
   ///
   /// Throws [AnnotationValidationException] if checks fail.
-  static void validateFieldAnnotations(FieldElement2 field) {
-    final annotations = _getAnnotationNames(
-      field.firstFragment.metadata2.annotations,
-    );
+  static void validateFieldAnnotations(FieldElement field) {
+    final annotations = _getAnnotationNames(field.metadata.annotations);
 
     _validateInjectFieldAnnotations(field, annotations);
   }
@@ -87,10 +82,8 @@ class AnnotationValidator {
   ///   - Provides helpful context for error/warning reporting.
   ///
   /// Throws [AnnotationValidationException] if checks fail.
-  static void validateClassAnnotations(ClassElement2 classElement) {
-    final annotations = _getAnnotationNames(
-      classElement.firstFragment.metadata2.annotations,
-    );
+  static void validateClassAnnotations(ClassElement classElement) {
+    final annotations = _getAnnotationNames(classElement.metadata.annotations);
 
     _validateModuleClassAnnotations(classElement, annotations);
     _validateInjectableClassAnnotations(classElement, annotations);
@@ -111,7 +104,7 @@ class AnnotationValidator {
   ///
   /// For example, `@instance` and `@provide` cannot both be present.
   static void _validateMutuallyExclusiveAnnotations(
-    MethodElement2 method,
+    MethodElement method,
     List<String> annotations,
   ) {
     // @instance and @provide are mutually exclusive
@@ -134,7 +127,7 @@ class AnnotationValidator {
   /// - One of `@instance` or `@provide` must be present for a registration method
   /// - Validates singleton usage
   static void _validateAnnotationCombinations(
-    MethodElement2 method,
+    MethodElement method,
     List<String> annotations,
   ) {
     // @params can only be used with @provide
@@ -172,7 +165,7 @@ class AnnotationValidator {
 
   /// Singleton-specific method annotation checks.
   static void _validateSingletonUsage(
-    MethodElement2 method,
+    MethodElement method,
     List<String> annotations,
   ) {
     // Singleton with params might not make sense in some contexts
@@ -194,11 +187,9 @@ class AnnotationValidator {
   }
 
   /// Validates extra requirements or syntactic rules for annotation arguments, like @named.
-  static void _validateAnnotationParameters(MethodElement2 method) {
+  static void _validateAnnotationParameters(MethodElement method) {
     // Validate @named annotation parameters
-    final namedValue = MetadataUtils.getNamedValue(
-      method.firstFragment.metadata2.annotations,
-    );
+    final namedValue = MetadataUtils.getNamedValue(method.metadata.annotations);
     if (namedValue != null) {
       if (namedValue.isEmpty) {
         throw AnnotationValidationException(
@@ -229,9 +220,7 @@ class AnnotationValidator {
 
     // Validate method parameters for @params usage
     for (final param in method.formalParameters) {
-      final paramAnnotations = _getAnnotationNames(
-        param.firstFragment.metadata2.annotations,
-      );
+      final paramAnnotations = _getAnnotationNames(param.metadata.annotations);
       if (paramAnnotations.contains('params')) {
         _validateParamsParameter(param, method);
       }
@@ -241,7 +230,7 @@ class AnnotationValidator {
   /// Checks that @params is used with compatible parameter type.
   static void _validateParamsParameter(
     FormalParameterElement param,
-    MethodElement2 method,
+    MethodElement method,
   ) {
     // @params parameter should typically be dynamic or Map<String, dynamic>
     final paramType = param.type.getDisplayString();
@@ -266,7 +255,7 @@ class AnnotationValidator {
 
   /// Checks field-level annotation for valid injectable fields.
   static void _validateInjectFieldAnnotations(
-    FieldElement2 field,
+    FieldElement field,
     List<String> annotations,
   ) {
     if (!annotations.contains('inject')) {
@@ -285,7 +274,7 @@ class AnnotationValidator {
     }
 
     // Validate scope annotation if present
-    for (final meta in field.firstFragment.metadata2.annotations) {
+    for (final meta in field.metadata.annotations) {
       final obj = meta.computeConstantValue();
       final type = obj?.type?.getDisplayString();
       if (type == 'scope') {
@@ -297,7 +286,7 @@ class AnnotationValidator {
 
   /// Checks @module usage: must have at least one DI method, each with DI-annotation.
   static void _validateModuleClassAnnotations(
-    ClassElement2 classElement,
+    ClassElement classElement,
     List<String> annotations,
   ) {
     if (!annotations.contains('module')) {
@@ -305,7 +294,7 @@ class AnnotationValidator {
     }
 
     // Check if class has public methods
-    final publicMethods = classElement.methods2
+    final publicMethods = classElement.methods
         .where((m) => m.isPublic)
         .toList();
     if (publicMethods.isEmpty) {
@@ -323,7 +312,7 @@ class AnnotationValidator {
     // Validate that public methods have appropriate annotations
     for (final method in publicMethods) {
       final methodAnnotations = _getAnnotationNames(
-        method.firstFragment.metadata2.annotations,
+        method.metadata.annotations,
       );
       if (!methodAnnotations.contains('instance') &&
           !methodAnnotations.contains('provide')) {
@@ -342,7 +331,7 @@ class AnnotationValidator {
 
   /// Checks @injectable usage on classes and their fields.
   static void _validateInjectableClassAnnotations(
-    ClassElement2 classElement,
+    ClassElement classElement,
     List<String> annotations,
   ) {
     if (!annotations.contains('injectable')) {
@@ -350,10 +339,8 @@ class AnnotationValidator {
     }
 
     // Check if class has injectable fields
-    final injectFields = classElement.fields2.where((f) {
-      final fieldAnnotations = _getAnnotationNames(
-        f.firstFragment.metadata2.annotations,
-      );
+    final injectFields = classElement.fields.where((f) {
+      final fieldAnnotations = _getAnnotationNames(f.metadata.annotations);
       return fieldAnnotations.contains('inject');
     }).toList();
 

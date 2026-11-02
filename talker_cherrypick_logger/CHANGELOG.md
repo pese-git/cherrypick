@@ -1,3 +1,27 @@
+## 4.0.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 4.0.0-dev.6
+
+ - Update a dependency to the latest release.
+
+## 4.0.0-dev.5
+
+ - Update a dependency to the latest release.
+
+## 4.0.0-dev.4
+
+ - Update a dependency to the latest release.
+
+## 4.0.0-dev.3
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+## 4.0.0-dev.3
+
+ - Bump "talker_cherrypick_logger" to `4.0.0-dev.3`.
+
 ## 3.0.3
 
  - Update a dependency to the latest release.

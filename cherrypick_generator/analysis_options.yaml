@@ -32,4 +32,5 @@ include: package:lints/recommended.yaml
 analyzer:
   errors:
     deprecated_member_use: ignore
+    experimental_member_use: ignore
     unintended_html_in_doc_comment: ignore

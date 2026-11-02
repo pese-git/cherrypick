@@ -6,6 +6,7 @@
 > - [`cherrypick`](https://pub.dev/packages/cherrypick) — runtime DI core  
 > - [`cherrypick_annotations`](https://pub.dev/packages/cherrypick_annotations) — DI annotations  
 > - [`cherrypick_generator`](https://pub.dev/packages/cherrypick_generator) — DI code generation  
+> - [`cherrypick_lint`](../cherrypick_lint) — IDE lint plugin for catching API misuse  
 >
 
 ---
@@ -40,8 +41,9 @@ final config = AppConfig.dev();
 bind<AppConfig>().toInstance(config);
 
 // Register an already running Future/async value
+// (toInstance accepts FutureOr<T>; resolve it with resolveAsync)
 final setupFuture = loadEnvironment();
-bind<Environment>().toInstanceAsync(setupFuture);
+bind<Environment>().toInstance(setupFuture);
 ```
 
 > ⚠️ **Important note about using toInstance in Module**
@@ -87,8 +89,8 @@ bind<Environment>().toInstanceAsync(setupFuture);
 - **toProvide** — regular sync factory
 - **toProvideAsync** — async factory (if you need to await a Future)
 - **toProvideWithParams / toProvideAsyncWithParams** — factories with runtime parameters
-- **toInstance** — registers an already created object as a dependency
-- **toInstanceAsync** — registers an already started Future as an async dependency
+- **toInstance** — registers an already created object (or an already running `Future`) as a dependency
+- ~~**toInstanceAsync**~~ — deprecated since 4.0.0, use `toInstance` (it already accepts `FutureOr<T>`)
 
 ### Named bindings
 
@@ -256,7 +258,7 @@ final service = scope.tryResolve<OptionalService>(); // returns null if not exis
 ## Automatic resource management: Disposable and dispose
 
 CherryPick makes it easy to clean up resources for your singleton services and other objects registered in DI.  
-If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was resolved via DI.  
+If your class implements the `Disposable` interface, always **await** `scope.dispose()` (or `CherryPick.closeRootScope()`) when you want to free all resources in your scope — CherryPick will automatically await `dispose()` for every object that implements `Disposable` and was created by a binding declared in that scope (resolving a parent's dependency through a subscope leaves it owned by the parent).  
 This ensures safe and graceful resource management (including any async resource cleanup: streams, DB connections, sockets, etc.).
 
 ### Example
@@ -309,7 +311,11 @@ CherryPick supports DI with annotations, letting you eliminate manual DI setup.
 ### Example DI module
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
 
 @module()
 abstract class AppModule extends Module {
@@ -538,6 +544,8 @@ You can use CherryPick in Dart CLI, server apps, and microservices. All major fe
 **A:**  
 Yes! Even if none of your services currently implement `Disposable`, always use `await` when closing scopes. If you later add resource cleanup (by implementing `dispose()`), CherryPick will handle it automatically without you needing to change your scope cleanup code. This ensures resource management is future-proof, robust, and covers all application scenarios.
 
+> 💡 [`cherrypick_lint`](../cherrypick_lint) flags a missing `await` on `closeSubScope`/`closeScope`/`dispose` right in the IDE, so this mistake doesn't need to rely on memory.
+
 ---
 
 ## Useful Links
@@ -545,4 +553,5 @@ Yes! Even if none of your services currently implement `Disposable`, always use 
 - [cherrypick](https://pub.dev/packages/cherrypick)
 - [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator)
+- [cherrypick_lint](../cherrypick_lint) — [linting guide](lint_en.md)
 - [Sources on GitHub](https://github.com/pese-git/cherrypick)

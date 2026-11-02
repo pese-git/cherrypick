@@ -2,10 +2,10 @@ name: cherrypick_generator
 description: |
   Source code generator for the cherrypick dependency injection system. Processes annotations to generate binding and module code for Dart & Flutter projects.
 
-version: 4.0.0-dev.1
-homepage: https://cherrypick-di.netlify.app
-documentation: https://cherrypick-di.netlify.app/docs/intro
-repository: https://github.com/pese-git/cherrypick/cherrypick_generator
+version: 4.0.0
+homepage: https://cherrypick.openidealab.com
+documentation: https://cherrypick.openidealab.com/intro/
+repository: https://github.com/pese-git/cherrypick/tree/master/cherrypick_generator
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 topics:
   - di
@@ -19,19 +19,23 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  cherrypick_annotations: ^4.0.0-dev.0
-  analyzer: ">=8.2.9 <10.0.1"
+  cherrypick_annotations: ^4.0.0
+  # Deliberately spans the whole supported range instead of a caret: on
+  # Flutter 3.38 the meta 1.17.0 pin forces analyzer 9.x, on 3.47 the
+  # resolver reaches 14.x, and Flutter apps running auto_route_generator
+  # sit at 13.x in between. The generator sources build against all three.
+  analyzer: ">=9.0.0 <16.0.0"
   dart_style: ^3.0.0
-  code_builder: ^4.10.1
-  build: ^3.0.0
+  build: ^4.0.0
   source_gen: ^4.2.0
   collection: ^1.18.0
   package_config: ^2.2.0
-  build_runner_core: ^9.3.1
+  #build_runner_core: ^9.3.2
+  build_runner: ^2.5.0
+  code_builder: ^4.11.1
 
 dev_dependencies:
   lints: ^6.0.0
   mockito: ^5.4.5
   test: ^1.25.8
   build_test: ^3.0.0
-  build_runner: ^2.5.0

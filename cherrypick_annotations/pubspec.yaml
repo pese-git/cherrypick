@@ -1,10 +1,10 @@
 name: cherrypick_annotations
 description: |
   Set of annotations for CherryPick dependency injection library. Enables code generation and declarative DI for Dart & Flutter projects.
-version: 4.0.0-dev.0
-homepage: https://cherrypick-di.netlify.app
-documentation: https://cherrypick-di.netlify.app/docs/intro
-repository: https://github.com/pese-git/cherrypick/cherrypick_annotations
+version: 4.0.0
+homepage: https://cherrypick.openidealab.com
+documentation: https://cherrypick.openidealab.com/intro/
+repository: https://github.com/pese-git/cherrypick/tree/master/cherrypick_annotations
 issue_tracker: https://github.com/pese-git/cherrypick/issues
 topics:
   - di
@@ -18,7 +18,6 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  meta: ^1.15.0
   # path: ^1.8.0
 
 dev_dependencies:

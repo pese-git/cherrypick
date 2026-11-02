@@ -15,11 +15,11 @@ import 'dart:isolate';
 
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:build_runner_core/build_runner_core.dart';
 import 'package:cherrypick_generator/inject_generator.dart';
 import 'package:package_config/package_config.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
+import 'package:build_runner/src/build/build_result.dart';
 
 void main() {
   group('InjectGenerator Tests', () {

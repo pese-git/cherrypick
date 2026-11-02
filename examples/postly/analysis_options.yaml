@@ -9,12 +9,17 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+
 analyzer:
+  errors:
+    experimental_member_use: ignore
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "**/*.gr.dart"
     - "**/*.config.dart"
+    - build/**
+    - web/**
 
 linter:
   # The lint rules applied to this project can be customized in the

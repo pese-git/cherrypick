@@ -1,0 +1,96 @@
+---
+// Splash pages (the homepages) have no sidebar, so on narrow viewports Starlight
+// renders no menu button and the version/theme/language selectors — which
+// normally live in the mobile sidebar footer — are unreachable. Add a small
+// dropdown with those controls for that case only.
+import Default from '@astrojs/starlight/components/Header.astro';
+import { Icon } from '@astrojs/starlight/components';
+// Virtual modules resolve to plugin overrides, so ThemeSelect includes the
+// starlight-versions selector.
+import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
+import SocialIcons from 'virtual:starlight/components/SocialIcons';
+import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+
+const { hasSidebar } = Astro.locals.starlightRoute;
+---
+
+{
+  hasSidebar ? (
+    <Default />
+  ) : (
+    <div class="splash-header">
+      <div class="splash-header-default">
+        <Default />
+      </div>
+      <details class="splash-menu md:sl-hidden print:hidden">
+        <summary aria-label={Astro.locals.t('menuButton.accessibleLabel')}>
+          <Icon name="bars" class="open-icon" />
+          <Icon name="close" class="close-icon" />
+        </summary>
+        <div class="splash-menu-panel">
+          <div class="sl-flex social-icons">
+            <SocialIcons />
+          </div>
+          <ThemeSelect />
+          <LanguageSelect />
+        </div>
+      </details>
+    </div>
+  )
+}
+
+<style>
+  .splash-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sl-nav-gap);
+    height: 100%;
+  }
+  .splash-header-default {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    list-style: none;
+    cursor: pointer;
+    color: var(--sl-color-text-accent);
+    background-color: var(--sl-color-white);
+    box-shadow: var(--sl-shadow-md);
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+  details:not([open]) .close-icon,
+  details[open] .open-icon {
+    display: none;
+  }
+
+  .splash-menu-panel {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--sl-nav-height);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1.5rem;
+    padding: 0.75rem var(--sl-nav-pad-x);
+    background-color: var(--sl-color-bg-nav);
+    border-bottom: 1px solid var(--sl-color-hairline-shade);
+    box-shadow: var(--sl-shadow-md);
+  }
+  .social-icons {
+    gap: 1rem;
+    width: 100%;
+  }
+</style>

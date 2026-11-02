@@ -3,6 +3,326 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-11-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v4.0.0`](#cherrypick---v400)
+ - [`cherrypick_annotations` - `v4.0.0`](#cherrypick_annotations---v400)
+ - [`cherrypick_flutter` - `v4.0.0`](#cherrypick_flutter---v400)
+ - [`cherrypick_generator` - `v4.0.0`](#cherrypick_generator---v400)
+ - [`cherrypick_lint` - `v4.0.0`](#cherrypick_lint---v400)
+ - [`talker_cherrypick_logger` - `v4.0.0`](#talker_cherrypick_logger---v400)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `cherrypick` - `v4.0.0`
+ - `cherrypick_annotations` - `v4.0.0`
+ - `cherrypick_flutter` - `v4.0.0`
+ - `cherrypick_generator` - `v4.0.0`
+ - `cherrypick_lint` - `v4.0.0`
+ - `talker_cherrypick_logger` - `v4.0.0`
+
+---
+
+#### `cherrypick` - `v4.0.0`
+
+#### `cherrypick_annotations` - `v4.0.0`
+
+#### `cherrypick_flutter` - `v4.0.0`
+
+#### `cherrypick_generator` - `v4.0.0`
+
+#### `cherrypick_lint` - `v4.0.0`
+
+#### `talker_cherrypick_logger` - `v4.0.0`
+
+
+## 2026-09-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.6`](#cherrypick---v400-dev6)
+ - [`cherrypick_annotations` - `v4.0.0-dev.2`](#cherrypick_annotations---v400-dev2)
+ - [`cherrypick_generator` - `v4.0.0-dev.7`](#cherrypick_generator---v400-dev7)
+ - [`cherrypick_flutter` - `v4.0.0-dev.6`](#cherrypick_flutter---v400-dev6)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.6`](#talker_cherrypick_logger---v400-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v4.0.0-dev.6`
+ - `talker_cherrypick_logger` - `v4.0.0-dev.6`
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.6`
+
+ - **DOCS**(cherrypick_lint): описать подключение через plugins: и релиз 2.0.0.
+ - **DOCS**: добавить гайд по использованию cherrypick_lint.
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+#### `cherrypick_annotations` - `v4.0.0-dev.2`
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+#### `cherrypick_generator` - `v4.0.0-dev.7`
+
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+
+## 2026-09-28
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_generator` - `v4.0.0-dev.6`](#cherrypick_generator---v400-dev6)
+
+---
+
+#### `cherrypick_generator` - `v4.0.0-dev.6`
+
+ - **DOCS**(cherrypick_generator): объяснить пин analyzer 9.x.
+
+
+## 2026-09-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.5`](#cherrypick---v400-dev5)
+ - [`cherrypick_annotations` - `v4.0.0-dev.1`](#cherrypick_annotations---v400-dev1)
+ - [`cherrypick_flutter` - `v4.0.0-dev.5`](#cherrypick_flutter---v400-dev5)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.5`](#talker_cherrypick_logger---v400-dev5)
+ - [`cherrypick_generator` - `v4.0.0-dev.5`](#cherrypick_generator---v400-dev5)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v4.0.0-dev.5`
+ - `talker_cherrypick_logger` - `v4.0.0-dev.5`
+ - `cherrypick_generator` - `v4.0.0-dev.5`
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.5`
+
+ - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.
+
+#### `cherrypick_annotations` - `v4.0.0-dev.1`
+
+ - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.
+
+
+## 2026-08-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.4`](#cherrypick---v400-dev4)
+ - [`cherrypick_generator` - `v4.0.0-dev.4`](#cherrypick_generator---v400-dev4)
+ - [`cherrypick_flutter` - `v4.0.0-dev.4`](#cherrypick_flutter---v400-dev4)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.4`](#talker_cherrypick_logger---v400-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `cherrypick_flutter` - `v4.0.0-dev.4`
+ - `talker_cherrypick_logger` - `v4.0.0-dev.4`
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.4`
+
+ - **REFACTOR**(scope): extract local resolve into shared sync/async helpers.
+ - **REFACTOR**(scope): deduplicate disposable tracking.
+ - **REFACTOR**(cherrypick): share one chain representation between both detectors.
+ - **PERF**(cherrypick): resolve parent chain internally, track disposable once in owner.
+ - **FIX**(cherrypick): keep the resolution chain alive across await boundaries.
+ - **FIX**(scope): report an incomplete binding instead of a null-check failure.
+ - **FIX**(scope): make scope ids collision-free.
+ - **DOCS**: document that a scope disposes only what its bindings created.
+ - **DOCS**(scope): state that tryResolve returns null only for a missing binding.
+
+#### `cherrypick_generator` - `v4.0.0-dev.4`
+
+ - **FIX**(cherrypick_generator): add upper bound to analyzer dependency.
+
+
+## 2026-08-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.3`](#cherrypick---v400-dev3)
+ - [`cherrypick_generator` - `v4.0.0-dev.3`](#cherrypick_generator---v400-dev3)
+ - [`cherrypick_flutter` - `v4.0.0-dev.3`](#cherrypick_flutter---v400-dev3)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.3`](#talker_cherrypick_logger---v400-dev3)
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick" to `4.0.0-dev.3`.
+
+#### `cherrypick_generator` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick_generator" to `4.0.0-dev.3`.
+
+#### `cherrypick_flutter` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick_flutter" to `4.0.0-dev.3`.
+
+#### `talker_cherrypick_logger` - `v4.0.0-dev.3`
+
+ - Bump "talker_cherrypick_logger" to `4.0.0-dev.3`.
+
+
+## 2026-08-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.3`](#cherrypick---v400-dev3)
+ - [`cherrypick_generator` - `v4.0.0-dev.3`](#cherrypick_generator---v400-dev3)
+ - [`cherrypick_flutter` - `v4.0.0-dev.3`](#cherrypick_flutter---v400-dev3)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.3`](#talker_cherrypick_logger---v400-dev3)
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FIX**(test): fix warning.
+ - **FIX**(scope): properly clear binding and module references on dispose.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+ - **DOCS**: sync references after ProviderFactory rename.
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `cherrypick_generator` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
+ - **FIX**: update deps.
+ - **FIX**: add deps.
+ - **FIX**: update deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+
+#### `cherrypick_flutter` - `v4.0.0-dev.3`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+#### `talker_cherrypick_logger` - `v4.0.0-dev.3`
+
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+
+## 2026-08-14
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick` - `v4.0.0-dev.3`](#cherrypick---v400-dev3)
+ - [`cherrypick_generator` - `v4.0.0-dev.3`](#cherrypick_generator---v400-dev3)
+ - [`cherrypick_flutter` - `v4.0.0-dev.3`](#cherrypick_flutter---v400-dev3)
+ - [`talker_cherrypick_logger` - `v4.0.0-dev.3`](#talker_cherrypick_logger---v400-dev3)
+
+---
+
+#### `cherrypick` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+
+#### `cherrypick_generator` - `v4.0.0-dev.3`
+
+ - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
+ - **FIX**: update deps.
+ - **FIX**: add deps.
+ - **FIX**: update deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
+
+#### `cherrypick_flutter` - `v4.0.0-dev.3`
+
+ - Bump "cherrypick_flutter" to `4.0.0-dev.3`.
+
+#### `talker_cherrypick_logger` - `v4.0.0-dev.3`
+
+ - Bump "talker_cherrypick_logger" to `4.0.0-dev.3`.
+
+
 ## 2026-04-28
 
 ### Changes
@@ -15,28 +335,34 @@ Packages with breaking changes:
 
 Packages with other changes:
 
- - [`cherrypick` - `v3.0.3`](#cherrypick---v303)
- - [`cherrypick_generator` - `v4.0.0-dev.1`](#cherrypick_generator---v400-dev1)
- - [`cherrypick_flutter` - `v3.0.3`](#cherrypick_flutter---v303)
- - [`talker_cherrypick_logger` - `v3.0.3`](#talker_cherrypick_logger---v303)
-
-Packages with dependency updates only:
-
-> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
-
- - `cherrypick_flutter` - `v3.0.3`
- - `talker_cherrypick_logger` - `v3.0.3`
+ - [`cherrypick_generator` - `v4.0.0-dev.2`](#cherrypick_generator---v400-dev2)
 
 ---
 
-#### `cherrypick` - `v3.0.3`
+#### `cherrypick_generator` - `v4.0.0-dev.2`
 
- - **DOCS**: sync references after ProviderFactory rename.
+ - **FIX**: update deps.
+
+
+## 2026-01-30
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`cherrypick_generator` - `v4.0.0-dev.1`](#cherrypick_generator---v400-dev1)
+
+---
 
 #### `cherrypick_generator` - `v4.0.0-dev.1`
 
- - **REFACTOR**(cherrypick_generator): migrate inject codegen to code_builder.
- - **FIX**: add deps.
+ - **FEAT**: migrate to analyzer 9.0.0 API.
 
 
 ## 2026-01-29

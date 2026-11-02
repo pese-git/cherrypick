@@ -4,14 +4,11 @@ import 'package:benchmark_di/scenarios/universal_service.dart';
 import 'package:kiwi/kiwi.dart';
 import 'di_adapter.dart';
 
-/// DIAdapter-для KiwiContainer с поддержкой universal benchmark сценариев.
+/// DIAdapter for KiwiContainer with universal benchmark scenario support.
 class KiwiAdapter extends DIAdapter<KiwiContainer> {
   late KiwiContainer _container;
-  // ignore: unused_field
-  final bool _isSubScope;
 
-  KiwiAdapter({KiwiContainer? container, bool isSubScope = false})
-      : _isSubScope = isSubScope {
+  KiwiAdapter({KiwiContainer? container, bool isSubScope = false}) {
     _container = container ?? KiwiContainer();
   }
 
@@ -33,6 +30,12 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
         throw UnsupportedError(
             'Kiwi does not support async dependencies or async binding scenarios.');
       }
+      if (scenario == UniversalScenario.override) {
+        throw UnsupportedError(
+            'Kiwi не поддерживает иерархию scope: KiwiContainer.scoped() '
+            'создаёт независимый контейнер, поэтому сценарий override был бы '
+            'плоским резолвом под чужим именем.');
+      }
       return (container) {
         switch (scenario) {
           case UniversalScenario.asyncChain:
@@ -43,12 +46,14 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
             );
             break;
           case UniversalScenario.named:
-            container.registerFactory<UniversalService>(
-                (c) => UniversalServiceImpl(value: 'impl1'),
-                name: 'impl1');
-            container.registerFactory<UniversalService>(
-                (c) => UniversalServiceImpl(value: 'impl2'),
-                name: 'impl2');
+            // Имя строится при регистрации и захватывается константой —
+            // симметрично chain-фабрикам.
+            for (var chain = 1; chain <= chainCount; chain++) {
+              final implName = 'impl$chain';
+              container.registerFactory<UniversalService>(
+                  (c) => UniversalServiceImpl(value: implName),
+                  name: implName);
+            }
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {
@@ -57,6 +62,8 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
                 final depName = '${chain}_$level';
                 switch (bindingMode) {
                   case UniversalBindingMode.singletonStrategy:
+                  case UniversalBindingMode.lazySingletonStrategy:
+                    // Kiwi's registerSingleton is lazy (factory-based, cached on first resolve)
                     container.registerSingleton<UniversalService>(
                         (c) => UniversalServiceImpl(
                             value: depName,
@@ -75,7 +82,7 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
                         name: depName);
                     break;
                   case UniversalBindingMode.asyncStrategy:
-                    // Не поддерживается
+                    // Not supported
                     break;
                 }
               }
@@ -97,33 +104,22 @@ class KiwiAdapter extends DIAdapter<KiwiContainer> {
 
   @override
   T resolve<T extends Object>({String? named}) {
-    // Для asyncChain нужен resolve<Future<T>>
-    if (T.toString().startsWith('Future<')) {
-      return _container.resolve<T>(named);
-    } else {
-      return _container.resolve<T>(named);
-    }
+    return _container.resolve<T>(named);
   }
 
   @override
-  Future<T> resolveAsync<T extends Object>({String? named}) async {
-    if (T.toString().startsWith('Future<')) {
-      // resolve<Future<T>>, unwrap result
-      return Future.value(_container.resolve<T>(named));
-    } else {
-      // Для совместимости с chain/override
-      return Future.value(_container.resolve<T>(named));
-    }
+  Future<T> resolveAsync<T extends Object>({String? named}) {
+    return Future.value(_container.resolve<T>(named));
   }
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     _container.clear();
   }
 
   @override
   KiwiAdapter openSubScope(String name) {
-    // Возвращаем новый scoped контейнер (отдельный). Наследование не реализовано.
+    // Returns a new scoped container. Inheritance not implemented.
     return KiwiAdapter(container: KiwiContainer.scoped(), isSubScope: true);
   }
 

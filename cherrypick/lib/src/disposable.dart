@@ -16,7 +16,10 @@ import 'dart:async';
 /// An interface for resources that require explicit cleanup, used by the CherryPick dependency injection container.
 ///
 /// If an object implements [Disposable], the CherryPick DI container will automatically call [dispose]
-/// when the corresponding scope is cleaned up. Use [Disposable] for closing streams, files, controllers, services, etc.
+/// when the corresponding scope is cleaned up. The corresponding scope is the one that *declares the
+/// binding* which created the object — not necessarily the scope `resolve()` was called on, since a
+/// subscope falls back to its parent for dependencies it does not declare itself.
+/// Use [Disposable] for closing streams, files, controllers, services, etc.
 /// Both synchronous and asynchronous cleanup is supported:
 /// - For sync disposables, implement [dispose] as a `void` or simply return nothing.
 /// - For async disposables, implement [dispose] returning a [Future].

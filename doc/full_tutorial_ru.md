@@ -6,6 +6,7 @@
 > - [`cherrypick`](https://pub.dev/packages/cherrypick) — runtime DI core  
 > - [`cherrypick_annotations`](https://pub.dev/packages/cherrypick_annotations) — аннотации для DI  
 > - [`cherrypick_generator`](https://pub.dev/packages/cherrypick_generator) — генерация DI-кода  
+> - [`cherrypick_lint`](../cherrypick_lint) — lint-плагин для IDE, ловит неверное использование API  
 >
 
 ---
@@ -40,8 +41,9 @@ final config = AppConfig.dev();
 bind<AppConfig>().toInstance(config);
 
 // Зарегистрировать уже существующий Future/асинхронное значение
+// (toInstance принимает FutureOr<T>; получать через resolveAsync)
 final setupFuture = loadEnvironment();
-bind<Environment>().toInstanceAsync(setupFuture);
+bind<Environment>().toInstance(setupFuture);
 ```
 
 
@@ -90,8 +92,8 @@ bind<Environment>().toInstanceAsync(setupFuture);
 - **toProvide** — обычная синхронная фабрика.
 - **toProvideAsync** — асинхронная фабрика (например, если нужно дожидаться Future).
 - **toProvideWithParams / toProvideAsyncWithParams** — фабрики с параметрами.
-- **toInstance** — регистрирует уже созданный экземпляр класса как зависимость.
-- **toInstanceAsync** — регистрирует уже запущенный Future, как асинхронную зависимость.
+- **toInstance** — регистрирует уже созданный экземпляр (или уже запущенный `Future`) как зависимость.
+- ~~**toInstanceAsync**~~ — устарел с 4.0.0, используйте `toInstance` (он уже принимает `FutureOr<T>`).
 
 ### Именованные биндинги (Named)
 
@@ -259,7 +261,7 @@ final service = scope.tryResolve<OptionalService>(); // вернет null, ес�
 ## Автоматическое управление ресурсами: Disposable и dispose
 
 CherryPick позволяет автоматически очищать ресурсы для ваших синглтонов и любых сервисов, зарегистрированных через DI.  
-Если ваш класс реализует интерфейс `Disposable`, всегда вызывайте и **await**-те `scope.dispose()` (или `CherryPick.closeRootScope()`), когда хотите освободить все ресурсы — CherryPick дождётся завершения `dispose()` для всех объектов, которые реализуют Disposable и были резолвлены из DI.  
+Если ваш класс реализует интерфейс `Disposable`, всегда вызывайте и **await**-те `scope.dispose()` (или `CherryPick.closeRootScope()`), когда хотите освободить все ресурсы — CherryPick дождётся завершения `dispose()` для всех объектов, которые реализуют Disposable и были созданы биндингом, объявленным в этом скоупе (родительская зависимость, зарезолвленная через подскоуп, остаётся во владении родителя).  
 Это позволяет избежать утечек памяти, корректно завершать процессы и грамотно освобождать любые ресурсы (файлы, потоки, соединения и т.д., включая async).
 
 ### Пример
@@ -312,7 +314,11 @@ CherryPick поддерживает DI через аннотации, что п�
 ### Пример DI-модуля
 
 ```dart
+// app_module.dart
+import 'package:cherrypick/cherrypick.dart';
 import 'package:cherrypick_annotations/cherrypick_annotations.dart';
+
+part 'app_module.module.cherrypick.g.dart';
 
 @module()
 abstract class AppModule extends Module {
@@ -543,6 +549,8 @@ void main() {
 **О:**  
 Да! Даже если в данный момент ни один сервис не реализует Disposable, всегда используйте `await` при закрытии скоупа. Если в будущем потребуется добавить освобождение ресурсов через dispose, CherryPick вызовет его автоматически без изменения завершения работы ваших скоупов. Такой подход делает управление ресурсами устойчивым и безопасным для любых изменений архитектуры.
 
+> 💡 [`cherrypick_lint`](../cherrypick_lint) подсвечивает пропущенный `await` на `closeSubScope`/`closeScope`/`dispose` прямо в IDE — не нужно держать это в голове.
+
 ---
 
 ## Полезные ссылки
@@ -550,4 +558,5 @@ void main() {
 - [cherrypick](https://pub.dev/packages/cherrypick)
 - [cherrypick_annotations](https://pub.dev/packages/cherrypick_annotations)
 - [cherrypick_generator](https://pub.dev/packages/cherrypick_generator)
+- [cherrypick_lint](../cherrypick_lint) — [гайд по линтингу](lint_ru.md)
 - [Исходники на GitHub](https://github.com/pese-git/cherrypick)
