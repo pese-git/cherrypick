@@ -217,6 +217,12 @@ Indicates that this parameter should receive runtime-supplied arguments during d
 
 ---
 
+## See also
+
+- [`cherrypick_lint`](../cherrypick_lint) — catches misused annotations (missing `abstract` on `@module`, a method with no `@provide`/`@instance`, an `@inject` field that isn't `late final`, and more) right in the IDE.
+
+---
+
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE).

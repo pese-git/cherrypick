@@ -11,15 +11,14 @@
 // limitations under the License.
 //
 import 'dart:collection';
-import 'dart:math';
 
+import 'package:cherrypick/src/binding.dart';
 import 'package:cherrypick/src/cycle_detector.dart';
 import 'package:cherrypick/src/disposable.dart';
 import 'package:cherrypick/src/global_cycle_detector.dart';
 import 'package:cherrypick/src/binding_resolver.dart';
 import 'package:cherrypick/src/module.dart';
 import 'package:cherrypick/src/observer.dart';
-// import 'package:cherrypick/src/log_format.dart';
 
 /// Represents a DI scope (container) for modules, subscopes,
 /// and dependency resolution (sync/async) in CherryPick.
@@ -60,6 +59,13 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   @override
   CherryPickObserver get observer => _observer;
 
+  bool get _isSilentObserver => _observer is SilentCherryPickObserver;
+
+  bool get _canUseDirectResolvePath =>
+      _isSilentObserver &&
+      !isCycleDetectionEnabled &&
+      !isGlobalCycleDetectionEnabled;
+
   /// COLLECTS all resolved instances that implement [Disposable].
   final Set<Disposable> _disposables = HashSet();
 
@@ -71,31 +77,41 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   Scope(this._parentScope, {required CherryPickObserver observer})
       : _observer = observer {
     setScopeId(_generateScopeId());
-    observer.onScopeOpened(scopeId ?? 'NO_ID');
-    observer.onDiagnostic(
-      'Scope created: ${scopeId ?? 'NO_ID'}',
-      details: {
-        'type': 'Scope',
-        'name': scopeId ?? 'NO_ID',
-        if (_parentScope?.scopeId != null) 'parent': _parentScope!.scopeId,
-        'description': 'scope created',
-      },
-    );
+    if (!_isSilentObserver) {
+      observer.onScopeOpened(scopeId ?? 'NO_ID');
+      observer.onDiagnostic(
+        'Scope created: ${scopeId ?? 'NO_ID'}',
+        details: {
+          'type': 'Scope',
+          'name': scopeId ?? 'NO_ID',
+          if (_parentScope?.scopeId != null) 'parent': _parentScope!.scopeId,
+          'description': 'scope created',
+        },
+      );
+    }
   }
 
   final Set<Module> _modulesList = HashSet();
 
-  // индекс для мгновенного поиска binding’ов
+  // index for fast binding lookup
   final Map<Object, Map<String?, BindingResolver>> _bindingResolvers = {};
+
+  /// Counts every scope created in this isolate, making [_generateScopeId]
+  /// collision-free by construction.
+  static int _scopeSequence = 0;
 
   /// Generates a unique identifier string for this scope instance.
   ///
   /// Used internally for diagnostics, logging and global scope tracking.
+  ///
+  /// The id must be unique: [GlobalCycleDetector] keys its per-scope detectors
+  /// by it and prefixes every global resolution key with it, so two scopes
+  /// sharing an id would share a resolution stack. The sequence number — not
+  /// the timestamp, which is only there to make logs readable — is what
+  /// guarantees uniqueness.
   String _generateScopeId() {
-    final random = Random();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final randomPart = random.nextInt(10000);
-    return 'scope_${timestamp}_$randomPart';
+    return 'scope_${timestamp}_${++_scopeSequence}';
   }
 
   /// Opens a named child [Scope] (subscope) as a descendant of the current scope.
@@ -119,16 +135,18 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         childScope.enableGlobalCycleDetection();
       }
       _scopeMap[name] = childScope;
-      observer.onDiagnostic(
-        'SubScope created: $name',
-        details: {
-          'type': 'SubScope',
-          'name': name,
-          'id': childScope.scopeId,
-          if (scopeId != null) 'parent': scopeId,
-          'description': 'subscope created',
-        },
-      );
+      if (!_isSilentObserver) {
+        observer.onDiagnostic(
+          'SubScope created: $name',
+          details: {
+            'type': 'SubScope',
+            'name': name,
+            'id': childScope.scopeId,
+            if (scopeId != null) 'parent': scopeId,
+            'description': 'subscope created',
+          },
+        );
+      }
     }
     return _scopeMap[name]!;
   }
@@ -137,6 +155,9 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   ///
   /// Ensures all [Disposable] objects and internal modules
   /// in the subscope are properly cleaned up. Also removes any global cycle detectors associated with the subscope.
+  ///
+  /// Only objects created by bindings declared in the subscope are disposed:
+  /// dependencies inherited from this scope remain owned by it. See [dispose].
   ///
   /// Example:
   /// ```dart
@@ -149,17 +170,19 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       if (childScope.scopeId != null) {
         GlobalCycleDetector.instance.removeScopeDetector(childScope.scopeId!);
       }
-      observer.onScopeClosed(childScope.scopeId ?? name);
-      observer.onDiagnostic(
-        'SubScope closed: $name',
-        details: {
-          'type': 'SubScope',
-          'name': name,
-          'id': childScope.scopeId,
-          if (scopeId != null) 'parent': scopeId,
-          'description': 'subscope closed',
-        },
-      );
+      if (!_isSilentObserver) {
+        observer.onScopeClosed(childScope.scopeId ?? name);
+        observer.onDiagnostic(
+          'SubScope closed: $name',
+          details: {
+            'type': 'SubScope',
+            'name': name,
+            'id': childScope.scopeId,
+            if (scopeId != null) 'parent': scopeId,
+            'description': 'subscope closed',
+          },
+        );
+      }
     }
     _scopeMap.remove(name);
   }
@@ -169,36 +192,44 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// Each module registers bindings and configuration for dependencies.
   /// After calling this, bindings are immediately available for resolve/tryResolve.
   ///
+  /// Throws [StateError] if a module declares a `bind<T>()` without completing
+  /// it with a target (`toInstance`, `toProvide`, …): such a binding could
+  /// never be resolved, so it is reported here rather than at resolve time.
+  ///
   /// Example:
   /// ```dart
   /// rootScope.installModules([AppModule(), NetworkModule()]);
   /// ```
   Scope installModules(List<Module> modules) {
     _modulesList.addAll(modules);
-    if (modules.isNotEmpty) {
+    if (!_isSilentObserver && modules.isNotEmpty) {
       observer.onModulesInstalled(
         modules.map((m) => m.runtimeType.toString()).toList(),
         scopeName: scopeId,
       );
     }
     for (var module in modules) {
-      observer.onDiagnostic(
-        'Module installed: ${module.runtimeType}',
-        details: {
-          'type': 'Module',
-          'name': module.runtimeType.toString(),
-          'scope': scopeId,
-          'description': 'module installed',
-        },
-      );
+      if (!_isSilentObserver) {
+        observer.onDiagnostic(
+          'Module installed: ${module.runtimeType}',
+          details: {
+            'type': 'Module',
+            'name': module.runtimeType.toString(),
+            'scope': scopeId,
+            'description': 'module installed',
+          },
+        );
+      }
       module.builder(this);
       // Associate bindings with this scope's observer
       for (final binding in module.bindingSet) {
         binding.observer = observer;
-        binding.logAllDeferred();
+        if (!_isSilentObserver) {
+          binding.logAllDeferred();
+        }
       }
+      _addModuleToIndex(module);
     }
-    _rebuildResolversIndex();
     return this;
   }
 
@@ -212,20 +243,22 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// testScope.dropModules();
   /// ```
   Scope dropModules() {
-    if (_modulesList.isNotEmpty) {
+    if (!_isSilentObserver && _modulesList.isNotEmpty) {
       observer.onModulesRemoved(
         _modulesList.map((m) => m.runtimeType.toString()).toList(),
         scopeName: scopeId,
       );
     }
-    observer.onDiagnostic(
-      'Modules dropped for scope: $scopeId',
-      details: {
-        'type': 'Scope',
-        'name': scopeId,
-        'description': 'modules dropped',
-      },
-    );
+    if (!_isSilentObserver) {
+      observer.onDiagnostic(
+        'Modules dropped for scope: $scopeId',
+        details: {
+          'type': 'Scope',
+          'name': scopeId,
+          'description': 'modules dropped',
+        },
+      );
+    }
     _modulesList.clear();
     _rebuildResolversIndex();
     return this;
@@ -242,6 +275,15 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// final special = scope.resolve<Service>(named: 'special');
   /// ```
   T resolve<T>({String? named, dynamic params}) {
+    if (_canUseDirectResolvePath) {
+      final result = _directResolveSync<T>(named, params);
+      if (result == null) {
+        throw StateError(
+            'Can\'t resolve dependency `$T`. Maybe you forget register it?');
+      }
+      return result;
+    }
+
     observer.onInstanceRequested(T.toString(), T, scopeName: scopeId);
     T result;
     if (isGlobalCycleDetectionEnabled) {
@@ -269,7 +311,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
         rethrow;
       }
     }
-    _trackDisposable(result);
     return result;
   }
 
@@ -307,14 +348,27 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
 
   /// Attempts to resolve a dependency of type [T], optionally by name and with params.
   ///
-  /// Returns the resolved dependency, or `null` if not found.
-  /// Does not throw if missing (unlike [resolve]).
+  /// Returns the resolved dependency, or `null` when no such binding is
+  /// registered in this scope or its parents — unlike [resolve], a missing
+  /// binding is not an error.
+  ///
+  /// A binding that *is* registered but cannot be resolved synchronously still
+  /// throws, so a misuse is reported instead of being hidden behind a `null`:
+  /// an async instance or provider directs you to [resolveAsync], and a
+  /// parameterized provider invoked without `params` reports the missing
+  /// arguments. Errors raised by the provider itself propagate unchanged.
+  ///
+  /// In short: `null` means "not registered", never "failed".
   ///
   /// Example:
   /// ```dart
   /// final maybeDb = scope.tryResolve<Database>();
   /// ```
   T? tryResolve<T>({String? named, dynamic params}) {
+    if (_canUseDirectResolvePath) {
+      return _directResolveSync<T>(named, params);
+    }
+
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = withGlobalCycleDetection<T?>(T, named, () {
@@ -323,7 +377,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     } else {
       result = _tryResolveWithLocalDetection<T>(named: named, params: params);
     }
-    if (result != null) _trackDisposable(result);
     return result;
   }
 
@@ -340,13 +393,28 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Locates and resolves [T] without cycle detection (direct lookup).
-  /// Returns null if not found. Used internally.
-  T? _tryResolveInternal<T>({String? named, dynamic params}) {
-    final resolver = _findBindingResolver<T>(named);
-    // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveSync(params) ??
-        _parentScope?.tryResolve(named: named, params: params);
-  }
+  /// Returns null if not found. Used internally by the observer/detection path.
+  ///
+  /// A resolved [Disposable] is tracked in the scope that owns the binding
+  /// (where the resolver produced it), exactly once — intermediate scopes on
+  /// the parent chain only forward the lookup.
+  T? _tryResolveInternal<T>({String? named, dynamic params}) =>
+      _resolveLocalSync<T>(named, params) ??
+      // Fallback to parent (public entry preserves per-scope cycle detection).
+      _parentScope?.tryResolve(named: named, params: params);
+
+  /// Fast-path resolution used when observers and cycle detection are disabled.
+  ///
+  /// Walks the parent chain via a direct internal recursion instead of
+  /// re-entering the public [tryResolve] at every level. This avoids the
+  /// per-level fast-path guard re-evaluation and, crucially, tracks a resolved
+  /// [Disposable] exactly once in the scope that owns the binding — the public
+  /// re-entry previously registered the same instance in every scope on the
+  /// chain (causing `dispose()` to run once per level). Returns null if not
+  /// found anywhere in the chain.
+  T? _directResolveSync<T>(String? named, dynamic params) =>
+      _resolveLocalSync<T>(named, params) ??
+      _parentScope?._directResolveSync<T>(named, params);
 
   /// Asynchronously resolves a dependency of type [T].
   ///
@@ -358,6 +426,19 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// final special = await scope.resolveAsync<Service>(named: "special");
   /// ```
   Future<T> resolveAsync<T>({String? named, dynamic params}) async {
+    if (_canUseDirectResolvePath) {
+      final result = await _directResolveAsync<T>(named, params);
+      if (result == null) {
+        throw StateError(
+            "Can't resolve async dependency `$T`. Maybe you forget register it?");
+      }
+      return result;
+    }
+    return _resolveAsyncWithObserverPath<T>(named: named, params: params);
+  }
+
+  Future<T> _resolveAsyncWithObserverPath<T>(
+      {String? named, dynamic params}) async {
     T result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T>>(T, named, () async {
@@ -368,7 +449,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       result = await _resolveAsyncWithLocalDetection<T>(
           named: named, params: params);
     }
-    _trackDisposable(result);
     return result;
   }
 
@@ -406,13 +486,29 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   }
 
   /// Attempts to asynchronously resolve a dependency of type [T].
-  /// Returns the dependency or null if not present (never throws).
+  ///
+  /// Returns the dependency, or `null` when no such binding is registered in
+  /// this scope or its parents.
+  ///
+  /// Failures while resolving a registered binding are not swallowed: an error
+  /// thrown by the provider, a detected cycle, or a parameterized provider
+  /// invoked without `params` all propagate to the caller.
+  ///
+  /// In short: `null` means "not registered", never "failed".
   ///
   /// Example:
   /// ```dart
   /// final user = await scope.tryResolveAsync<User>();
   /// ```
   Future<T?> tryResolveAsync<T>({String? named, dynamic params}) async {
+    if (_canUseDirectResolvePath) {
+      return await _directResolveAsync<T>(named, params);
+    }
+    return _tryResolveAsyncWithObserverPath<T>(named: named, params: params);
+  }
+
+  Future<T?> _tryResolveAsyncWithObserverPath<T>(
+      {String? named, dynamic params}) async {
     T? result;
     if (isGlobalCycleDetectionEnabled) {
       result = await withGlobalCycleDetection<Future<T?>>(T, named, () async {
@@ -423,7 +519,6 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
       result = await _tryResolveAsyncWithLocalDetection<T>(
           named: named, params: params);
     }
-    if (result != null) _trackDisposable(result);
     return result;
   }
 
@@ -440,38 +535,97 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
     }
   }
 
-  /// Direct async resolution for [T] without cycle check. Returns null if missing. Internal use only.
-  Future<T?> _tryResolveAsyncInternal<T>(
-      {String? named, dynamic params}) async {
-    final resolver = _findBindingResolver<T>(named);
-    // 1 - Try from own modules; 2 - Fallback to parent
-    return resolver?.resolveAsync(params) ??
-        _parentScope?.tryResolveAsync(named: named, params: params);
-  }
+  /// Direct async resolution for [T] without cycle check. Returns null if missing.
+  /// Used internally by the observer/detection path. Tracks a resolved
+  /// [Disposable] once in the owning scope (see [_tryResolveInternal]).
+  Future<T?> _tryResolveAsyncInternal<T>({String? named, dynamic params}) =>
+      _resolveLocalAsync<T>(named, params) ??
+      // Fallback to parent (public entry preserves per-scope cycle detection).
+      _parentScope?.tryResolveAsync(named: named, params: params) ??
+      Future<T?>.value(null);
+
+  /// Fast-path async resolution used when observers and cycle detection are
+  /// disabled. Mirrors [_directResolveSync]: recurses into the parent chain
+  /// directly (no public re-entry) and tracks a resolved [Disposable] exactly
+  /// once in the scope that owns the binding.
+  Future<T?> _directResolveAsync<T>(String? named, dynamic params) =>
+      _resolveLocalAsync<T>(named, params) ??
+      _parentScope?._directResolveAsync<T>(named, params) ??
+      Future<T?>.value(null);
 
   /// Looks up the [BindingResolver] for [T] and [named] within this scope.
   /// Returns null if none found. Internal use only.
   BindingResolver<T>? _findBindingResolver<T>(String? named) =>
       _bindingResolvers[T]?[named] as BindingResolver<T>?;
 
-  /// Rebuilds the internal index of all [BindingResolver]s from installed modules.
-  /// Called after [installModules] and [dropModules]. Internal use only.
-  void _rebuildResolversIndex() {
-    _bindingResolvers.clear();
-    for (var module in _modulesList) {
-      for (var binding in module.bindingSet) {
-        _bindingResolvers.putIfAbsent(binding.key, () => {});
-        final nameKey = binding.isNamed ? binding.name : null;
-        _bindingResolvers[binding.key]![nameKey] = binding.resolver!;
-      }
+  /// Resolves [T] from this scope's own bindings only, tracking a resolved
+  /// [Disposable] here — this scope owns the binding that produced it.
+  ///
+  /// Returns null when this scope has no matching binding, which is the signal
+  /// callers use to fall back to the parent chain.
+  T? _resolveLocalSync<T>(String? named, dynamic params) {
+    final local = _findBindingResolver<T>(named)?.resolveSync(params);
+    if (local != null) {
+      _trackDisposable(local);
+    }
+    return local;
+  }
+
+  /// Async counterpart of [_resolveLocalSync].
+  ///
+  /// Returns null (not a null-completing future) when this scope has no
+  /// matching binding, so callers can distinguish "nothing here, ask the
+  /// parent" from "the local binding resolved to null".
+  Future<T?>? _resolveLocalAsync<T>(String? named, dynamic params) {
+    final local = _findBindingResolver<T>(named)?.resolveAsync(params);
+    if (local == null) {
+      return null;
+    }
+    return local.then((value) {
+      _trackDisposable(value);
+      return value;
+    });
+  }
+
+  void _trackDisposable(Object? value) {
+    if (value is Disposable) {
+      _disposables.add(value);
     }
   }
 
-  /// Tracks resolved [Disposable] instances, to ensure dispose is called automatically.
-  /// Internal use only.
-  void _trackDisposable(Object? obj) {
-    if (obj is Disposable && !_disposables.contains(obj)) {
-      _disposables.add(obj);
+  void _addModuleToIndex(Module module) {
+    for (var binding in module.bindingSet) {
+      final resolver =
+          binding.resolver ?? _reportIncompleteBinding(binding, module);
+      _bindingResolvers.putIfAbsent(binding.key, () => {});
+      final nameKey = binding.isNamed ? binding.name : null;
+      _bindingResolvers[binding.key]![nameKey] = resolver;
+    }
+  }
+
+  /// Reports a `bind<T>()` whose chain was never completed with a target.
+  ///
+  /// Such a binding carries no resolver, so nothing could ever be resolved
+  /// from it. It is a configuration mistake, and naming the type, the module
+  /// and the missing call is far more useful than the null-check failure that
+  /// indexing it would otherwise produce.
+  Never _reportIncompleteBinding(Binding binding, Module module) {
+    final name = binding.isNamed ? " named '${binding.name}'" : '';
+    final message =
+        'Binding for `${binding.key}`$name in module ${module.runtimeType} '
+        'has no target, so it can never be resolved. Complete it with '
+        'toInstance(), toProvide(), toProvideWithParams(), toProvideAsync() '
+        'or toProvideAsyncWithParams().';
+    observer.onError(message, null, null);
+    throw StateError(message);
+  }
+
+  /// Rebuilds the internal index of all [BindingResolver]s from installed modules.
+  /// Called after [dropModules]. Internal use only.
+  void _rebuildResolversIndex() {
+    _bindingResolvers.clear();
+    for (var module in _modulesList) {
+      _addModuleToIndex(module);
     }
   }
 
@@ -481,20 +635,30 @@ class Scope with CycleDetectionMixin, GlobalCycleDetectionMixin {
   /// This method should always be called when a scope is no longer needed
   /// to guarantee timely resource cleanup (files, sockets, streams, handles, etc).
   ///
+  /// A [Disposable] is tracked by — and therefore disposed by — the scope whose
+  /// binding created it, not the scope [resolve] was called on. Resolving a
+  /// parent's dependency through a subscope leaves it owned by the parent, so
+  /// it stays alive until the parent is disposed.
+  ///
+  /// Note that a binding declared in a long-lived scope and not marked
+  /// `singleton()` accumulates one tracked instance per resolve until that
+  /// scope is disposed. Declare bindings in the scope whose lifetime matches
+  /// the resource.
+  ///
   /// Example:
   /// ```dart
   /// await myScope.dispose();
   /// ```
   Future<void> dispose() async {
     // Create copies to avoid concurrent modification
-    final scopesCopy = Map<String, Scope>.from(_scopeMap);
-    for (final subScope in scopesCopy.values) {
+    final scopes = _scopeMap.values.toList();
+    for (final subScope in scopes) {
       await subScope.dispose();
     }
     _scopeMap.clear();
 
-    final disposablesCopy = Set<Disposable>.from(_disposables);
-    for (final d in disposablesCopy) {
+    final disposables = _disposables.toList();
+    for (final d in disposables) {
       await d.dispose();
     }
     _disposables.clear();

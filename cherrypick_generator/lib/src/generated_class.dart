@@ -12,7 +12,6 @@
 //
 
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/element2.dart';
 import 'bind_spec.dart';
 
 /// ---------------------------------------------------------------------------
@@ -76,11 +75,11 @@ class GeneratedClass {
   /// final gen = GeneratedClass.fromClassElement(classElement);
   /// print(gen.generatedClassName); // e.g. $AppModule
   /// ```
-  static GeneratedClass fromClassElement(ClassElement2 element) {
-    final className = element.firstFragment.name2 ?? '';
+  static GeneratedClass fromClassElement(ClassElement element) {
+    final className = element.name ?? '';
     final generatedClassName = r'$' + className;
     final sourceFile = element.firstFragment.libraryFragment.source.shortName;
-    final binds = element.methods2
+    final binds = element.methods
         .where((m) => !m.isAbstract)
         .map(BindSpec.fromMethod)
         .toList();

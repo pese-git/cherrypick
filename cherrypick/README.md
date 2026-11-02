@@ -98,7 +98,7 @@ await CherryPick.closeRootScope();
 
 A **Binding** acts as a configuration for how to create or provide a particular dependency. Bindings support:
 
-* Direct instance assignment (`toInstance()`, `toInstanceAsync()`)
+* Direct instance assignment (`toInstance()` — accepts a value or an already running `Future`)
 * Lazy providers (sync/async functions)
 * Provider functions supporting dynamic parameters
 * Named instances for resolving by string key
@@ -111,8 +111,8 @@ void builder(Scope scope) {
   // Provide a direct instance
   bind<String>().toInstance("Hello world");
 
-  // Provide an async direct instance
-  bind<String>().toInstanceAsync(Future.value("Hello world"));
+  // Provide an async direct instance (toInstance accepts FutureOr<T>)
+  bind<String>().toInstance(Future.value("Hello world"));
 
   // Provide a lazy sync instance using a factory
   bind<String>().toProvide(() => "Hello world");
@@ -254,8 +254,28 @@ If you bind an object implementing `Disposable` as a singleton or provide it via
 #### Key Points
 - Supports both synchronous and asynchronous cleanup (dispose may return `void` or `Future`).
 - All `Disposable` instances from the current scope and subscopes will be disposed in the correct order.
+- An instance is owned by the scope that **declares its binding**, not by the scope you called `resolve()` on.
 - Prevents resource leaks and enforces robust cleanup.
 - No manual wiring needed once your class implements `Disposable`.
+
+#### Ownership
+
+Resolving a parent's dependency through a subscope does not transfer ownership:
+
+```dart
+final root = CherryPick.openRootScope()
+  ..installModules([AppModule()]);        // Database is declared here
+final feature = root.openSubScope('feature');
+
+final db = feature.resolve<Database>();   // resolved through the subscope...
+await root.closeSubScope('feature');      // ...but NOT disposed here
+
+await CherryPick.closeRootScope();        // disposed here
+```
+
+Keep in mind that a binding declared in a long-lived scope and *not* marked
+`.singleton()` accumulates one instance per resolve in that scope until it
+closes. Declare a binding in the scope whose lifetime matches the resource.
 
 #### Minimal Sync Example
 ```dart
@@ -300,8 +320,14 @@ await CherryPick.closeRootScope(); // awaits async disposal
 
 - `resolve<T>()` — Locates a dependency instance or throws if missing.
 - `resolveAsync<T>()` — Async variant for dependencies requiring async binding.
-- `tryResolve<T>()` — Returns `null` if not found (sync).
-- `tryResolveAsync<T>()` — Returns `null` async if not found.
+- `tryResolve<T>()` — Returns `null` if no such binding is registered (sync).
+- `tryResolveAsync<T>()` — Returns `null` async if no such binding is registered.
+
+`null` from `tryResolve`/`tryResolveAsync` means "not registered", not "failed":
+a binding that *is* registered but is asked for the wrong way still reports the
+problem. Calling `tryResolve<T>()` on an async binding throws and points you to
+`resolveAsync<T>()`, a parameterized provider invoked without `params` throws,
+and errors raised by a provider propagate to the caller.
 
 Supports:
 - Synchronous and asynchronous dependencies
@@ -434,6 +460,7 @@ abstract class AppModule {
 - After modifying DI-related code, always re-run `build_runner`.
 - Do not manually edit `.g.dart` files—let the generator manage them.
 - Errors in annotation usage (e.g., using `@singleton` on wrong target) are shown at build time.
+- Add [`cherrypick_lint`](../cherrypick_lint) to catch many of the same mistakes in the IDE, before you run the generator.
 
 ---
 
@@ -442,6 +469,7 @@ abstract class AppModule {
 - [Full annotation reference (en)](doc/annotations_en.md)
 - [cherrypick_annotations/README.md](../cherrypick_annotations/README.md)
 - [cherrypick_generator/README.md](../cherrypick_generator/README.md)
+- [cherrypick_lint/README.md](../cherrypick_lint/README.md) · [Linting guide](../doc/lint_en.md)
 - See the [`examples/postly`](../examples/postly) for a full working DI+annotations app.
 
 ---
@@ -785,6 +813,7 @@ CherryPick provides a set of official add-on modules for advanced use cases and 
 | [**cherrypick_generator**](https://pub.dev/packages/cherrypick_generator) | Code generator to produce DI bindings based on annotations. |
 | [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Flutter integration: DI provider widgets and helpers for Flutter. |
 | [**talker_cherrypick_logger**](https://pub.dev/packages/talker_cherrypick_logger) | Advanced logger for CherryPick DI events and state. Provides seamless integration with [Talker](https://pub.dev/packages/talker) logger, enabling central and visual tracking of DI events, errors, and diagnostics in both UI and console. |
+| [**cherrypick_lint**](../cherrypick_lint) | Analyzer plugin that catches CherryPick API misuse (missing `await` on scope disposal, invalid annotation usage, runtime traps) in the IDE and in `dart analyze`. |
 
 ---
 

@@ -137,8 +137,8 @@ void main() {
         AsyncCircularModule(),
       ]);
 
-      expect(
-        () => scope.resolveAsync<AsyncServiceA>(),
+      await expectLater(
+        scope.resolveAsync<AsyncServiceA>(),
         throwsA(isA<CircularDependencyException>()),
       );
     });
@@ -208,12 +208,14 @@ class AsyncCircularModule extends Module {
   void builder(Scope currentScope) {
     // ignore: deprecated_member_use_from_same_package
     bind<AsyncServiceA>().toProvideAsync(() async {
+      await Future<void>.delayed(Duration.zero);
       final serviceB = await currentScope.resolveAsync<AsyncServiceB>();
       return AsyncServiceA(serviceB);
     });
 
     // ignore: deprecated_member_use_from_same_package
     bind<AsyncServiceB>().toProvideAsync(() async {
+      await Future<void>.delayed(Duration.zero);
       final serviceA = await currentScope.resolveAsync<AsyncServiceA>();
       return AsyncServiceB(serviceA);
     });

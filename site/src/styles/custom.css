@@ -1,0 +1,90 @@
+/* CherryPick — fresh minimal theme with a cherry/rose accent.
+   Accent scale generated around #e11d48 (rose-600). */
+
+:root {
+  --sl-color-accent-low: #3a0311;
+  --sl-color-accent: #d4234a;
+  --sl-color-accent-high: #f6b8c6;
+
+  --cp-cherry: #e11d48;
+  --cp-leaf: #63b846;
+}
+
+/* Slightly warmer neutral grays — dark theme only. Starlight inverts this
+   scale for the light theme inside a cascade layer, so an unlayered `:root`
+   override here would leak dark grays into light mode. */
+:root:not([data-theme='light']) {
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #eceef2;
+  --sl-color-gray-2: #c0c2c7;
+  --sl-color-gray-3: #888b96;
+  --sl-color-gray-4: #565861;
+  --sl-color-gray-5: #363841;
+  --sl-color-gray-6: #24262f;
+  --sl-color-black: #17181c;
+}
+
+/* Light mode accent tuning. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #ffdfe6;
+  --sl-color-accent: #d01843;
+  --sl-color-accent-high: #6b0d23;
+}
+
+.hero > .stack {
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* Tagline under the hero title reads a touch softer. */
+.hero .tagline {
+  color: var(--sl-color-gray-2);
+}
+
+/* Starlight fills primary buttons with the text accent, which in the dark theme
+   is the pale pink accent-high. Use the saturated cherry with white text there
+   (~5:1 contrast); the light theme already gets cherry on white. */
+:root:not([data-theme='light']) .sl-link-button.primary,
+:root:not([data-theme='light']) .sl-link-button.primary:hover {
+  background: var(--sl-color-accent);
+  border-color: var(--sl-color-accent);
+  color: var(--sl-color-white);
+}
+
+/* Cherry-tinted CTA hover. */
+.hero .actions a.primary {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hero .actions a.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -8px var(--cp-cherry);
+}
+
+/* Card grid accent border on hover. Uses `translate` rather than `transform`
+   so it composes with the `<CardGrid stagger>` offset instead of replacing it. */
+.card {
+  transition: border-color 0.15s ease, translate 0.15s ease;
+}
+.card:hover {
+  border-color: var(--sl-color-accent);
+  translate: 0 -2px;
+}
+
+/* Inline code a little tighter. */
+:not(pre) > code {
+  font-size: 0.875em;
+}
+
+/* starlight-versions fixes the selector at 6.5em, which truncates "4.x (dev)".
+   Size it to the longest option instead (`:root` outranks the scoped rule). */
+:root starlight-version-select select {
+  width: auto;
+}
+
+/* Between the desktop breakpoint and ~1024px the header's first column still
+   reserves the full sidebar width for the site title, which pushes the
+   language selector past the right edge. Size it to the title instead. */
+@media (min-width: 50rem) and (max-width: 64rem) {
+  .header > .header {
+    grid-template-columns: auto 1fr auto;
+  }
+}

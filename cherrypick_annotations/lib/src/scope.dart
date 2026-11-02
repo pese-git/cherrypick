@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Specifies the DI scope or region from which a dependency should be resolved.
 ///
 /// Use `@scope('scopeName')` on an injected field, parameter, or provider method when you want
@@ -45,7 +43,6 @@ import 'package:meta/meta.dart';
 ///   Service service(@scope('shared') SharedConfig config);
 /// }
 /// ```
-@experimental
 final class scope {
   /// The name/key of the DI scope from which to resolve this dependency.
   final String? name;

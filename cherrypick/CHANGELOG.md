@@ -1,3 +1,58 @@
+## 4.0.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+ - **BREAKING**: finalizes the resolver/provider public API. Upgrading from 3.x: see the [migration guide](https://github.com/pese-git/cherrypick/blob/cherrypick-v4.0.0/doc/migration_4.0.0_en.md) ([RU](https://github.com/pese-git/cherrypick/blob/cherrypick-v4.0.0/doc/migration_4.0.0_ru.md)).
+
+## 4.0.0-dev.6
+
+ - **DOCS**(cherrypick_lint): описать подключение через plugins: и релиз 2.0.0.
+ - **DOCS**: добавить гайд по использованию cherrypick_lint.
+ - **DOCS**: упомянуть cherrypick_lint в документации экосистемы.
+
+## 4.0.0-dev.5
+
+ - **FEAT**: убрать @experimental с публичного API annotations и openScope/closeScope.
+
+## 4.0.0-dev.4
+
+ - **REFACTOR**(scope): extract local resolve into shared sync/async helpers.
+ - **REFACTOR**(scope): deduplicate disposable tracking.
+ - **REFACTOR**(cherrypick): share one chain representation between both detectors.
+ - **PERF**(cherrypick): resolve parent chain internally, track disposable once in owner.
+ - **FIX**(cherrypick): keep the resolution chain alive across await boundaries.
+ - **FIX**(scope): report an incomplete binding instead of a null-check failure.
+ - **FIX**(scope): make scope ids collision-free.
+ - **DOCS**: document that a scope disposes only what its bindings created.
+ - **DOCS**(scope): state that tryResolve returns null only for a missing binding.
+
+## 4.0.0-dev.3
+
+ - Bump "cherrypick" to `4.0.0-dev.3`.
+
+## 4.0.0-dev.3
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FIX**(test): fix warning.
+ - **FIX**(scope): properly clear binding and module references on dispose.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+ - **DOCS**: sync references after ProviderFactory rename.
+ - **DOCS**: add Netlify deployment status badge to README files.
+
+## 4.0.0-dev.3
+
+ - **REFACTOR**(cherrypick): restrict binding_resolver exports to public factory typedefs.
+ - **FIX**(cherrypick): retry async singleton after failed initialization.
+ - **FIX**(cherrypick): rename Provider typedefs to ProviderFactory.
+ - **FIX**(cherrypick): fix fast-path tests to actually exercise silent observer path.
+ - **FEAT**(cherrypick): split resolver into type-specialized classes with eager/lazy singleton and FutureOr support.
+ - **FEAT**(cherrypick): optimize Scope resolution with incremental index, silent observer, and fast-path.
+ - **DOCS**(cherrypick): align docs with 4.0.0 resolver/provider API.
+
 ## 3.0.3
 
  - **DOCS**: sync references after ProviderFactory rename.

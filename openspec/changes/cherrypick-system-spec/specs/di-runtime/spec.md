@@ -41,8 +41,15 @@
 - **WHEN** модули сброшены
 - **THEN** bindings модулей не доступны для резолва в этом scope
 
+#### Scenario: Незавершённый binding
+- **WHEN** модуль объявляет `bind<T>()` без цели (`toInstance` / `toProvide` / `toProvideWithParams` / `toProvideAsync` / `toProvideAsyncWithParams`)
+- **THEN** установка модуля завершается ошибкой с указанием типа, имени (если binding именованный) и модуля
+- **AND** ошибка выбрасывается при установке модуля, а не при резолве
+
 ### Requirement: Типы bindings
 `Binding` MUST поддерживать прямые инстансы, синхронные провайдеры, асинхронные провайдеры и провайдеры с параметрами, а также именованные bindings.
+
+Публичные методы регистрации: `toInstance` (принимает `FutureOr<T>`), `toProvide`, `toProvideWithParams`, `toProvideAsync`, `toProvideAsyncWithParams`. Начиная с 4.0.0 `toProvideAsync` / `toProvideAsyncWithParams` строго асинхронны и MUST принимать фабрику, возвращающую `Future<T>` (`AsyncProviderFactory<T>` / `AsyncProviderFactoryWithParams<T>`), а не являются алиасами `toProvide`. Метод `toInstanceAsync` DEPRECATED — используйте `toInstance`. Публичны только `BindingResolver` и typedef'ы фабрик (`ProviderFactory`, `ProviderFactoryWithParams`, `AsyncProviderFactory`, `AsyncProviderFactoryWithParams`); конкретные классы резолверов не экспортируются.
 
 #### Scenario: Именованные bindings
 - **WHEN** зарегистрированы два bindings одного типа с разными именами
@@ -78,6 +85,10 @@
 - **WHEN** вызывается `tryResolveAsync<T>()` для отсутствующей зависимости
 - **THEN** возвращается `null` без исключения
 
+#### Scenario: Повторная попытка async‑синглтона после сбоя инициализации
+- **WHEN** провайдер async‑синглтона выбрасывает ошибку при первой инициализации
+- **THEN** неуспешный результат не кэшируется, и следующий `resolveAsync<T>()` повторяет попытку инициализации
+
 ### Requirement: Ошибки несоответствия sync/async
 Резолв MUST выбрасывать ошибки при несоответствии sync/async режима.
 
@@ -86,11 +97,17 @@
 - **THEN** выбрасывается ошибка с указанием использовать async‑резолв
 
 ### Requirement: Управление Disposable
-`Scope` MUST отслеживать экземпляры, реализующие `Disposable`, и вызывать `dispose()` при закрытии scope.
+`Scope` MUST отслеживать экземпляры, реализующие `Disposable`, созданные биндингами, объявленными в этом scope, и вызывать `dispose()` при закрытии scope.
 
 #### Scenario: Автоматическое освобождение
 - **WHEN** scope закрывается
 - **THEN** все `Disposable` в scope и дочерних scope освобождаются
+
+#### Scenario: Владение при резолве через подскоуп
+- **WHEN** зависимость объявлена в родительском scope и резолвится через дочерний scope
+- **THEN** экземпляр отслеживается родительским scope
+- **AND** закрытие дочернего scope не вызывает у него `dispose()`
+- **AND** родительский scope продолжает выдавать этот экземпляр
 
 ### Requirement: Детекция циклов зависимостей
 Ядро DI MUST поддерживать локальную и глобальную детекцию циклов.

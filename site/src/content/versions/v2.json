@@ -1,0 +1,84 @@
+{
+  "sidebar": [
+    {
+      "label": "Getting Started",
+      "translations": {
+        "ru": "Начало работы"
+      },
+      "items": [
+        {
+          "label": "Introduction",
+          "translations": {
+            "ru": "Введение"
+          },
+          "slug": "intro"
+        },
+        {
+          "label": "Installation",
+          "translations": {
+            "ru": "Установка"
+          },
+          "slug": "installation"
+        },
+        {
+          "label": "Quick Start",
+          "translations": {
+            "ru": "Быстрый старт"
+          },
+          "slug": "getting-started"
+        }
+      ]
+    },
+    {
+      "label": "Guides",
+      "translations": {
+        "ru": "Руководства"
+      },
+      "items": [
+        {
+          "label": "Bindings",
+          "translations": {
+            "ru": "Биндинги"
+          },
+          "slug": "bindings"
+        },
+        {
+          "label": "Scopes",
+          "translations": {
+            "ru": "Скоупы"
+          },
+          "slug": "scopes"
+        },
+        {
+          "label": "Using Annotations",
+          "translations": {
+            "ru": "Аннотации"
+          },
+          "slug": "using-annotations"
+        },
+        {
+          "label": "Flutter Integration",
+          "translations": {
+            "ru": "Интеграция с Flutter"
+          },
+          "slug": "flutter-integration"
+        }
+      ]
+    },
+    {
+      "label": "Reference",
+      "translations": {
+        "ru": "Справочник"
+      },
+      "items": [
+        {
+          "label": "Example Application",
+          "translations": {
+            "ru": "Пример приложения"
+          },
+          "slug": "example-application"
+        }
+      ]
+    }
+  ]
+}

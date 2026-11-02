@@ -4,14 +4,14 @@ import 'package:benchmark_di/scenarios/universal_service.dart';
 import 'package:get_it/get_it.dart';
 import 'di_adapter.dart';
 
-/// Универсальный DIAdapter для GetIt c поддержкой scopes и строгой типизацией.
+/// DIAdapter for GetIt with scope support and strict typing.
 class GetItAdapter extends DIAdapter<GetIt> {
   late GetIt _getIt;
   final String? _scopeName;
   final bool _isSubScope;
   bool _scopePushed = false;
 
-  /// Основной (root) и subScope-конструкторы.
+  /// Root and subScope constructors.
   GetItAdapter({GetIt? instance, String? scopeName, bool isSubScope = false})
       : _scopeName = scopeName,
         _isSubScope = isSubScope {
@@ -23,7 +23,7 @@ class GetItAdapter extends DIAdapter<GetIt> {
   @override
   void setupDependencies(void Function(GetIt container) registration) {
     if (_isSubScope) {
-      // Создаём scope через pushNewScope с init
+      // Create scope via pushNewScope with init
       _getIt.pushNewScope(
         scopeName: _scopeName,
         init: (getIt) => registration(getIt),
@@ -41,15 +41,15 @@ class GetItAdapter extends DIAdapter<GetIt> {
 
   @override
   Future<T> resolveAsync<T extends Object>({String? named}) async =>
-      _getIt<T>(instanceName: named);
+      _getIt.getAsync<T>(instanceName: named);
 
   @override
-  void teardown() {
+  Future<void> teardown() async {
     if (_isSubScope && _scopePushed) {
-      _getIt.popScope();
+      await _getIt.popScope();
       _scopePushed = false;
     } else {
-      _getIt.reset();
+      await _getIt.reset();
     }
   }
 
@@ -59,6 +59,9 @@ class GetItAdapter extends DIAdapter<GetIt> {
 
   @override
   Future<void> waitForAsyncReady() async {
+    // registerLazySingletonAsync не участвует в allReady: прогрев обеспечивает
+    // prewarm() в раннере, одинаково для всех адаптеров. Вызов оставлен —
+    // он корректен, если в сценарии появятся eager-async привязки.
     await _getIt.allReady();
   }
 
@@ -73,11 +76,17 @@ class GetItAdapter extends DIAdapter<GetIt> {
       return (getIt) {
         switch (scenario) {
           case UniversalScenario.asyncChain:
+            // registerSingletonAsync инициализирует ВСЕ зарегистрированные
+            // async-синглтоны сразу, независимо от того, что резолвит бенчмарк.
+            // При chainCount=100/depth=100 это 10 000 объектов против 100 у
+            // ленивых контейнеров. registerLazySingletonAsync строит только
+            // запрошенную цепочку — та же семантика, что у
+            // toProvideAsync().singleton() в cherrypick.
             for (int chain = 1; chain <= chainCount; chain++) {
               for (int level = 1; level <= nestingDepth; level++) {
                 final prevDepName = '${chain}_${level - 1}';
                 final depName = '${chain}_$level';
-                getIt.registerSingletonAsync<UniversalService>(
+                getIt.registerLazySingletonAsync<UniversalService>(
                   () async {
                     final prev = level > 1
                         ? await getIt.getAsync<UniversalService>(
@@ -92,16 +101,23 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.register:
-            getIt.registerSingleton<UniversalService>(
-                UniversalServiceImpl(value: 'reg', dependency: null));
+            if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
+              getIt.registerLazySingleton<UniversalService>(
+                  () => UniversalServiceImpl(value: 'reg', dependency: null));
+            } else {
+              getIt.registerSingleton<UniversalService>(
+                  UniversalServiceImpl(value: 'reg', dependency: null));
+            }
             break;
           case UniversalScenario.named:
-            getIt.registerFactory<UniversalService>(
-                () => UniversalServiceImpl(value: 'impl1'),
-                instanceName: 'impl1');
-            getIt.registerFactory<UniversalService>(
-                () => UniversalServiceImpl(value: 'impl2'),
-                instanceName: 'impl2');
+            // Имя строится при регистрации и захватывается константой —
+            // симметрично chain-фабрикам.
+            for (var chain = 1; chain <= chainCount; chain++) {
+              final implName = 'impl$chain';
+              getIt.registerFactory<UniversalService>(
+                  () => UniversalServiceImpl(value: implName),
+                  instanceName: implName);
+            }
             break;
           case UniversalScenario.chain:
             for (int chain = 1; chain <= chainCount; chain++) {
@@ -112,6 +128,17 @@ class GetItAdapter extends DIAdapter<GetIt> {
                   case UniversalBindingMode.singletonStrategy:
                     getIt.registerSingleton<UniversalService>(
                       UniversalServiceImpl(
+                        value: depName,
+                        dependency: level > 1
+                            ? getIt<UniversalService>(instanceName: prevDepName)
+                            : null,
+                      ),
+                      instanceName: depName,
+                    );
+                    break;
+                  case UniversalBindingMode.lazySingletonStrategy:
+                    getIt.registerLazySingleton<UniversalService>(
+                      () => UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
                             ? getIt<UniversalService>(instanceName: prevDepName)
@@ -132,7 +159,8 @@ class GetItAdapter extends DIAdapter<GetIt> {
                     );
                     break;
                   case UniversalBindingMode.asyncStrategy:
-                    getIt.registerSingletonAsync<UniversalService>(
+                    // Ленивая регистрация — см. комментарий в ветке asyncChain.
+                    getIt.registerLazySingletonAsync<UniversalService>(
                       () async => UniversalServiceImpl(
                         value: depName,
                         dependency: level > 1
@@ -148,15 +176,25 @@ class GetItAdapter extends DIAdapter<GetIt> {
             }
             break;
           case UniversalScenario.override:
-            // handled at benchmark level
+            // Ребёнок регистрирует только алиас последнего звена; сама цепочка
+            // остаётся у родителя и резолвится через границу scope.
+            final depName = '${chainCount}_$nestingDepth';
+            getIt.registerLazySingleton<UniversalService>(
+              () => getIt<UniversalService>(instanceName: depName),
+            );
             break;
         }
-        if (scenario == UniversalScenario.chain ||
-            scenario == UniversalScenario.override) {
+        if (scenario == UniversalScenario.chain) {
           final depName = '${chainCount}_$nestingDepth';
-          getIt.registerSingleton<UniversalService>(
-            getIt<UniversalService>(instanceName: depName),
-          );
+          if (bindingMode == UniversalBindingMode.lazySingletonStrategy) {
+            getIt.registerLazySingleton<UniversalService>(
+              () => getIt<UniversalService>(instanceName: depName),
+            );
+          } else {
+            getIt.registerSingleton<UniversalService>(
+              getIt<UniversalService>(instanceName: depName),
+            );
+          }
         }
       };
     }

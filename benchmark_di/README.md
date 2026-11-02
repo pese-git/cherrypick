@@ -2,6 +2,33 @@
 
 _Benchmark suite for cherrypick DI container, get_it, and other DI solutions._
 
+
+
+> **Before changing the measurement apparatus** read [METHODOLOGY.md](METHODOLOGY.md).
+> Every decision there is documented together with the measurement that caused
+> it. Several of them look like unnecessary complexity — batching, one process
+> per scenario, median instead of mean, containers refusing a scenario instead of
+> silently substituting it — and would be reverted without that document.
+
+> **Reproducing the numbers:** [REPRODUCE.md](REPRODUCE.md) — the exact commands
+> behind every table in the reports, the expected run-to-run spread, and what to
+> check when your numbers disagree.
+
+## How to produce publishable numbers
+
+```shell
+./tool/run_matrix.sh
+```
+
+The script runs every (DI, scenario) pair in its own process, in both JIT and
+AOT modes. Do not assemble tables by hand: numbers from `--benchmark=all` are
+unusable for memory comparison, because process RSS is inherited between
+scenarios.
+
+Every result row carries `runtime_mode` and `cycle_detection`. A report without
+those fields is considered invalid — JIT and AOT reorder the containers, and the
+cherrypick fast path only applies with cycle detection off.
+
 ## Overview
 
 benchmark_di is a flexible benchmarking suite to compare DI containers (like cherrypick and get_it) on synthetic, deep, and real-world dependency scenarios – chains, factories, async, named, override, etc.
@@ -69,6 +96,8 @@ Switch DI with the CLI option: `--di`
 - `--format, -f` — Output: `pretty`, `csv`, `json`, `markdown`
 - `--help, -h` — Usage
 
+> Short flags take a space (`-c 100`), not an equals sign (`-c=100`). With `-c=100` the value arrives as `=100` and the run is rejected with exit code 64 instead of printing an empty table.
+
 ### Run Examples
 
 - **All benchmarks for cherrypick:**
@@ -124,13 +153,7 @@ dart run bin/main.dart --di=riverpod --benchmark=all
 See the `benchmark_di/lib/di_adapters/` folder for ready-to-use adapters.
 
 ---
-## Advantages
 
-- **Type-safe:** Zero dynamic/object usage in DI flows.
-- **Extensible:** New scenarios are just new Enum values and a method extension.
-- **No global registration logic:** All DI-related logic is where it belongs: in the adapter.
-
-=======
 ## How to Add Your Own DI
 
 1. Implement a class extending `DIAdapter` (`lib/di_adapters/your_adapter.dart`)
@@ -139,40 +162,6 @@ See the `benchmark_di/lib/di_adapters/` folder for ready-to-use adapters.
 4. No global function needed — all logic is within the adapter!
 
 ---
-## Universal DI registration: Adapter-centric approach
-
-Starting from vX.Y.Z, all DI registration scenarios and logic are encapsulated in the adapter itself via the `universalRegistration` method.
-
-### How to use (in Dart code):
-
-```dart
-final di = CherrypickDIAdapter(); // or GetItAdapter(), RiverpodAdapter(), etc
-
-di.setupDependencies(
-  di.universalRegistration(
-    scenario: UniversalScenario.chain,
-    chainCount: 10,
-    nestingDepth: 5,
-    bindingMode: UniversalBindingMode.singletonStrategy,
-  ),
-);
-```
-- There is **no more need to use any global function or switch**: each adapter provides its own type-safe implementation.
-
-### How to add a new scenario or DI:
-- Implement `universalRegistration<S extends Enum>(...)` in your adapter
-- Use your own Enum if you want adapter-specific scenarios!
-- Benchmarks and CLI become automatically extensible for custom DI and scenarios.
-
-### CLI usage (runs all universal scenarios for Cherrypick, GetIt, Riverpod):
-
-```
-dart run bin/main.dart --di=cherrypick --benchmark=all
-dart run bin/main.dart --di=getit --benchmark=all
-dart run bin/main.dart --di=riverpod --benchmark=all
-```
-
-See the `benchmark_di/lib/di_adapters/` folder for ready-to-use adapters.
 
 ## Advantages
 

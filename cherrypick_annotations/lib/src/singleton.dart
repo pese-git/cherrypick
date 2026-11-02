@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 
-import 'package:meta/meta.dart';
-
 /// Marks a provider method or class so its instance is created only once and shared (singleton) for DI in CherryPick.
 ///
 /// Use `@singleton()` on provider methods or classes in your DI module to ensure only one instance is ever created
@@ -35,7 +33,6 @@ import 'package:meta/meta.dart';
 /// ```
 ///
 /// See also: [@instance], [@provide], [@named]
-@experimental
 final class singleton {
   /// Creates a [singleton] annotation for DI providers/classes.
   const singleton();
