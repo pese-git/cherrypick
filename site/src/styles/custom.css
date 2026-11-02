@@ -74,7 +74,7 @@
   font-size: 0.875em;
 }
 
-/* starlight-versions fixes the selector at 6.5em, which truncates "4.x (dev)".
+/* starlight-versions fixes the selector at 6.5em, which truncates longer labels.
    Size it to the longest option instead (`:root` outranks the scoped rule). */
 :root starlight-version-select select {
   width: auto;
