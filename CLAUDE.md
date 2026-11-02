@@ -25,7 +25,11 @@ Monorepo DI-экосистемы для Dart и Flutter на Melos 6 + FVM. Па
 - Документация двуязычная: правка в `*_en.md` — и в `*_ru.md`; страницы сайта — en и `ru/`.
 - `CHANGELOG.md` пишет `melos version` по коммитам; руками не править без явного решения.
 - Коммиты — Conventional Commits, `scope` — имя пакета (`feat(cherrypick_generator): …`), описание по-русски, как в истории. Теги — `<package>-v<version>`.
-- Ветки: задача — в своей ветке (`feat/`, `fix/`, `docs/`, `chore/`…) от `develop`, PR в `develop`; `master` — выпущенное.
+- Ветки — **git flow**: `master` — только выпущенное, `develop` — интеграционная.
+  - `feature/<имя>` (любая задача: фичи, документация, chore) и `bugfix/<имя>` — от `develop`, PR в `develop`.
+  - `release/<версия>` (например, `release/4.1.0` по версии `cherrypick`) — от `develop`; в ней только `melos version`, исправления к релизу и документация. PR в `master` **merge-коммитом** (без squash/rebase — теги `melos version` должны остаться достижимыми из `master`), затем `master` вливается обратно в `develop`.
+  - `hotfix/<версия>` — от `master`, PR в `master` merge-коммитом, затем обратно в `develop`.
+  - Базовая ветка для diff/ревью: `develop`, для `hotfix/*` — `master`. Напрямую в `develop`/`master` не коммитить.
 - Без явной просьбы: не делать `git commit`/`push`, не открывать PR, не запускать `melos version` и `pub publish`.
 
 ## Команда субагентов (`.claude/agents/`)
