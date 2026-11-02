@@ -8,7 +8,9 @@
 .dart_tool/
 .idea/
 .vscode/
-.claude/
+.claude/*
+!.claude/agents/
+!.claude/commands/
 .cocoindex_code/
 
 
