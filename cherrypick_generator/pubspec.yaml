@@ -2,7 +2,7 @@ name: cherrypick_generator
 description: |
   Source code generator for the cherrypick dependency injection system. Processes annotations to generate binding and module code for Dart & Flutter projects.
 
-version: 4.0.0-dev.7
+version: 4.0.0
 homepage: https://cherrypick.openidealab.com
 documentation: https://cherrypick.openidealab.com/intro/
 repository: https://github.com/pese-git/cherrypick/tree/master/cherrypick_generator
@@ -19,7 +19,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  cherrypick_annotations: ^4.0.0-dev.2
+  cherrypick_annotations: ^4.0.0
   # Deliberately spans the whole supported range instead of a caret: on
   # Flutter 3.38 the meta 1.17.0 pin forces analyzer 9.x, on 3.47 the
   # resolver reaches 14.x, and Flutter apps running auto_route_generator

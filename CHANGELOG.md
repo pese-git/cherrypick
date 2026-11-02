@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-11-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`cherrypick` - `v4.0.0`](#cherrypick---v400)
+ - [`cherrypick_annotations` - `v4.0.0`](#cherrypick_annotations---v400)
+ - [`cherrypick_flutter` - `v4.0.0`](#cherrypick_flutter---v400)
+ - [`cherrypick_generator` - `v4.0.0`](#cherrypick_generator---v400)
+ - [`cherrypick_lint` - `v4.0.0`](#cherrypick_lint---v400)
+ - [`talker_cherrypick_logger` - `v4.0.0`](#talker_cherrypick_logger---v400)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+Packages graduated to a stable release (see pre-releases prior to the stable version for changelog entries):
+
+ - `cherrypick` - `v4.0.0`
+ - `cherrypick_annotations` - `v4.0.0`
+ - `cherrypick_flutter` - `v4.0.0`
+ - `cherrypick_generator` - `v4.0.0`
+ - `cherrypick_lint` - `v4.0.0`
+ - `talker_cherrypick_logger` - `v4.0.0`
+
+---
+
+#### `cherrypick` - `v4.0.0`
+
+#### `cherrypick_annotations` - `v4.0.0`
+
+#### `cherrypick_flutter` - `v4.0.0`
+
+#### `cherrypick_generator` - `v4.0.0`
+
+#### `cherrypick_lint` - `v4.0.0`
+
+#### `talker_cherrypick_logger` - `v4.0.0`
+
+
 ## 2026-09-28
 
 ### Changes

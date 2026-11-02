@@ -1,3 +1,8 @@
+## 4.0.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+ - **BREAKING**: finalizes the resolver/provider public API. Upgrading from 3.x: see the [migration guide](https://github.com/pese-git/cherrypick/blob/cherrypick-v4.0.0/doc/migration_4.0.0_en.md) ([RU](https://github.com/pese-git/cherrypick/blob/cherrypick-v4.0.0/doc/migration_4.0.0_ru.md)).
+
 ## 4.0.0-dev.6
 
  - **DOCS**(cherrypick_lint): описать подключение через plugins: и релиз 2.0.0.
