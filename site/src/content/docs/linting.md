@@ -22,7 +22,7 @@ Name it in the top-level `plugins` section of `analysis_options.yaml`:
 ```yaml
 # analysis_options.yaml
 plugins:
-  cherrypick_lint: ^4.0.0-dev.0
+  cherrypick_lint: ^4.0.0
 ```
 
 Requires Dart >=3.10 (Flutter >=3.38).
@@ -327,7 +327,7 @@ bind<Api>().toProvide(() => ApiMock());
 # analysis_options.yaml
 plugins:
   cherrypick_lint:
-    version: ^4.0.0-dev.0
+    version: ^4.0.0
     diagnostics:
       avoid_extends_silent_observer: false
 ```

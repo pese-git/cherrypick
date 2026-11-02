@@ -24,8 +24,8 @@ export default defineConfig({
       title: 'CherryPick',
       plugins: [
         starlightVersions({
-          // The unversioned docs at the root are the latest (development) line.
-          current: { label: '4.x (dev)' },
+          // The unversioned docs at the root are the current stable line.
+          current: { label: '4.x' },
           // Archived versions. Add one at a time — the plugin snapshots a single
           // new version per build run.
           versions: [
