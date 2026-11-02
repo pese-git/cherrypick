@@ -1,5 +1,15 @@
 include: package:lints/recommended.yaml
 
+analyzer:
+  # example/ — отдельный пакет melos со своим analysis_options.yaml, который
+  # включает плагин cherrypick_lint. Без исключения `dart analyze` здесь тоже
+  # поднимает плагин, и в CI два параллельных процесса собирают один и тот же
+  # ~/.dartServer/.plugin_manager/<hash>/bin/plugin.aot — снимок получается
+  # битым ("file too short", "not an ELF shared object"). Пример
+  # анализируется своим прогоном.
+  exclude:
+    - example/**
+
 linter:
   rules:
     prefer_single_quotes: true
