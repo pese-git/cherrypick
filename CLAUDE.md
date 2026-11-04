@@ -23,6 +23,7 @@ Monorepo DI-экосистемы для Dart и Flutter на Melos 6 + FVM. Па
 - Утверждения о поведении генератора, анализатора или чужой библиотеки проверяются прогоном (`build_test`, пробная программа), а не выводятся из документации — так написаны changes `cherrypick-lint-*`.
 - Правила `cherrypick_lint` должны совпадать с тем, что реально делает `cherrypick_generator`.
 - Документация двуязычная: правка в `*_en.md` — и в `*_ru.md`; страницы сайта — en и `ru/`.
+- Скилл для агентов-потребителей — `skills/cherrypick-di/` (`SKILL.md` + `references/`), распространяется плагином через `.claude-plugin/marketplace.json` и `plugin.json`. Пишется **только на английском** (исключение из правила двуязычия). Изменение публичного API, поведения рантайма, вывода генератора или правил линта — обновить и скилл; примеры в нём проверяются прогоном (пробный проект с `build_runner`), а не выводятся из документации. Проверка манифестов: `claude plugin validate .`.
 - `CHANGELOG.md` пишет `melos version` по коммитам; руками не править без явного решения.
 - Коммиты — Conventional Commits, `scope` — имя пакета (`feat(cherrypick_generator): …`), описание по-русски, как в истории. Теги — `<package>-v<version>`.
 - Ветки — **git flow**: `master` — только выпущенное, `develop` — интеграционная.
@@ -41,7 +42,7 @@ Monorepo DI-экосистемы для Dart и Flutter на Melos 6 + FVM. Па
 | `lint-engineer` | `cherrypick_lint` | да |
 | `integrations-engineer` | `cherrypick_flutter`, `talker_cherrypick_logger`, `examples/*` | да |
 | `benchmark-engineer` | `benchmark_di` | да |
-| `docs-engineer` | README, `doc/`, `site/`, руководства по миграции | документы |
+| `docs-engineer` | README, `doc/`, `site/`, руководства по миграции, скилл `skills/cherrypick-di/` | документы |
 | `check-runner` | codegen, analyze, test на одной или двух версиях Flutter | нет |
 | `code-reviewer` | семантика DI, паритет линта и генератора, тесты | нет |
 | `api-reviewer` | публичный API, semver, совместимость SDK и analyzer, потребители | нет |
