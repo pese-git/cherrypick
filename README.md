@@ -163,7 +163,9 @@ In Claude Code, install it from this repository's plugin marketplace:
 ```
 
 For other agents that support the Agent Skills format, copy the
-`skills/cherrypick-di` folder into the agent's skills directory.
+`skills/cherrypick-di` folder into the agent's skills directory. Details:
+[AI Coding Agents](https://cherrypick.openidealab.com/ai-agents/) ·
+[ИИ-агенты для кода](https://cherrypick.openidealab.com/ru/ai-agents/).
 
 ---
 

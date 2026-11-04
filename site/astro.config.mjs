@@ -92,6 +92,7 @@ export default defineConfig({
             { label: 'Dependency Resolution API', translations: { ru: 'API разрешения зависимостей' }, slug: 'dependency-resolution-api' },
             { label: 'Using Annotations', translations: { ru: 'Аннотации' }, slug: 'using-annotations' },
             { label: 'Linting', translations: { ru: 'Линтинг' }, slug: 'linting' },
+            { label: 'AI Coding Agents', translations: { ru: 'ИИ-агенты' }, slug: 'ai-agents' },
             { label: 'Example Application', translations: { ru: 'Пример приложения' }, slug: 'example-application' },
           ],
         },
