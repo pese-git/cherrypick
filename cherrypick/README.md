@@ -30,6 +30,7 @@ It provides an easy-to-use system for registering, scoping, and resolving depend
 - [FAQ](#faq)
 - [Documentation Links](#documentation-links)
 - [Additional Modules](#additional-modules)
+- [Using with AI Coding Agents](#using-with-ai-coding-agents)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -814,6 +815,19 @@ CherryPick provides a set of official add-on modules for advanced use cases and 
 | [**cherrypick_flutter**](https://pub.dev/packages/cherrypick_flutter) | Flutter integration: DI provider widgets and helpers for Flutter. |
 | [**talker_cherrypick_logger**](https://pub.dev/packages/talker_cherrypick_logger) | Advanced logger for CherryPick DI events and state. Provides seamless integration with [Talker](https://pub.dev/packages/talker) logger, enabling central and visual tracking of DI events, errors, and diagnostics in both UI and console. |
 | [**cherrypick_lint**](../cherrypick_lint) | Analyzer plugin that catches CherryPick API misuse (missing `await` on scope disposal, invalid annotation usage, runtime traps) in the IDE and in `dart analyze`. |
+
+---
+
+## Using with AI Coding Agents
+
+The [`cherrypick-di`](https://github.com/pese-git/cherrypick/tree/master/skills/cherrypick-di) [Agent Skill](https://agentskills.io) teaches coding agents the CherryPick 4.x API — scopes, bindings, code generation, Flutter integration, `cherrypick_lint` rules and the 3.x → 4.0 migration. In Claude Code:
+
+```text
+/plugin marketplace add pese-git/cherrypick
+/plugin install cherrypick-di@cherrypick
+```
+
+For other agents and manual installation see [AI Coding Agents](https://cherrypick.openidealab.com/ai-agents/).
 
 ---
 

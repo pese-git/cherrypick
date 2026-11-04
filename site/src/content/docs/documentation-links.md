@@ -14,6 +14,10 @@ description: CherryPick packages, extended guides, and source code.
 | [**talker_cherrypick_logger**](https://pub.dev/packages/talker_cherrypick_logger) | Logs DI events, errors, and diagnostics through [Talker](https://pub.dev/packages/talker), in the UI and the console. |
 | [**cherrypick_lint**](https://pub.dev/packages/cherrypick_lint) | Analyzer plugin that catches API misuse — missing `await` on scope disposal, invalid annotation usage, runtime traps — in the IDE and in `dart analyze`. See [Linting](/linting/). |
 
+## For AI coding agents
+
+- [`cherrypick-di` skill](https://github.com/pese-git/cherrypick/tree/master/skills/cherrypick-di) — the CherryPick 4.x API for coding agents. See [AI Coding Agents](/ai-agents/).
+
 ## Extended guides in the repository
 
 - [Full tutorial](https://github.com/pese-git/cherrypick/blob/master/doc/full_tutorial_en.md)

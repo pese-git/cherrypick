@@ -14,6 +14,7 @@ model: sonnet
 - Примеры кода в документации — рабочие: актуальные имена API, `extends Module`, part-директива, `await` при закрытии скоупов; проходят `cherrypick_lint`.
 - Сайдбар и подписи разделов (с русскими переводами) — в `site/astro.config.mjs`.
 - `CHANGELOG.md` не трогать — его пишет `melos version`.
+- Скилл `skills/cherrypick-di/` (для агентов в проектах-потребителях) — тоже копия темы: изменение API, поведения, генератора или правил линта отражается в `SKILL.md` и нужном файле `references/`. Только английский, `SKILL.md` короткий, подробности — в `references/`. Утверждения и примеры проверяй прогоном в пробном проекте (path-зависимости на пакеты монорепо, `dart run build_runner build`, `dart analyze`, `dart run`). Версию в `.claude-plugin/plugin.json` держи равной версии `cherrypick`; после правки — `claude plugin validate .`.
 
 ## Проверка
 ```bash

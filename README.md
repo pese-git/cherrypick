@@ -148,6 +148,27 @@ Please see:
 
 ---
 
+## Using CherryPick with AI coding agents
+
+[`skills/cherrypick-di`](./skills/cherrypick-di/SKILL.md) is an
+[Agent Skill](https://agentskills.io) that teaches coding agents the CherryPick 4.x
+API: scopes and bindings, code generation, Flutter integration, the
+`cherrypick_lint` rules and the 3.x → 4.0 migration.
+
+In Claude Code, install it from this repository's plugin marketplace:
+
+```text
+/plugin marketplace add pese-git/cherrypick
+/plugin install cherrypick-di@cherrypick
+```
+
+For other agents that support the Agent Skills format, copy the
+`skills/cherrypick-di` folder into the agent's skills directory. Details:
+[AI Coding Agents](https://cherrypick.openidealab.com/ai-agents/) ·
+[ИИ-агенты для кода](https://cherrypick.openidealab.com/ru/ai-agents/).
+
+---
+
 ## Migrating to 4.0.0
 
 The `cherrypick` core package changes its resolver/provider public API in 4.0.0.

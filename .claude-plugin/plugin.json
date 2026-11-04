@@ -1,0 +1,13 @@
+{
+  "name": "cherrypick-di",
+  "description": "Skill for writing, reviewing and migrating Dart/Flutter code that uses CherryPick DI 4.x.",
+  "version": "4.0.0",
+  "author": {
+    "name": "Sergey Penkovsky"
+  },
+  "homepage": "https://cherrypick.openidealab.com",
+  "repository": "https://github.com/pese-git/cherrypick",
+  "license": "Apache-2.0",
+  "keywords": ["dart", "flutter", "dependency-injection", "cherrypick"],
+  "skills": ["./skills/"]
+}

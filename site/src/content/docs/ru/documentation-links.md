@@ -14,6 +14,10 @@ description: Пакеты CherryPick, расширенные руководст�
 | [**talker_cherrypick_logger**](https://pub.dev/packages/talker_cherrypick_logger) | Логирует события, ошибки и диагностику DI через [Talker](https://pub.dev/packages/talker) — в UI и в консоли. |
 | [**cherrypick_lint**](https://pub.dev/packages/cherrypick_lint) | Плагин анализатора, который ловит неверное использование API — пропущенный `await` при закрытии скоупа, некорректные аннотации, рантайм-ловушки — в IDE и в `dart analyze`. См. [Линтинг](/ru/linting/). |
 
+## Для ИИ-агентов
+
+- [Скилл `cherrypick-di`](https://github.com/pese-git/cherrypick/tree/master/skills/cherrypick-di) — API CherryPick 4.x для агентов, пишущих код. См. [ИИ-агенты для кода](/ru/ai-agents/).
+
 ## Расширенные руководства в репозитории
 
 - [Полный туториал](https://github.com/pese-git/cherrypick/blob/master/doc/full_tutorial_ru.md)
